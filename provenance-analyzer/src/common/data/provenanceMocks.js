@@ -647,6 +647,8 @@ let forTaskFilter = task1Data;
 /*allProvenanceData.filter((run) =>
   run.id.includes("S-task01")
 );*/
+let provset = new Set()
+
 function trimProvGraph(entireProvGraph) {
   if (!entireProvGraph || !Array.isArray(entireProvGraph)) {
     return;
@@ -669,7 +671,7 @@ function trimProvGraph(entireProvGraph) {
     }
     trimmedNode.target = null; // to display meta info about event target (ie node 'J_heer')
     trimmedNode.trigger = null; // to display meta info about event trigger (ie click, drag, etc)
-
+    provset.add(trimmedNode.event);
     return trimmedNode;
   });
 
@@ -677,6 +679,7 @@ function trimProvGraph(entireProvGraph) {
   trimedProvGraph["stopTime"] = stopTime;
   trimedProvGraph["correct"] = 1;
 
+  console.log('provSet', provset)
   return trimedProvGraph;
 }
 
@@ -686,5 +689,5 @@ const provData = forTaskFilter.map((value) => {
 });
 
 //const provData = allData.data.provGraphs;
-console.log(provData);
+
 export default provData;

@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from "react";
-
+import GroupedNodes from "./GroupedNodes";
 import * as d3 from "d3";
 import chroma from "chroma-js";
 
@@ -27,28 +27,68 @@ const ProvenanceNodes = ({ provenanceGraph }: any) => {
   const yOffset = 50;
 
   let provNodes = [];
+  let xExtents = [];
+  let radius = barHeight / 3;
 
+  // calculate groupings. Pass each grouping into <Grouping Etren
+  let currentGroup = [];
   provenanceGraph.nodes.forEach((node) => {
     if (node.event === "startedProvenance" || node.event === "Finished Task") {
       return;
     }
+
+    xExtents.push({
+      start: xScale(node.time) - radius,
+      stop: xScale(node.time) + radius,
+    });
+
     provNodes.push({
       x: xScale(node.time),
       y: yOffset + barHeight / 2,
-      r: barHeight / 3,
+      r: radius,
       fill: "lightgray",
+      info: node.event,
     });
   });
+  let provElements = [];
+  for (let i = 0; i < provNodes.length; i++) {
+    let d = provNodes[i];
+    console.log(
+      "outside grouped!",
+      provNodes,
+      i,
+      i + 1 < xExtents.length - 1,
 
-  console.log(provNodes);
+      xExtents
+    );
+
+    // if not last node and this element overlaps with next
+    if (i < xExtents.length - 1 && xExtents[i].stop > xExtents[i + 1].start) {
+      let groupedNodes = [];
+      // start grouping
+      groupedNodes.push(d);
+      // a group starts
+      while (
+        provNodes.length - 1 > i &&
+        xExtents[i].stop > xExtents[i + 1].start
+      ) {
+        d = provNodes[i + 1];
+        groupedNodes.push(d);
+        i++;
+      }
+      provElements.push(
+        <GroupedNodes groupedNodes={groupedNodes}></GroupedNodes>
+      );
+    } else {
+      provElements.push(
+        <circle cx={d.x} cy={d.y} r={d.r} fill={d.fill}></circle>
+      );
+    }
+  }
+  // for any
+
   // Note when rendering other things in svgs, you must only render things that are svg elements can render- they can't render most react components
-  return (
-    <g>
-      {provNodes.map((d, i) => {
-        return <circle cx={d.x} cy={d.y} r={d.r} fill={d.fill}></circle>;
-      })}
-    </g>
-  );
+  return <g>{provElements}</g>;
 };
 
 export default ProvenanceNodes;
