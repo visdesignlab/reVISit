@@ -1,10 +1,15 @@
 import React from 'react';
 import ThreeDRotation from "@material-ui/icons/ThreeDRotation";
+import Add from "@material-ui/icons/Add";
+import PanTool from "@material-ui/icons/PanTool";
+import Sort from "@material-ui/icons/Sort";
+import Highlight from "@material-ui/icons/Highlight";
+import TabUnselected from "@material-ui/icons/TabUnselected";
 
 const eventMapping = {
   answerBox: {
     name: "Add",
-    icon: < ThreeDRotation width = {
+    icon: < Add width = {
       24
     }
     height = {
@@ -14,7 +19,7 @@ const eventMapping = {
   },
   "Hard Selected a Node": {
     name: "Add",
-    icon: < ThreeDRotation width = {
+    icon: < Add width = {
       24
     }
     height = {
@@ -24,7 +29,7 @@ const eventMapping = {
   },
   "Dragged Node": {
     name: "PanTool",
-    icon: < ThreeDRotation width = {
+    icon: < PanTool width = {
       24
     }
     height = {
@@ -34,7 +39,7 @@ const eventMapping = {
   },
   sort: {
     name: "Sort",
-    icon: < ThreeDRotation width = {
+    icon: < Sort width = {
       24
     }
     height = {
@@ -44,7 +49,7 @@ const eventMapping = {
   },
   attrRow: {
     name: "Highlight",
-    icon: < ThreeDRotation width = {
+    icon: < Highlight width = {
       24
     }
     height = {
@@ -54,7 +59,7 @@ const eventMapping = {
   },
   "Hard Unselected a Node": {
     name: "TabUnselected",
-    icon: < ThreeDRotation width = {
+    icon: < TabUnselected width = {
       24
     }
     height = {

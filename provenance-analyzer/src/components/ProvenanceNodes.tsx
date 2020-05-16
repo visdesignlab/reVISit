@@ -62,7 +62,7 @@ const ProvenanceNodes = ({ provenanceGraph }: any) => {
 
       xExtents
     );
-
+    let item;
     // if not last node and this element overlaps with next
     if (i < xExtents.length - 1 && xExtents[i].stop > xExtents[i + 1].start) {
       let groupedNodes = [];
@@ -77,12 +77,19 @@ const ProvenanceNodes = ({ provenanceGraph }: any) => {
         groupedNodes.push(d);
         i++;
       }
-      provElements.push(
-        <GroupedNodes groupedNodes={groupedNodes}></GroupedNodes>
+      item = (
+        <GroupedNodes
+          groupedNodes={groupedNodes}
+          barHeight={barHeight}></GroupedNodes>
       );
     } else {
-      provElements.push(<ProvenanceNode circle={d}></ProvenanceNode>);
+      item = <ProvenanceNode circle={d} barHeight={barHeight}></ProvenanceNode>;
     }
+    provElements.push(
+      <g transform={`translate(${d.x - barHeight / 4},${d.y - barHeight / 4})`}>
+        {item}
+      </g>
+    );
   }
   // for any
 

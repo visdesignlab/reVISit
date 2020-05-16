@@ -8,7 +8,7 @@ const svgWidth = 200;
 const svgHeight = 100;
 const margin = { top: 5, right: 5, bottom: 5, left: 5 };
 
-const ProvenanceGraph = ({ provenanceGraph }) => {
+const ProvenanceGraph = ({ provenanceGraph, xScale }) => {
   if (!provenanceGraph) {
     console.log(provenanceGraph);
     return <div></div>;
@@ -16,13 +16,13 @@ const ProvenanceGraph = ({ provenanceGraph }) => {
   console.log(provenanceGraph);
   let margin = { top: 5, right: 5, bottom: 5, left: 5 },
     width = svgWidth - margin.right - margin.left,
-    height = svgHeight - margin.top - margin.bottom,
-    xScale = d3.scaleTime().range([margin.left, width - margin.right]);
+    height = svgHeight - margin.top - margin.bottom; //,
+  //xScale = d3.scaleTime().range([margin.left, width - margin.right]);
   // set domains, needs to take in axis from parent to scale all
-  xScale.domain([
+  /*xScale.domain([
     new Date(provenanceGraph.startTime),
     new Date(provenanceGraph.stopTime),
-  ]);
+  ]);*/
   console.log(xScale);
   const barHeight = 50;
   const yOffset = 50;

@@ -8,13 +8,13 @@ import GroupedNodes from "./GroupedNodes";
 import * as d3 from "d3";
 import chroma from "chroma-js";
 
-const ProvenanceNode = ({ circle }: any) => {
-  let iconSize = 24;
+const ProvenanceNode = ({ circle, barHeight }: any) => {
+  let iconSize = barHeight / 2;
   // Note when rendering other things in svgs, you must only render things that are svg elements can render- they can't render most react components
   const icon = eventMapping[circle.info].icon;
   console.log("dywootto", icon);
   const circ = (
-    <g transform={`translate(${circle.x},${circle.y})`}>
+    <g>
       <circle
         cy={iconSize / 2}
         cx={iconSize / 2}

@@ -1,12 +1,21 @@
 import React, { useRef, useEffect } from "react";
 import * as d3 from "d3";
 import chroma from "chroma-js";
-
+import EventFrequencies from "./EventFrequencies";
 const svgWidth = 200;
 const svgHeight = 100;
 const margin = { top: 5, right: 5, bottom: 5, left: 5 };
 
-const GroupedNodes = ({ groupedNodes }: any) => {
+function count(ary, classifier) {
+  classifier = classifier || String;
+  return ary.reduce(function (counter, item) {
+    var p = classifier(item);
+    counter[p] = counter.hasOwnProperty(p) ? counter[p] + 1 : 1;
+    return counter;
+  }, {});
+}
+
+const GroupedNodes = ({ groupedNodes, barHeight }: any) => {
   console.log("in grouped Nodes", groupedNodes);
   const rectStartX = groupedNodes[0].x;
   const rectFinishX = groupedNodes[groupedNodes.length - 1].x;
@@ -14,23 +23,36 @@ const GroupedNodes = ({ groupedNodes }: any) => {
   let width = rectFinishX - rectStartX;
   const height = groupedNodes[0].r * 2;
   const y = groupedNodes[0].y - height / 2;
-
+  const color = "lightgray";
   const baseElement = (
     <g>
+      <circle r={groupedNodes[0].r} cy={barHeight / 4} fill={color}></circle>
+      <rect
+        y={-groupedNodes[0].r / 4}
+        height={height}
+        width={width}
+        fill={color}></rect>
       <circle
-        cx={rectStartX}
-        cy={groupedNodes[0].y}
+        cx={width}
         r={groupedNodes[0].r}
-      ></circle>
-      <rect x={rectStartX} y={y} height={height} width={width}></rect>
-      <circle
-        cx={rectFinishX}
-        cy={groupedNodes[0].y}
-        r={groupedNodes[0].r}
-      ></circle>
+        cy={barHeight / 4}
+        fill={color}></circle>
     </g>
   );
-  return baseElement;
+  const eventFreq = count(groupedNodes, function (item) {
+    return item.info;
+  });
+  console.log(eventFreq);
+  let scale = width / 12;
+  scale = scale / Object.keys(eventFreq).length;
+  return (
+    <g>
+      {baseElement}
+      <EventFrequencies
+        frequencies={eventFreq}
+        scale={scale}></EventFrequencies>
+    </g>
+  );
 };
 
 export default GroupedNodes;
