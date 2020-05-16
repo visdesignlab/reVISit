@@ -1,0 +1,24 @@
+{
+    "folders" : [
+        {
+            "path":"./"
+        }
+    ],
+    "settings": {
+        "eslint.format.enable": true,
+        "eslint.run": "onSave",
+        "editor.formatOnSave": true
+    },
+    "extensions" : {
+        "recommendations" : [
+            "dbaeumer.vscode-eslint",
+            "eamodio.gitlens",
+            "ms-vsliveshare.vsliveshare-pack",
+            "formulahendry.auto-close-tag",
+            "aeschli.vscode-css-formatter",
+            "msjsdiag.debugger-for-chrome",
+            "christian-kohler.npm-intellisense",
+            "ms-vscode.powershell"
+        ]
+    }
+}
