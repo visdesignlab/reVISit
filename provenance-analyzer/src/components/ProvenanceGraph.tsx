@@ -43,6 +43,7 @@ const ProvenanceGraph = ({ provenanceGraph, xScale }) => {
     if (node.event === "startedProvenance" || node.event === "Finished Task") {
       return;
     }
+    console.log("node time", node.time);
     provNodes.push({
       x: xScale(node.time),
       y: yOffset + barHeight / 2,
@@ -68,7 +69,9 @@ const ProvenanceGraph = ({ provenanceGraph, xScale }) => {
             />
           );
         })}
-        <ProvenanceNodes provenanceGraph={provenanceGraph}></ProvenanceNodes>
+        <ProvenanceNodes
+          provenanceGraph={provenanceGraph}
+          xScale={xScale}></ProvenanceNodes>
       </g>
     </svg>
   );
