@@ -7,7 +7,8 @@
     "settings": {
         "eslint.format.enable": true,
         "eslint.run": "onSave",
-        "editor.formatOnSave": true
+        "editor.formatOnSave": true,
+        "prettier.jsxBracketSameLine": true
     },
     "extensions" : {
         "recommendations" : [

@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from "react";
 import GroupedNodes from "./GroupedNodes";
+import ProvenanceNode from "./ProvenanceNode";
 import * as d3 from "d3";
 import chroma from "chroma-js";
 
@@ -80,9 +81,7 @@ const ProvenanceNodes = ({ provenanceGraph }: any) => {
         <GroupedNodes groupedNodes={groupedNodes}></GroupedNodes>
       );
     } else {
-      provElements.push(
-        <circle cx={d.x} cy={d.y} r={d.r} fill={d.fill}></circle>
-      );
+      provElements.push(<ProvenanceNode circle={d}></ProvenanceNode>);
     }
   }
   // for any

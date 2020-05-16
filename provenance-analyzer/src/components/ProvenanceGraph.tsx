@@ -8,7 +8,7 @@ const svgWidth = 200;
 const svgHeight = 100;
 const margin = { top: 5, right: 5, bottom: 5, left: 5 };
 
-const ProvenanceGraph = ({ provenanceGraph }: IChartGenerator) => {
+const ProvenanceGraph = ({ provenanceGraph }) => {
   if (!provenanceGraph) {
     console.log(provenanceGraph);
     return <div></div>;
