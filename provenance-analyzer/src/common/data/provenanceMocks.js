@@ -681,7 +681,9 @@ function trimProvGraph(entireProvGraph) {
   trimmedProvGraph["nodes"].forEach(node => {
 
     node.time = (node.time - startTime) / (totalTime); // relative time
-
+    if (node.time >= 1) {
+      console.log(node);
+    }
   })
 
 
@@ -706,23 +708,27 @@ let longestTime = d3.max(unrelativeProvData, d => {
   return 0;
 
 });
+let provData;
+if (false) {
+  provData = provData = unrelativeProvData.map(provGraph => {
+    let scale = longestTime / provGraph.totalTime;
+    console.log(scale);
+    provGraph["startTime"] = provGraph["startTime"] / (scale);
+    provGraph["stopTime"] = provGraph["stopTime"] / (scale);
+    console.log('pre nodes', JSON.parse(JSON.stringify(provGraph["nodes"])))
+    provGraph["nodes"] = provGraph["nodes"].map(node => {
+      console.log(node, scale, node["time"], node["time"] / scale);
+      node['time'] = node["time"] / scale;
+      console.log(node['time'], scale, );
 
-const provData = unrelativeProvData.map(provGraph => {
-  let scale = longestTime / provGraph.totalTime;
-  console.log(scale);
-  provGraph["startTime"] = provGraph["startTime"] / (scale);
-  provGraph["stopTime"] = provGraph["stopTime"] / (scale);
-  console.log('pre nodes', JSON.parse(JSON.stringify(provGraph["nodes"])))
-  provGraph["nodes"] = provGraph["nodes"].map(node => {
-    console.log(node, scale, node["time"], node["time"] / scale);
-    node['time'] = node["time"] / scale;
-    console.log(node['time'], scale, );
-
-    return node;
+      return node;
+    })
+    console.log('post nodes', provGraph["nodes"])
+    return provGraph;
   })
-  console.log('post nodes', provGraph["nodes"])
-  return provGraph;
-})
+} else {
+  provData = unrelativeProvData;
+}
 
 //const provData = allData.data.provGraphs;
 

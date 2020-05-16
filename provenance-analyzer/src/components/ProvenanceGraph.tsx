@@ -4,9 +4,9 @@ import eventMapping from "./eventMapping";
 import * as d3 from "d3";
 import chroma from "chroma-js";
 
-const svgWidth = 200;
+const svgWidth = 250;
 const svgHeight = 100;
-const margin = { top: 5, right: 5, bottom: 5, left: 5 };
+const margin = { top: 5, right: 20, bottom: 5, left: 20 };
 
 const ProvenanceGraph = ({ provenanceGraph, xScale }) => {
   if (!provenanceGraph) {
@@ -14,8 +14,7 @@ const ProvenanceGraph = ({ provenanceGraph, xScale }) => {
     return <div></div>;
   }
   console.log(provenanceGraph);
-  let margin = { top: 5, right: 5, bottom: 5, left: 5 },
-    width = svgWidth - margin.right - margin.left,
+  let width = svgWidth - margin.right - margin.left,
     height = svgHeight - margin.top - margin.bottom; //,
   //xScale = d3.scaleTime().range([margin.left, width - margin.right]);
   // set domains, needs to take in axis from parent to scale all

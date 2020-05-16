@@ -8,18 +8,22 @@ import GroupedNodes from "./GroupedNodes";
 import * as d3 from "d3";
 import chroma from "chroma-js";
 
-const EventFrequencies = ({ frequencies, scale }: any) => {
+const EventFrequencies = ({ frequencies, scaleFactor, start, finish }: any) => {
   const icons = Object.keys(frequencies).map((eventName, index) => {
     const icon = eventMapping[eventName].icon;
     return (
-      <g transform={`translate(${index * 16},0)scale(${scale})`}>
+      <g transform={`translate(${index * 16},0)scale(${scaleFactor})`}>
         {icon}
-        <text>{frequencies[eventName]}</text>
+        <g transform={`translate(8,40)`}>
+          <text fontFamily={"Roboto"} fontSize={"20"}>
+            {frequencies[eventName]}
+          </text>
+        </g>
       </g>
     );
   });
 
-  return icons;
+  return <g transform={`translate(${5 / scaleFactor},${0})`}>{icons}</g>;
 };
 
 export default EventFrequencies;

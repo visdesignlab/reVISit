@@ -12,7 +12,9 @@ storiesOf("ProvGraphs", module).add("small", () => {
   return (
     <div>
       {provData.map((provRound) => (
-        <ProvenanceGraph provenanceGraph={provRound} xScale={xScale} />
+        <div>
+          <ProvenanceGraph provenanceGraph={provRound} xScale={xScale} />
+        </div>
       ))}
     </div>
   );

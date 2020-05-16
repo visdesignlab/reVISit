@@ -20,7 +20,7 @@ const GroupedNodes = ({ groupedNodes, barHeight }: any) => {
   const rectStartX = groupedNodes[0].x;
   const rectFinishX = groupedNodes[groupedNodes.length - 1].x;
   // if width can't accomodate all actions, expand
-  let width = rectFinishX - rectStartX;
+  let width = rectFinishX - rectStartX + 2 * groupedNodes[0].r;
   const height = groupedNodes[0].r * 2;
   const y = groupedNodes[0].y - height / 2;
   const color = "lightgray";
@@ -43,14 +43,20 @@ const GroupedNodes = ({ groupedNodes, barHeight }: any) => {
     return item.info;
   });
   console.log(eventFreq);
-  let scale = width / 12;
-  scale = scale / Object.keys(eventFreq).length;
+  let scaleFactor = width / 24;
+  scaleFactor = scaleFactor / Object.keys(eventFreq).length;
+  console.log(scaleFactor);
+  if (scaleFactor > 0.7) {
+    scaleFactor = 0.7;
+  }
   return (
     <g>
       {baseElement}
       <EventFrequencies
         frequencies={eventFreq}
-        scale={scale}></EventFrequencies>
+        scaleFactor={scaleFactor}
+        start={rectStartX}
+        finish={rectFinishX}></EventFrequencies>
     </g>
   );
 };
