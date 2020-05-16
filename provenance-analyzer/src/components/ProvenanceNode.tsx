@@ -10,8 +10,15 @@ import chroma from "chroma-js";
 
 const ProvenanceNode = ({ circle, barHeight }: any) => {
   let iconSize = barHeight / 2;
+  console.log(circle.info);
   // Note when rendering other things in svgs, you must only render things that are svg elements can render- they can't render most react components
-  const icon = eventMapping[circle.info].icon;
+  let icon;
+  if (eventMapping[circle.info] !== undefined) {
+    icon = eventMapping[circle.info].icon;
+  } else {
+    icon = <ThreeDRotation width={24} height={24}></ThreeDRotation>;
+  }
+
   console.log("dywootto", icon);
   const circ = (
     <g>

@@ -1,7 +1,15 @@
 //import allProvenanceData from "./allProvenanceMocks.js";
-import task1Data from './task1ProvData.js'
+//import task1Data from './task1ProvData.js'l
 import * as d3 from "d3";
 
+let taskIds = ["S-task01", "S-task02", "S-task03", "S-task04", "S-task05", "S-task06", "S-task07", "S-task08", "S-task09", "S-task010", "S-task011", "S-task012"]
+
+let allTaskData = [];
+for (let i = 0; i < taskIds.length; i++) {
+  allTaskData.push(require(`./taskPartitioned/${taskIds[i]}.json`));
+}
+
+let allProvData = [];
 const allData = {
   id: "58c84d506d1c600001a09319_S-task01",
   data: {
@@ -645,91 +653,86 @@ const allData = {
 //S - task01;
 //const allProvenanceData = [allData];
 let provDataForTask = [];
-let forTaskFilter = task1Data.filter(value => value.data.provGraphs);
-/*allProvenanceData.filter((run) =>
-  run.id.includes("S-task01")
-);*/
 let provset = new Set()
 
-function trimProvGraph(entireProvGraph) {
-  if (!entireProvGraph || !Array.isArray(entireProvGraph)) {
-    console.log('in non exist', entireProvGraph)
-    return;
-  }
-  let trimmedProvGraph = {};
-  let startTime, stopTime;
-  console.log("jhere!", entireProvGraph);
-  trimmedProvGraph["nodes"] = entireProvGraph.map((provenanceNode) => {
-    let trimmedNode = {};
+allTaskData.forEach(taskData => {
+  let forTaskFilter = taskData.filter(value => value.data.provGraphs);
+  /*allProvenanceData.filter((run) =>
+    run.id.includes("S-task01")
+  );*/
 
-    trimmedNode.event = provenanceNode.event ?
-      provenanceNode.event :
-      "startedProvenance";
-    trimmedNode.time = new Date(provenanceNode.time);
-    if (trimmedNode.event === "startedProvenance") {
-      startTime = new Date(provenanceNode.time);
+  function trimProvGraph(entireProvGraph) {
+    if (!entireProvGraph || !Array.isArray(entireProvGraph)) {
+      return;
     }
-    if (trimmedNode.event === "Finished Task") {
-      stopTime = new Date(provenanceNode.time); //provenanceNode.time;
-    }
-    trimmedNode.target = null; // to display meta info about event target (ie node 'J_heer')
-    trimmedNode.trigger = null; // to display meta info about event trigger (ie click, drag, etc)
-    provset.add(trimmedNode.event);
-    return trimmedNode;
-  });
-  const totalTime = stopTime - startTime;
-  trimmedProvGraph["nodes"].forEach(node => {
+    let trimmedProvGraph = {};
+    let startTime, stopTime;
+    trimmedProvGraph["nodes"] = entireProvGraph.map((provenanceNode) => {
+      let trimmedNode = {};
 
-    node.time = (node.time - startTime) / (totalTime); // relative time
-    if (node.time >= 1) {
-      console.log(node);
-    }
-  })
+      trimmedNode.event = provenanceNode.event ?
+        provenanceNode.event :
+        "startedProvenance";
+      trimmedNode.time = new Date(provenanceNode.time);
+      if (trimmedNode.event === "startedProvenance") {
+        startTime = new Date(provenanceNode.time);
+      }
+      if (trimmedNode.event === "Finished Task") {
+        stopTime = new Date(provenanceNode.time); //provenanceNode.time;
+      }
+      trimmedNode.target = null; // to display meta info about event target (ie node 'J_heer')
+      trimmedNode.trigger = null; // to display meta info about event trigger (ie click, drag, etc)
+      provset.add(trimmedNode.event);
+      return trimmedNode;
+    });
+    const totalTime = stopTime - startTime;
+    trimmedProvGraph["nodes"].forEach(node => {
 
+      node.time = (node.time - startTime) / (totalTime); // relative time
 
-  trimmedProvGraph["startTime"] = (startTime - startTime) / (totalTime); // 0
-  trimmedProvGraph["stopTime"] = (stopTime - startTime) / (totalTime); // 1
-  trimmedProvGraph["totalTime"] = totalTime;
-  trimmedProvGraph["correct"] = 1;
-
-  console.log('provSet', trimmedProvGraph)
-  return trimmedProvGraph;
-}
-
-// find the person with longest time, 
-let unrelativeProvData = forTaskFilter.map((value) => {
-  return trimProvGraph(value.data.provGraphs);
-});
-
-let longestTime = d3.max(unrelativeProvData, d => {
-  if (d) {
-    return d.totalTime;
-  }
-  return 0;
-
-});
-let provData;
-if (false) {
-  provData = provData = unrelativeProvData.map(provGraph => {
-    let scale = longestTime / provGraph.totalTime;
-    console.log(scale);
-    provGraph["startTime"] = provGraph["startTime"] / (scale);
-    provGraph["stopTime"] = provGraph["stopTime"] / (scale);
-    console.log('pre nodes', JSON.parse(JSON.stringify(provGraph["nodes"])))
-    provGraph["nodes"] = provGraph["nodes"].map(node => {
-      console.log(node, scale, node["time"], node["time"] / scale);
-      node['time'] = node["time"] / scale;
-      console.log(node['time'], scale, );
-
-      return node;
     })
-    console.log('post nodes', provGraph["nodes"])
-    return provGraph;
-  })
-} else {
-  provData = unrelativeProvData;
-}
 
-//const provData = allData.data.provGraphs;
 
-export default provData;
+    trimmedProvGraph["startTime"] = (startTime - startTime) / (totalTime); // 0
+    trimmedProvGraph["stopTime"] = (stopTime - startTime) / (totalTime); // 1
+    trimmedProvGraph["totalTime"] = totalTime;
+    trimmedProvGraph["correct"] = 1;
+
+    return trimmedProvGraph;
+  }
+
+  // find the person with longest time, 
+  let unrelativeProvData = forTaskFilter.map((value) => {
+    return trimProvGraph(value.data.provGraphs);
+  });
+
+  let longestTime = d3.max(unrelativeProvData, d => {
+    if (d) {
+      return d.totalTime;
+    }
+    return 0;
+
+  });
+  let provData;
+  if (false) {
+    provData = provData = unrelativeProvData.map(provGraph => {
+      let scale = longestTime / provGraph.totalTime;
+      provGraph["startTime"] = provGraph["startTime"] / (scale);
+      provGraph["stopTime"] = provGraph["stopTime"] / (scale);
+      provGraph["nodes"] = provGraph["nodes"].map(node => {
+        node['time'] = node["time"] / scale;
+
+        return node;
+      })
+      return provGraph;
+    })
+  } else {
+    provData = unrelativeProvData;
+  }
+  allProvData.push(provData);
+  //const provData = allData.data.provGraphs;
+})
+
+console.log('provSet', provset)
+
+export default allProvData;

@@ -1,7 +1,7 @@
 import React from "react";
 import { storiesOf } from "@storybook/react";
 import * as d3 from "d3";
-import provData from "../common/data/provenanceMocks.js";
+import allProvData from "../common/data/provenanceMocks.js";
 import ProvenanceGraph from "./ProvenanceGraph";
 import { start } from "repl";
 
@@ -11,9 +11,13 @@ xScale.domain([0, 1]);
 storiesOf("ProvGraphs", module).add("small", () => {
   return (
     <div>
-      {provData.map((provRound) => (
+      {allProvData.map((provTask) => (
         <div>
-          <ProvenanceGraph provenanceGraph={provRound} xScale={xScale} />
+          {provTask.map((provRound) => {
+            return (
+              <ProvenanceGraph provenanceGraph={provRound} xScale={xScale} />
+            );
+          })}
         </div>
       ))}
     </div>

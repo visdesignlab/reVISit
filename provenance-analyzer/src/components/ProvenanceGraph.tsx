@@ -10,10 +10,8 @@ const margin = { top: 5, right: 20, bottom: 5, left: 20 };
 
 const ProvenanceGraph = ({ provenanceGraph, xScale }) => {
   if (!provenanceGraph) {
-    console.log(provenanceGraph);
     return <div></div>;
   }
-  console.log(provenanceGraph);
   let width = svgWidth - margin.right - margin.left,
     height = svgHeight - margin.top - margin.bottom; //,
   //xScale = d3.scaleTime().range([margin.left, width - margin.right]);
@@ -22,7 +20,6 @@ const ProvenanceGraph = ({ provenanceGraph, xScale }) => {
     new Date(provenanceGraph.startTime),
     new Date(provenanceGraph.stopTime),
   ]);*/
-  console.log(xScale);
   const barHeight = 50;
   const yOffset = 50;
   const bars = [
@@ -42,7 +39,6 @@ const ProvenanceGraph = ({ provenanceGraph, xScale }) => {
     if (node.event === "startedProvenance" || node.event === "Finished Task") {
       return;
     }
-    console.log("node time", node.time);
     provNodes.push({
       x: xScale(node.time),
       y: yOffset + barHeight / 2,
@@ -51,7 +47,6 @@ const ProvenanceGraph = ({ provenanceGraph, xScale }) => {
     });
   });
 
-  console.log(provNodes);
   // Note when rendering other things in svgs, you must only render things that are svg elements can render- they can't render most react components
   return (
     <svg width={svgWidth} height={svgHeight}>

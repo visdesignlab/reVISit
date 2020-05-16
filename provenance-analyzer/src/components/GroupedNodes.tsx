@@ -16,7 +16,6 @@ function count(ary, classifier) {
 }
 
 const GroupedNodes = ({ groupedNodes, barHeight }: any) => {
-  console.log("in grouped Nodes", groupedNodes);
   const rectStartX = groupedNodes[0].x;
   const rectFinishX = groupedNodes[groupedNodes.length - 1].x;
   // if width can't accomodate all actions, expand
@@ -42,10 +41,8 @@ const GroupedNodes = ({ groupedNodes, barHeight }: any) => {
   const eventFreq = count(groupedNodes, function (item) {
     return item.info;
   });
-  console.log(eventFreq);
   let scaleFactor = width / 24;
   scaleFactor = scaleFactor / Object.keys(eventFreq).length;
-  console.log(scaleFactor);
   if (scaleFactor > 0.7) {
     scaleFactor = 0.7;
   }

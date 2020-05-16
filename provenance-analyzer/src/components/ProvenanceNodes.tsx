@@ -28,7 +28,11 @@ const ProvenanceNodes = ({ provenanceGraph, xScale }: any) => {
 
   // calculate groupings. Pass each grouping into <Grouping Etren
   let currentGroup = [];
+
   provenanceGraph.nodes.forEach((node) => {
+    if (node.time > 1) {
+      console.log("GREATER THAN 1", node);
+    }
     if (node.event === "startedProvenance" || node.event === "Finished Task") {
       return;
     }
@@ -81,7 +85,7 @@ const ProvenanceNodes = ({ provenanceGraph, xScale }: any) => {
       item = <ProvenanceNode circle={d} barHeight={barHeight}></ProvenanceNode>;
     }
     provElements.push(
-      <g transform={`translate(${d.x - barHeight / 4},${d.y - barHeight / 4})`}>
+      <g transform={`translate(${d.x - barHeight},${d.y - barHeight / 4})`}>
         {item}
       </g>
     );
