@@ -691,6 +691,7 @@ allTaskData.forEach(taskData => {
       node.time = (node.time - startTime) / (totalTime); // relative time
 
     })
+    trimmedProvGraph["nodes"].sort((nodeA, nodeB) => nodeA.time - nodeB.time)
 
 
     trimmedProvGraph["startTime"] = (startTime - startTime) / (totalTime); // 0

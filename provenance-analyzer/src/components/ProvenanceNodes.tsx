@@ -30,7 +30,7 @@ const ProvenanceNodes = ({ provenanceGraph, xScale }: any) => {
   let currentGroup = [];
 
   provenanceGraph.nodes.forEach((node) => {
-    if (node.time > 1) {
+    if (node.time > 1 || node.time < 0) {
       console.log("GREATER THAN 1", node);
     }
     if (node.event === "startedProvenance" || node.event === "Finished Task") {
@@ -53,29 +53,25 @@ const ProvenanceNodes = ({ provenanceGraph, xScale }: any) => {
   let provElements = [];
   for (let i = 0; i < provNodes.length; i++) {
     let d = provNodes[i];
-    console.log(
-      "outside grouped!",
-      provNodes,
-      i,
-      i + 1 < xExtents.length - 1,
 
-      xExtents
-    );
     let item;
     // if not last node and this element overlaps with next
     if (i < xExtents.length - 1 && xExtents[i].stop > xExtents[i + 1].start) {
       let groupedNodes = [];
+      let data = d;
       // start grouping
-      groupedNodes.push(d);
+      groupedNodes.push(data);
       // a group starts
       while (
         provNodes.length - 1 > i &&
         xExtents[i].stop > xExtents[i + 1].start
       ) {
-        d = provNodes[i + 1];
-        groupedNodes.push(d);
+        data = provNodes[i + 1];
+        groupedNodes.push(data);
         i++;
       }
+      data = provNodes[i];
+      groupedNodes.push(data);
       item = (
         <GroupedNodes
           groupedNodes={groupedNodes}
@@ -85,9 +81,7 @@ const ProvenanceNodes = ({ provenanceGraph, xScale }: any) => {
       item = <ProvenanceNode circle={d} barHeight={barHeight}></ProvenanceNode>;
     }
     provElements.push(
-      <g transform={`translate(${d.x - barHeight},${d.y - barHeight / 4})`}>
-        {item}
-      </g>
+      <g transform={`translate(${d.x},${d.y - barHeight / 4})`}>{item}</g>
     );
   }
   // for any

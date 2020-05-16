@@ -13,160 +13,160 @@ const eventMapping = {
   answerBox: {
     name: "Add",
     icon: < Add width = {
-      24
+      16
     }
     height = {
-      24
+      16
     }
     /> 
   },
   "Hard Selected a Node": {
     name: "Add",
     icon: < Add width = {
-      24
+      16
     }
     height = {
-      24
+      16
     }
     /> 
   },
   "Dragged Node": {
     name: "PanTool",
     icon: < PanTool width = {
-      24
+      16
     }
     height = {
-      24
+      16
     }
     /> 
   },
   sort: {
     name: "Sort",
     icon: < Sort width = {
-      24
+      16
     }
     height = {
-      24
+      16
     }
     /> 
   },
   attrRow: {
     name: "Highlight",
     icon: < Highlight width = {
-      24
+      16
     }
     height = {
-      24
+      16
     }
     /> 
   },
   "Hard Unselected a Node": {
     name: "TabUnselected",
     icon: < TabUnselected width = {
-      24
+      16
     }
     height = {
-      24
+      16
     }
     /> 
   },
   "answerBox": {
     name: "Add",
     icon: < Add width = {
-      24
+      16
     }
     height = {
-      24
+      16
     }
     /> 
   },
   "Select Node": {
     name: "Highlight",
     icon: < Highlight width = {
-      24
+      16
     }
     height = {
-      24
+      16
     }
     /> 
   },
   "rowLabel": {
     name: "Highlight",
     icon: < Highlight width = {
-      24
+      16
     }
     height = {
-      24
+      16
     }
     /> 
   },
   "colLabel": {
     name: "Highlight",
     icon: < Highlight width = {
-      24
+      16
     }
     height = {
-      24
+      16
     }
     /> 
   },
   "search": {
     name: "Search",
     icon: < Search width = {
-      24
+      16
     }
     height = {
-      24
+      16
     }
     /> 
   },
   "Searched for Node": {
     name: "Search",
     icon: < Search width = {
-      24
+      16
     }
     height = {
-      24
+      16
     }
     /> 
   },
   "cell": {
     name: "Highlight",
     icon: < Highlight width = {
-      24
+      16
     }
     height = {
-      24
+      16
     }
     /> 
   },
   "Unselect Node": {
     name: "HighlightOff",
     icon: < HighlightOff width = {
-      24
+      16
     }
     height = {
-      24
+      16
     }
     /> 
   },
   "clear": {
     name: "Clear",
     icon: < Clear width = {
-      24
+      16
     }
     height = {
-      24
+      16
     }
     /> 
   },
   "cleared all selected nodes": {
     name: "Clear",
     icon: < Clear width = {
-      24
+      16
     }
     height = {
-      24
+      16
     }
     /> 
   }

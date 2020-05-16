@@ -22,12 +22,8 @@ const ProvenanceNode = ({ circle, barHeight }: any) => {
   console.log("dywootto", icon);
   const circ = (
     <g>
-      <circle
-        cy={iconSize / 2}
-        cx={iconSize / 2}
-        r={circle.r}
-        fill={circle.fill}></circle>
-      {icon}
+      <circle cy={iconSize / 2} r={circle.r} fill={circle.fill}></circle>
+      <g transform={`translate(${-circle.r / 2},${4})`}>{icon}</g>
     </g>
   );
   return circ;
