@@ -19,7 +19,6 @@ const ProvenanceNode = ({ circle, barHeight }: any) => {
     icon = <ThreeDRotation width={24} height={24}></ThreeDRotation>;
   }
 
-  console.log("dywootto", icon);
   const circ = (
     <g>
       <circle cy={iconSize / 2} r={circle.r} fill={circle.fill}></circle>

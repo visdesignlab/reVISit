@@ -20,7 +20,11 @@ const EventFrequencies = ({ frequencies, scaleFactor, start, finish }: any) => {
 
     let xTranslate = finish - start < 48 ? -12 : 0;
     return (
-      <g transform={`translate(${xTranslate},0)`}>
+      <g
+        transform={`translate(${xTranslate},0)`}
+        onClick={(e) => {
+          console.log(frequencies, start, finish);
+        }}>
         <g transform={`translate(${index * 20},0)scale(${scaleFactor})`}>
           {icon}
           <g transform={`translate(4,26)`}>

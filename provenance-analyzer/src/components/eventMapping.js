@@ -1,12 +1,10 @@
 import React from 'react';
-import ThreeDRotation from "@material-ui/icons/ThreeDRotation";
 import Add from "@material-ui/icons/Add";
 import PanTool from "@material-ui/icons/PanTool";
 import Sort from "@material-ui/icons/Sort";
-import Highlight from "@material-ui/icons/Highlight";
-import TabUnselected from "@material-ui/icons/TabUnselected";
+import FiberManualRecordIcon from '@material-ui/icons/FiberManualRecord';
+import RadioButtonUncheckedIcon from '@material-ui/icons/RadioButtonUnchecked';
 import Search from "@material-ui/icons/Search";
-import HighlightOff from "@material-ui/icons/HighlightOff";
 import Clear from "@material-ui/icons/Clear";
 
 const eventMapping = {
@@ -51,8 +49,8 @@ const eventMapping = {
     /> 
   },
   attrRow: {
-    name: "Highlight",
-    icon: < Highlight width = {
+    name: "FiberManualRecordIcon",
+    icon: < FiberManualRecordIcon width = {
       16
     }
     height = {
@@ -61,18 +59,8 @@ const eventMapping = {
     /> 
   },
   "Hard Unselected a Node": {
-    name: "TabUnselected",
-    icon: < TabUnselected width = {
-      16
-    }
-    height = {
-      16
-    }
-    /> 
-  },
-  "answerBox": {
-    name: "Add",
-    icon: < Add width = {
+    name: "RadioButtonUncheckedIcon",
+    icon: < RadioButtonUncheckedIcon width = {
       16
     }
     height = {
@@ -81,8 +69,8 @@ const eventMapping = {
     /> 
   },
   "Select Node": {
-    name: "Highlight",
-    icon: < Highlight width = {
+    name: "FiberManualRecordIcon",
+    icon: < FiberManualRecordIcon width = {
       16
     }
     height = {
@@ -91,8 +79,8 @@ const eventMapping = {
     /> 
   },
   "rowLabel": {
-    name: "Highlight",
-    icon: < Highlight width = {
+    name: "FiberManualRecordIcon",
+    icon: < FiberManualRecordIcon width = {
       16
     }
     height = {
@@ -101,8 +89,8 @@ const eventMapping = {
     /> 
   },
   "colLabel": {
-    name: "Highlight",
-    icon: < Highlight width = {
+    name: "FiberManualRecordIcon",
+    icon: < FiberManualRecordIcon width = {
       16
     }
     height = {
@@ -131,8 +119,8 @@ const eventMapping = {
     /> 
   },
   "cell": {
-    name: "Highlight",
-    icon: < Highlight width = {
+    name: "FiberManualRecordIcon",
+    icon: < FiberManualRecordIcon width = {
       16
     }
     height = {
@@ -141,8 +129,8 @@ const eventMapping = {
     /> 
   },
   "Unselect Node": {
-    name: "HighlightOff",
-    icon: < HighlightOff width = {
+    name: "RadioButtonUncheckedIcon",
+    icon: < RadioButtonUncheckedIcon width = {
       16
     }
     height = {
