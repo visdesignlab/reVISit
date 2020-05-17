@@ -1,7 +1,7 @@
 //import allProvenanceData from "./allProvenanceMocks.js";
 //import task1Data from './task1ProvData.js'l
 import * as d3 from "d3";
-
+import _ from 'lodash';
 let taskIds = ["S-task01", "S-task02", "S-task03", "S-task04", "S-task05", "S-task06", "S-task07", "S-task08", "S-task09", "S-task010", "S-task011", "S-task012"]
 
 let allTaskData = [];
@@ -654,7 +654,8 @@ const allData = {
 //const allProvenanceData = [allData];
 let provDataForTask = [];
 let provset = new Set()
-
+let unrelativeProvenanceData = [],
+  relativeProvenanceData = [];
 allTaskData.forEach(taskData => {
   let forTaskFilter = taskData.filter(value => value.data.provGraphs);
   /*allProvenanceData.filter((run) =>
@@ -715,25 +716,30 @@ allTaskData.forEach(taskData => {
 
   });
   let provData;
-  if (false) {
-    provData = provData = unrelativeProvData.map(provGraph => {
-      let scale = longestTime / provGraph.totalTime;
-      provGraph["startTime"] = provGraph["startTime"] / (scale);
-      provGraph["stopTime"] = provGraph["stopTime"] / (scale);
-      provGraph["nodes"] = provGraph["nodes"].map(node => {
-        node['time'] = node["time"] / scale;
+  unrelativeProvenanceData.push(_.cloneDeep(unrelativeProvData))
 
-        return node;
-      })
-      return provGraph;
+  //if (true) {
+  relativeProvenanceData.push(unrelativeProvData.map(provGraph => {
+    let scale = longestTime / provGraph.totalTime;
+    provGraph["startTime"] = provGraph["startTime"] / (scale);
+    provGraph["stopTime"] = provGraph["stopTime"] / (scale);
+    provGraph["nodes"] = provGraph["nodes"].map(node => {
+      node['time'] = node["time"] / scale;
+
+      return node;
     })
-  } else {
-    provData = unrelativeProvData;
-  }
-  allProvData.push(provData);
+    return provGraph;
+  }));
+  //} else {
+  //provData = unrelativeProvData;
+  //}
+  //allProvData.push(provData);
   //const provData = allData.data.provGraphs;
 })
 
 console.log('provSet', provset)
 
-export default allProvData;
+export {
+  relativeProvenanceData,
+  unrelativeProvenanceData
+};

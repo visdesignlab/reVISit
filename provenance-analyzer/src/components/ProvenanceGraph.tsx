@@ -8,7 +8,7 @@ const svgWidth = 250;
 const svgHeight = 100;
 const margin = { top: 5, right: 20, bottom: 5, left: 20 };
 
-const ProvenanceGraph = ({ provenanceGraph, xScale }) => {
+const ProvenanceGraph = ({ provenanceGraph, xScale, renderIcons }) => {
   if (!provenanceGraph) {
     return <div></div>;
   }
@@ -65,7 +65,8 @@ const ProvenanceGraph = ({ provenanceGraph, xScale }) => {
         })}
         <ProvenanceNodes
           provenanceGraph={provenanceGraph}
-          xScale={xScale}></ProvenanceNodes>
+          xScale={xScale}
+          renderIcons={renderIcons}></ProvenanceNodes>
       </g>
     </svg>
   );
