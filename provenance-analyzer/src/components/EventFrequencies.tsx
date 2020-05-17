@@ -19,6 +19,7 @@ const EventFrequencies = ({ frequencies, scaleFactor, start, finish }: any) => {
     }
 
     let xTranslate = finish - start < 48 ? -12 : 0;
+    scaleFactor = 0.75;
     return (
       <g
         transform={`translate(${xTranslate},0)`}

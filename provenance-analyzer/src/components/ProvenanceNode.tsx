@@ -23,7 +23,12 @@ const ProvenanceNode = ({ circle, barHeight, renderIcons }: any) => {
 
     node = (
       <g>
-        <circle cy={iconSize / 2} r={circle.r} fill={circle.fill}></circle>
+        <rect
+          y={iconSize / 2}
+          height={barHeight}
+          width={20}
+          rx={"6"}
+          fill={circle.fill}></rect>
         <g transform={`translate(${-circle.r / 2},${4})`}>{icon}</g>
       </g>
     );

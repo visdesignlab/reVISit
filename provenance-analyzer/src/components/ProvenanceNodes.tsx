@@ -24,7 +24,7 @@ const ProvenanceNodes = ({ provenanceGraph, xScale, renderIcons }: any) => {
 
   let provNodes = [];
   let xExtents = [];
-  let radius = barHeight / 3;
+  let radius = 20;
 
   // calculate groupings. Pass each grouping into <Grouping Etren
   let currentGroup = [];
@@ -38,8 +38,8 @@ const ProvenanceNodes = ({ provenanceGraph, xScale, renderIcons }: any) => {
     }
 
     xExtents.push({
-      start: xScale(node.time) - radius,
-      stop: xScale(node.time) + radius,
+      start: xScale(node.time) - radius / 2,
+      stop: xScale(node.time) + radius / 2,
     });
 
     provNodes.push({

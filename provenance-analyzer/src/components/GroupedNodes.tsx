@@ -25,17 +25,13 @@ const GroupedNodes = ({ groupedNodes, barHeight }: any) => {
   const color = "lightgray";
   const baseElement = (
     <g>
-      <circle r={groupedNodes[0].r} cy={barHeight / 4} fill={color}></circle>
       <rect
         y={-groupedNodes[0].r / 4}
+        x={-groupedNodes[0].r}
         height={height}
-        width={width}
-        fill={color}></rect>
-      <circle
-        cx={width}
-        r={groupedNodes[0].r}
-        cy={barHeight / 4}
-        fill={color}></circle>
+        width={width + groupedNodes[0].r}
+        fill={color}
+        rx={10}></rect>
     </g>
   );
   const eventFreq = count(groupedNodes, function (item) {

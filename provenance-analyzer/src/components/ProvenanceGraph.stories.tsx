@@ -7,7 +7,30 @@ import {
 } from "../common/data/provenanceMocks.js";
 import ProvenanceGraph from "./ProvenanceGraph";
 import { start } from "repl";
-import { withKnobs, text, boolean, number } from "@storybook/addon-knobs";
+import {
+  withKnobs,
+  text,
+  boolean,
+  number,
+  optionsKnob as options,
+} from "@storybook/addon-knobs";
+const label = "Tasks";
+const valuesObj = {
+  task1: "Task 1",
+  task2: "Task 2",
+  task3: "Task 3",
+  task4: "Task 4",
+  task5: "Task 5",
+  task6: "Task 6",
+  task7: "Task 7",
+  task8: "Task 8",
+  task9: "Task 9",
+};
+const defaultValue = "Task 1";
+
+const optionsObj = {
+  display: "multi-select",
+};
 
 const stories = storiesOf("ProvGraphs", module);
 stories.addDecorator(withKnobs);
@@ -32,17 +55,52 @@ xScale.domain([0, 1]);
 stories.add("small", () => {
   let isDataRelative = boolean("Relative", true);
   let renderIcons = boolean("Icons", true);
+  const groupId = "GROUP-ID1";
+
+  const taskValue = options(
+    label,
+    valuesObj,
+    defaultValue,
+    optionsObj,
+    groupId
+  );
 
   console.log(
     "KNOB",
     isDataRelative,
     relativeProvenanceData,
-    unrelativeProvenanceData
+    unrelativeProvenanceData,
+    taskValue
   );
+  function transpose(data) {
+    return data[0].map((col, i) => data.map((row) => row[i]));
+  }
+
+  if (!Array.isArray(taskValue)) {
+    taskValue = [taskValue];
+  }
+
+  let indexToAdd = taskValue.map((value) => {
+    let matches = value.match(/\d+/g);
+    return parseInt(matches[0]) - 1;
+  });
+
+  console.log("filter to index", indexToAdd);
+  let tempRelativeProvenanceData = relativeProvenanceData.filter(
+    (data, index) => {
+      console.log(index, indexToAdd);
+      return indexToAdd.includes(index);
+    }
+  );
+  console.log("relative prov data", relativeProvenanceData);
+  let tempUnrelativeProvenanceData = unrelativeProvenanceData.filter(
+    (data, index) => indexToAdd.includes(index)
+  );
+
   return (
     <div>
       {isDataRelative &&
-        relativeProvenanceData.map((provTask) => (
+        transpose(tempRelativeProvenanceData).map((provTask, index) => (
           <div>
             {provTask.map((provRound) => {
               return (
@@ -56,7 +114,7 @@ stories.add("small", () => {
           </div>
         ))}
       {!isDataRelative &&
-        unrelativeProvenanceData.map((provTask) => (
+        transpose(tempUnrelativeProvenanceData).map((provTask) => (
           <div>
             {provTask.map((provRound) => {
               return (

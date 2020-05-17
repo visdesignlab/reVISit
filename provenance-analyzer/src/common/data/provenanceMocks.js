@@ -716,6 +716,11 @@ allTaskData.forEach(taskData => {
 
   });
   let provData;
+  console.log('filter here', unrelativeProvData)
+  if (unrelativeProvData.length === 0) {
+    return;
+  }
+  //unrelativeProvData = unrelativeProvData.filter(data => data.length > 0)
   unrelativeProvenanceData.push(_.cloneDeep(unrelativeProvData))
 
   //if (true) {
