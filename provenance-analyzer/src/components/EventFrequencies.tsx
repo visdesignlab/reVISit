@@ -53,7 +53,7 @@ const EventFrequencies = ({ frequencies, scaleFactor, width, height }: any) => {
     <SvgGrid
       items={icons}
       itemHeight={12}
-      itemWidth={20}
+      itemWidth={24}
       gridWidth={width}
       gridHeight={height}></SvgGrid>
   );

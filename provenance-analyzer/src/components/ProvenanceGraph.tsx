@@ -5,7 +5,7 @@ import * as d3 from "d3";
 import chroma from "chroma-js";
 
 const svgWidth = 250;
-const svgHeight = 100;
+const svgHeight = 60;
 const margin = { top: 5, right: 20, bottom: 5, left: 20 };
 
 const ProvenanceGraph = ({ provenanceGraph, xScale, renderIcons }) => {
@@ -21,7 +21,7 @@ const ProvenanceGraph = ({ provenanceGraph, xScale, renderIcons }) => {
     new Date(provenanceGraph.stopTime),
   ]);*/
   const barHeight = 50;
-  const yOffset = 50;
+  const yOffset = 0;
   const bars = [
     {
       x: 0,
@@ -49,7 +49,7 @@ const ProvenanceGraph = ({ provenanceGraph, xScale, renderIcons }) => {
 
   // Note when rendering other things in svgs, you must only render things that are svg elements can render- they can't render most react components
   return (
-    <svg width={svgWidth} height={svgHeight}>
+    <svg width={svgWidth} height={svgHeight} style={{ float: "left" }}>
       <g transform={`translate(${margin.left},${margin.top})`}>
         {bars.map((d, i) => {
           return (

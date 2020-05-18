@@ -10,6 +10,8 @@ import chroma from "chroma-js";
 
 const ProvenanceNode = ({ circle, barHeight, renderIcons }: any) => {
   let node;
+  const height = barHeight - 10;
+
   if (renderIcons) {
     let iconSize = barHeight / 2;
     console.log(circle.info);
@@ -20,10 +22,9 @@ const ProvenanceNode = ({ circle, barHeight, renderIcons }: any) => {
     } else {
       icon = <ThreeDRotation width={24} height={24}></ThreeDRotation>;
     }
-    const height = circle.r * 2;
     const y = circle.y - height / 2;
     const color = "lightgray";
-    const width = 20;
+    const width = 21;
     node = (
       <g>
         <rect
@@ -38,7 +39,7 @@ const ProvenanceNode = ({ circle, barHeight, renderIcons }: any) => {
     );
   } else {
     node = (
-      <rect width={3} height={barHeight} color={"black"} opacity={0.5}></rect>
+      <rect width={3} height={height} color={"black"} opacity={0.5}></rect>
     );
   }
 

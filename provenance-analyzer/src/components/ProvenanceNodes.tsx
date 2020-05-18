@@ -19,12 +19,12 @@ const ProvenanceNodes = ({ provenanceGraph, xScale, renderIcons }: any) => {
     height = svgHeight - margin.top - margin.bottom;
   // set domains, needs to take in axis from parent to scale all
 
-  const barHeight = 50;
-  const yOffset = 50;
+  const barHeight = 60;
+  const yOffset = 0;
 
   let provNodes = [];
   let xExtents = [];
-  let radius = 20;
+  let minimumNodeWidth = 24;
 
   // calculate groupings. Pass each grouping into <Grouping Etren
   let currentGroup = [];
@@ -38,14 +38,14 @@ const ProvenanceNodes = ({ provenanceGraph, xScale, renderIcons }: any) => {
     }
 
     xExtents.push({
-      start: xScale(node.time) - radius / 2,
-      stop: xScale(node.time) + radius / 2,
+      start: xScale(node.time) - minimumNodeWidth / 2,
+      stop: xScale(node.time) + minimumNodeWidth / 2,
     });
 
     provNodes.push({
       x: xScale(node.time),
       y: yOffset + barHeight / 2,
-      r: radius,
+      r: minimumNodeWidth,
       fill: "lightgray",
       info: node.event,
     });
@@ -87,9 +87,7 @@ const ProvenanceNodes = ({ provenanceGraph, xScale, renderIcons }: any) => {
         );
       }
       provElements.push(
-        <g transform={`translate(${d.x - d.r},${d.y - barHeight / 4})`}>
-          {item}
-        </g>
+        <g transform={`translate(${d.x - d.r},${7})`}>{item}</g>
       );
     }
   } else {
@@ -102,9 +100,7 @@ const ProvenanceNodes = ({ provenanceGraph, xScale, renderIcons }: any) => {
           renderIcons={false}></ProvenanceNode>
       );
 
-      provElements.push(
-        <g transform={`translate(${d.x},${d.y - barHeight / 2})`}>{item}</g>
-      );
+      provElements.push(<g transform={`translate(${d.x},${0})`}>{item}</g>);
     }
   }
 
