@@ -57,13 +57,7 @@ stories.add("small", () => {
   let renderIcons = boolean("Icons", true);
   const groupId = "GROUP-ID1";
 
-  const taskValue = options(
-    label,
-    valuesObj,
-    defaultValue,
-    optionsObj,
-    groupId
-  );
+  let taskValue = options(label, valuesObj, defaultValue, optionsObj, groupId);
 
   console.log(
     "KNOB",

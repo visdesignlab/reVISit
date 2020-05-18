@@ -87,7 +87,9 @@ const ProvenanceNodes = ({ provenanceGraph, xScale, renderIcons }: any) => {
         );
       }
       provElements.push(
-        <g transform={`translate(${d.x},${d.y - barHeight / 4})`}>{item}</g>
+        <g transform={`translate(${d.x - d.r},${d.y - barHeight / 4})`}>
+          {item}
+        </g>
       );
     }
   } else {

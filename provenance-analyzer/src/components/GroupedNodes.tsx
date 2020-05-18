@@ -27,7 +27,6 @@ const GroupedNodes = ({ groupedNodes, barHeight }: any) => {
     <g>
       <rect
         y={-groupedNodes[0].r / 4}
-        x={-groupedNodes[0].r}
         height={height}
         width={width + groupedNodes[0].r}
         fill={color}
@@ -50,8 +49,8 @@ const GroupedNodes = ({ groupedNodes, barHeight }: any) => {
       <EventFrequencies
         frequencies={eventFreq}
         scaleFactor={scaleFactor}
-        start={rectStartX}
-        finish={rectFinishX}></EventFrequencies>
+        width={width + groupedNodes[0].r}
+        height={height}></EventFrequencies>
     </g>
   );
 };

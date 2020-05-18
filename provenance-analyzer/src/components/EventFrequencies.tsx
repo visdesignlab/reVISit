@@ -8,7 +8,7 @@ import GroupedNodes from "./GroupedNodes";
 import * as d3 from "d3";
 import chroma from "chroma-js";
 
-const EventFrequencies = ({ frequencies, scaleFactor, start, finish }: any) => {
+const EventFrequencies = ({ frequencies, scaleFactor, width, height }: any) => {
   console.log("freqs", frequencies);
   const icons = Object.keys(frequencies).map((eventName, index) => {
     let icon;
@@ -18,10 +18,10 @@ const EventFrequencies = ({ frequencies, scaleFactor, start, finish }: any) => {
       icon = <ThreeDRotation width={24} height={24}></ThreeDRotation>;
     }
 
-    let xTranslate = finish - start < 48 ? -12 : 0;
+    //let xTranslate = finish - start < 48 ? -12 : 0;
     scaleFactor = 0.75;
     const iconSize = 16;
-    return (
+    /*return (
       <g
         transform={`translate(${xTranslate},0)`}
         onClick={(e) => {
@@ -36,40 +36,51 @@ const EventFrequencies = ({ frequencies, scaleFactor, start, finish }: any) => {
           </g>
         </g>
       </g>
+    );*/
+    return (
+      <g transform={`scale(${scaleFactor})`}>
+        {icon}
+        <g transform={`translate(${iconSize},${5 + iconSize / 2})`}>
+          <text fontFamily={"Roboto"} fontSize={"14"}>
+            {frequencies[eventName]}
+          </text>
+        </g>
+      </g>
     );
   });
 
-  return icons;
+  return (
+    <SvgGrid
+      items={icons}
+      itemHeight={12}
+      itemWidth={20}
+      gridWidth={width}
+      gridHeight={height}></SvgGrid>
+  );
 };
 
-const SvgGrid = ({
-  items,
-  itemHeight,
-  itemWidth,
-  gridHeight,
-  gridWidth,
-  centerItems,
-}) => {
+const SvgGrid = ({ items, itemHeight, itemWidth, gridHeight, gridWidth }) => {
   let maxRows = Math.floor(gridHeight / itemHeight);
   let maxColumns = Math.floor(gridWidth / itemWidth);
-
+  console.log(
+    maxRows,
+    maxColumns,
+    items,
+    itemHeight,
+    itemWidth,
+    gridHeight,
+    gridWidth
+  );
   let numberItems = items.length;
 
   let numberColumns = numberItems > maxColumns ? maxColumns : numberItems;
   let numberRows =
-    numberItems === numberColumns
-      ? 1
-      : Math.Ceiling(numberItems / numberColumns);
-
+    numberItems === numberColumns ? 1 : Math.ceil(numberItems / numberColumns);
+  console.log(numberColumns, numberRows);
   if (numberItems > maxRows * maxColumns) {
     // render ...
+    console.warn("over number of items on", items);
   }
-
-  // create grid
-  // adjust positioning for items to be in middle, 1 based row 1 based column
-  //let currentRow = 1;
-  let currentColumn = 1;
-  let totalSpaces = numberColumns * numberRows;
 
   //
   let currentCol, currentRow;
@@ -78,22 +89,65 @@ const SvgGrid = ({
   for (currentRow = 0; currentRow < numberRows; currentRow++) {
     //
     let isLastRow = currentRow + 1 == numberRows;
-    let startingCol = isLastRow
-      ? Math.floor((maxRows * maxColumns - numberItems) / 2)
-      : 0; /* The number of items outside perf match */
+    let startingCol = 0;
+    let leftPadding = 0;
+    let allPadding = 0;
+    if (isLastRow) {
+      let numberItemsRemaining = numberItems - itemCounter;
+      let padding = maxColumns - numberItemsRemaining;
+      leftPadding = padding / 2;
+      //startingCol = Math.floor(padding / 2);
+      //leftPadding = Math.floor(padding / 2);
+      //allPadding = padding;
+    }
+
     for (currentCol = startingCol; currentCol < numberColumns; currentCol++) {
+      console.log(currentCol);
       gridItems.push(
         <g
-          transform={`translate(${currentRow * itemHeight},${
-            currentCol * itemWidth
-          })`}>
+          transform={`translate(${(currentCol + leftPadding) * itemWidth},${
+            currentRow * itemHeight
+          })`}
+          onClick={() => {
+            console.log(
+              "col",
+              JSON.parse(JSON.stringify(currentCol)),
+              "row",
+              JSON.parse(JSON.stringify(currentRow)),
+              itemCounter,
+              numberColumns,
+              numberRows,
+              leftPadding,
+              allPadding,
+              isLastRow,
+              "num items remain",
+              numberItems - itemCounter,
+              numberColumns - numberItems - itemCounter
+            );
+          }}>
           {items[itemCounter]}
         </g>
       );
       itemCounter++;
     }
   }
-  return <g>{gridItems}</g>;
+  if (gridItems.length === 0) {
+    console.log(
+      "NOITEMS",
+      numberItems,
+      numberColumns,
+      numberRows,
+      "mc",
+      maxColumns,
+      "mr",
+      maxRows
+    );
+  }
+  return (
+    <g className={"svggrid"} onClick={() => {}}>
+      {gridItems}
+    </g>
+  );
 };
 
 export default EventFrequencies;
