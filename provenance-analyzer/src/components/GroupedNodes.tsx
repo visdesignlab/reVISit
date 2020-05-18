@@ -26,7 +26,7 @@ const GroupedNodes = ({ groupedNodes, barHeight }: any) => {
   const baseElement = (
     <g>
       <rect
-        y={-groupedNodes[0].r / 4}
+        y={0}
         height={height}
         width={width + groupedNodes[0].r}
         fill={color}

@@ -8,7 +8,12 @@ const svgWidth = 200;
 const svgHeight = 100;
 const margin = { top: 5, right: 5, bottom: 5, left: 5 };
 
-const ProvenanceNodes = ({ provenanceGraph, xScale, renderIcons }: any) => {
+const ProvenanceNodes = ({
+  provenanceGraph,
+  xScale,
+  renderIcons,
+  eventType,
+}: any) => {
   if (!provenanceGraph) {
     console.log(provenanceGraph);
     return <div></div>;
@@ -33,7 +38,11 @@ const ProvenanceNodes = ({ provenanceGraph, xScale, renderIcons }: any) => {
     if (node.time > 1 || node.time < 0) {
       console.log("GREATER THAN 1", node);
     }
-    if (node.event === "startedProvenance" || node.event === "Finished Task") {
+    if (
+      node.event === "startedProvenance" ||
+      node.event === "Finished Task" ||
+      (eventType && eventType !== "overall" && eventType !== node.event)
+    ) {
       return;
     }
 
@@ -72,7 +81,7 @@ const ProvenanceNodes = ({ provenanceGraph, xScale, renderIcons }: any) => {
           i++;
         }
         data = provNodes[i];
-        groupedNodes.push(data);
+        //groupedNodes.push(data);
         item = (
           <GroupedNodes
             groupedNodes={groupedNodes}
@@ -87,7 +96,7 @@ const ProvenanceNodes = ({ provenanceGraph, xScale, renderIcons }: any) => {
         );
       }
       provElements.push(
-        <g transform={`translate(${d.x - d.r},${7})`}>{item}</g>
+        <g transform={`translate(${d.x - d.r},${0})`}>{item}</g>
       );
     }
   } else {

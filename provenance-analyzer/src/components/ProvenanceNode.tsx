@@ -28,18 +28,23 @@ const ProvenanceNode = ({ circle, barHeight, renderIcons }: any) => {
     node = (
       <g>
         <rect
-          y={-circle.r / 4}
-          x={-circle.r.r}
+          y={0}
+          x={0}
           height={height}
           width={width}
           fill={color}
           rx={10}></rect>
-        <g transform={`translate(${1},${4})`}>{icon}</g>
+        <g transform={`translate(${2},${14})`}>{icon}</g>
       </g>
     );
   } else {
     node = (
-      <rect width={3} height={height} color={"black"} opacity={0.5}></rect>
+      <rect
+        width={3}
+        x={-12 - 1.5}
+        height={height}
+        color={"black"}
+        opacity={0.25}></rect>
     );
   }
 

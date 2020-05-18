@@ -54,18 +54,12 @@ let xScale = d3.scaleTime().range([5, 200 - 5]);
 xScale.domain([0, 1]);
 stories.add("small", () => {
   let isDataRelative = boolean("Relative", true);
+  let collapseEvents = boolean("Collapse Events", true);
   let renderIcons = boolean("Icons", true);
   const groupId = "GROUP-ID1";
 
   let taskValue = options(label, valuesObj, defaultValue, optionsObj, groupId);
 
-  console.log(
-    "KNOB",
-    isDataRelative,
-    relativeProvenanceData,
-    unrelativeProvenanceData,
-    taskValue
-  );
   function transpose(data) {
     return data[0].map((col, i) => data.map((row) => row[i]));
   }
@@ -102,6 +96,7 @@ stories.add("small", () => {
                   provenanceGraph={provRound}
                   xScale={xScale}
                   renderIcons={renderIcons}
+                  collapseEvents={collapseEvents}
                 />
               );
             })}
@@ -116,6 +111,7 @@ stories.add("small", () => {
                   provenanceGraph={provRound}
                   xScale={xScale}
                   renderIcons={renderIcons}
+                  collapseEvents={collapseEvents}
                 />
               );
             })}
