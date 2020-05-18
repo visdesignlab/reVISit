@@ -20,16 +20,20 @@ const ProvenanceNode = ({ circle, barHeight, renderIcons }: any) => {
     } else {
       icon = <ThreeDRotation width={24} height={24}></ThreeDRotation>;
     }
-
+    const height = circle.r * 2;
+    const y = circle.y - height / 2;
+    const color = "lightgray";
+    const width = 20;
     node = (
       <g>
         <rect
-          y={iconSize / 2}
-          height={barHeight}
-          width={20}
-          rx={"6"}
-          fill={circle.fill}></rect>
-        <g transform={`translate(${-circle.r / 2},${4})`}>{icon}</g>
+          y={-circle.r / 4}
+          x={-circle.r.r}
+          height={height}
+          width={width}
+          fill={color}
+          rx={10}></rect>
+        <g transform={`translate(${1},${4})`}>{icon}</g>
       </g>
     );
   } else {
