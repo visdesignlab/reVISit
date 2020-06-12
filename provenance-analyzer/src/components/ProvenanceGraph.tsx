@@ -10,6 +10,7 @@ const ProvenanceGraph = ({
   renderIcons,
   collapseEvents,
 }) => {
+  console.log("dywoott in provenance graph", provenanceGraph);
   const [showEvents, setShowEvents] = React.useState(!collapseEvents);
 
   React.useEffect(() => {
@@ -23,14 +24,7 @@ const ProvenanceGraph = ({
   if (!provenanceGraph) {
     return <div></div>;
   }
-  let width = svgWidth - margin.right - margin.left,
-    height = svgHeight - margin.top - margin.bottom; //,
-  //xScale = d3.scaleTime().range([margin.left, width - margin.right]);
-  // set domains, needs to take in axis from parent to scale all
-  /*xScale.domain([
-    new Date(provenanceGraph.startTime),
-    new Date(provenanceGraph.stopTime),
-  ]);*/
+
   const barHeight = 50;
   const yOffset = 0;
   const bars = [
@@ -60,7 +54,7 @@ const ProvenanceGraph = ({
     });
   });
   if (showEvents) {
-    svgHeight = (svgHeight + 15) * (eventTypes.size + 1);
+    svgHeight = svgHeight * (eventTypes.size + 1);
     let counter = 1;
     eventTypes.forEach((type) => {
       bars.push({
@@ -82,27 +76,18 @@ const ProvenanceGraph = ({
       width={svgWidth}
       height={svgHeight}
       style={{ display: "inline-block" }}>
-      <g
-        transform={`translate(${margin.left},${margin.top})`}
-        onClick={() => {
-          setShowEvents(!showEvents);
-        }}>
-        {bars.map((d, i) => {
-          return (
-            <g transform={`translate(${d.x},${d.y})`}>
-              <text y={-5} fontSize={10} fontFamily={"roboto"}>
-                {d.type}
-              </text>
-              <rect key={i} width={d.width} height={d.height} fill={d.fill} />
-              <ProvenanceNodes
-                provenanceGraph={provenanceGraph}
-                xScale={xScale}
-                renderIcons={renderIcons && d.type === "overall"}
-                eventType={d.type}></ProvenanceNodes>
-            </g>
-          );
-        })}
-      </g>
+      {bars.map((d, i) => {
+        return (
+          <g>
+            <rect key={i} width={d.width} height={d.height} fill={d.fill} />
+            <ProvenanceNodes
+              provenanceGraph={provenanceGraph}
+              xScale={xScale}
+              renderIcons={renderIcons && d.type === "overall"}
+              eventType={d.type}></ProvenanceNodes>
+          </g>
+        );
+      })}
     </svg>
   );
 };

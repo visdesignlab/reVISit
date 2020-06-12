@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from "react";
 import eventMapping from "./eventMapping.js";
 import Icon from "@material-ui/core/Icon";
-import FileCloudDownload from "material-ui/core/Icons";
+
 import ThreeDRotation from "@material-ui/icons/ThreeDRotation";
 
 import GroupedNodes from "./GroupedNodes";
