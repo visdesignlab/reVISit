@@ -27,7 +27,7 @@ export const Histogram = ({ data, width, height }) => {
         return (
           <rect
             key={index}
-            x={x(index) - (xBand.bandwidth() * 0.9) / 2}
+            x={x(index) - xBand.bandwidth() * 0.9} // 1/2 xBandwidth to move to middle 1/2 another because of -1 index on xBand domain
             y={y(bucket.length)}
             width={xBand.bandwidth() * 0.9}
             height={height - y(bucket.length)}></rect>
@@ -90,15 +90,11 @@ const Brush = (props) => {
   );
 };
 
-const BrushableHistogram = ({ data, setBounds }) => {
-  const initMin = d3.min(data);
-  const initMax = d3.max(data);
-  const width = 50;
+const BrushableHistogram = ({ data, xScale, setMinimum, setMaximum }) => {
+  const width = xScale.range()[1];
   const height = 30;
-  const scale = scaleLinear().domain([initMin, initMax]).range([0, width]);
-
-  const [minimum, setMinimum] = useState(initMin);
-  const [maximum, setMaximum] = useState(initMax);
+  const scale = xScale;
+  console.log("width dywootto;", xScale.range(), xScale.domain());
 
   function setFilterBounds(inputs) {
     // scale inversion
@@ -106,8 +102,7 @@ const BrushableHistogram = ({ data, setBounds }) => {
     // set bounds
     setMaximum(scale.invert(inputs[1]));
   }
-  console.log(minimum);
-  console.log(maximum);
+
   return (
     <Brush
       width={width}
@@ -123,5 +118,44 @@ const BrushableHistogram = ({ data, setBounds }) => {
   );
 };
 
-const TimeFilter = 
-export default BrushableHistogram;
+const TimeFilter = ({ data, xScale, columnDef, onFilterChanged }) => {
+  const [minimum, setMinimum] = useState(d3.min(data));
+  const [maximum, setMaximum] = useState(d3.max(data));
+  const debouncedMin = useDebounce(minimum, 100);
+  const debouncedMax = useDebounce(maximum, 100);
+  useEffect(() => {
+    onFilterChanged(columnDef.tableData.id, [debouncedMin, debouncedMax]);
+  }, [debouncedMin, debouncedMax]);
+  return (
+    <BrushableHistogram
+      xScale={xScale}
+      data={data}
+      setMinimum={setMinimum}
+      setMaximum={setMaximum}></BrushableHistogram>
+  );
+};
+export default TimeFilter;
+
+function useDebounce(value, delay) {
+  // State and setters for debounced value
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(
+    () => {
+      // Update debounced value after delay
+      const handler = setTimeout(() => {
+        setDebouncedValue(value);
+      }, delay);
+
+      // Cancel the timeout if value changes (also on delay change or unmount)
+      // This is how we prevent debounced value from updating if value is changed ...
+      // .. within the delay period. Timeout gets cleared and restarted.
+      return () => {
+        clearTimeout(handler);
+      };
+    },
+    [value, delay] // Only re-call effect if value or delay changes
+  );
+
+  return debouncedValue;
+}

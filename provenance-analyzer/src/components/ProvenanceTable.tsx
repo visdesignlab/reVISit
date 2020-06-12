@@ -22,6 +22,8 @@ import ViewColumn from "@material-ui/icons/ViewColumn";
 import { Icons } from "material-table";
 import * as d3 from "d3";
 
+import TimeFilter from "./TableFilters";
+
 const tableIcons: Icons = {
   Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
   Check: forwardRef((props, ref) => <Check {...props} ref={ref} />),
@@ -47,8 +49,8 @@ const tableIcons: Icons = {
 };
 
 // import data
-const xScale = d3.scaleLinear().domain([0, 1]).range([0, 200]);
-
+const width = 200;
+const xScale = d3.scaleLinear().domain([0, 1]).range([0, width]);
 const MaterialTableWrapper = ({ provenanceData }) => {
   function renderProvenanceNodes(data) {
     console.log(data);
@@ -70,6 +72,7 @@ const MaterialTableWrapper = ({ provenanceData }) => {
       </svg>
     );
   }
+  const TimeFilterObj = TimeFilter;
   console.log("dywootto provenance", provenanceData);
   return (
     <MaterialTable
@@ -81,6 +84,22 @@ const MaterialTableWrapper = ({ provenanceData }) => {
           width: 250,
           customSort: (a, b) => a.provGraph.stopTime - b.provGraph.stopTime,
           render: renderProvenanceTime,
+          customFilterAndSearch: (filterResults, datum) => {
+            console.log("custom filter", filterResults, datum); // https://github.com/mbrn/material-table/pull/1351
+            return (
+              datum.provGraph.stopTime >= filterResults[0] &&
+              datum.provGraph.stopTime <= filterResults[1]
+            );
+          },
+          //filterComponent: () => <div></div>,
+          filterComponent: (props) => (
+            <TimeFilterObj
+              {...props}
+              xScale={xScale}
+              data={provenanceData.map(
+                (graph) => graph.provGraph.stopTime
+              )}></TimeFilterObj>
+          ),
         },
         {
           title: "Events Used",
@@ -92,11 +111,17 @@ const MaterialTableWrapper = ({ provenanceData }) => {
           customSort: (a, b) =>
             a.provGraph.nodes.length - b.provGraph.nodes.length,
           render: renderProvenanceNodes,
+          //filterComponent: <div></div>,
         },
       ]}
       data={provenanceData}
       icons={tableIcons}
-      options={{ selection: true, search: false, paging: false }}
+      options={{
+        selection: true,
+        search: false,
+        paging: false,
+        filtering: true,
+      }}
     />
   );
 };
