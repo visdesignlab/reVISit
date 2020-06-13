@@ -52,7 +52,7 @@ const ProvenanceNodes = ({
     });
 
     provNodes.push({
-      x: xScale(node.time),
+      x: xScale(node.time * provenanceGraph.totalTime),
       y: yOffset + barHeight / 2,
       r: minimumNodeWidth,
       fill: "lightgray",

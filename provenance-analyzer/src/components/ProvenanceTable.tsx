@@ -50,8 +50,14 @@ const tableIcons: Icons = {
 
 // import data
 const width = 200;
-const xScale = d3.scaleLinear().domain([0, 1]).range([0, width]);
 const MaterialTableWrapper = ({ provenanceData }) => {
+  const [min, max] = d3.extent(
+    provenanceData,
+    (datum) => datum.provGraph.totalTime
+  );
+
+  const xScale = d3.scaleLinear().domain([0, max]).range([0, width]);
+
   function renderProvenanceNodes(data) {
     console.log(data);
     return (
@@ -82,13 +88,13 @@ const MaterialTableWrapper = ({ provenanceData }) => {
           title: "Time To Complete",
           field: "provGraph",
           width: 250,
-          customSort: (a, b) => a.provGraph.stopTime - b.provGraph.stopTime,
+          customSort: (a, b) => a.provGraph.totalTime - b.provGraph.totalTime,
           render: renderProvenanceTime,
           customFilterAndSearch: (filterResults, datum) => {
             console.log("custom filter", filterResults, datum); // https://github.com/mbrn/material-table/pull/1351
             return (
-              datum.provGraph.stopTime >= filterResults[0] &&
-              datum.provGraph.stopTime <= filterResults[1]
+              datum.provGraph.totalTime >= filterResults[0] &&
+              datum.provGraph.totalTime <= filterResults[1]
             );
           },
           //filterComponent: () => <div></div>,
@@ -97,7 +103,7 @@ const MaterialTableWrapper = ({ provenanceData }) => {
               {...props}
               xScale={xScale}
               data={provenanceData.map(
-                (graph) => graph.provGraph.stopTime
+                (graph) => graph.provGraph.totalTime
               )}></TimeFilterObj>
           ),
         },

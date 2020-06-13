@@ -19,7 +19,6 @@ const ProvenanceGraph = ({
 
   const svgWidth = 250;
   let svgHeight = 75;
-  const margin = { top: 20, right: 20, bottom: 5, left: 20 };
 
   if (!provenanceGraph) {
     return <div></div>;
@@ -31,8 +30,7 @@ const ProvenanceGraph = ({
     {
       x: 0,
       y: yOffset,
-      width:
-        xScale(provenanceGraph.stopTime) - xScale(provenanceGraph.startTime),
+      width: xScale(provenanceGraph.totalTime),
       height: barHeight,
       fill: "gray",
       type: "overall",
@@ -47,7 +45,7 @@ const ProvenanceGraph = ({
     }
     eventTypes.add(node.event);
     provNodes.push({
-      x: xScale(node.time),
+      x: xScale(node.absoluteTime),
       y: yOffset + barHeight / 2,
       r: barHeight / 3,
       fill: "whitesmoke",
@@ -60,8 +58,7 @@ const ProvenanceGraph = ({
       bars.push({
         x: 0,
         y: (barHeight + 10) * counter,
-        width:
-          xScale(provenanceGraph.stopTime) - xScale(provenanceGraph.startTime),
+        width: xScale(provenanceGraph.totalTime),
         height: barHeight,
         fill: "lightgray",
         type: type,
@@ -71,25 +68,18 @@ const ProvenanceGraph = ({
   }
 
   // Note when rendering other things in svgs, you must only render things that are svg elements can render- they can't render most react components
-  return (
-    <svg
-      width={svgWidth}
-      height={svgHeight}
-      style={{ display: "inline-block" }}>
-      {bars.map((d, i) => {
-        return (
-          <g>
-            <rect key={i} width={d.width} height={d.height} fill={d.fill} />
-            <ProvenanceNodes
-              provenanceGraph={provenanceGraph}
-              xScale={xScale}
-              renderIcons={renderIcons && d.type === "overall"}
-              eventType={d.type}></ProvenanceNodes>
-          </g>
-        );
-      })}
-    </svg>
-  );
+  return bars.map((d, i) => {
+    return (
+      <g>
+        <rect key={i} width={d.width} height={d.height} fill={d.fill} />
+        <ProvenanceNodes
+          provenanceGraph={provenanceGraph}
+          xScale={xScale}
+          renderIcons={renderIcons && d.type === "overall"}
+          eventType={d.type}></ProvenanceNodes>
+      </g>
+    );
+  });
 };
 
 export default ProvenanceGraph;

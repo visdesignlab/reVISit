@@ -41,7 +41,7 @@ const ProvenanceNode = ({ circle, barHeight, renderIcons }: any) => {
     node = (
       <rect
         width={3}
-        x={-12 - 1.5}
+        x={0}
         height={height}
         color={"black"}
         opacity={0.25}></rect>

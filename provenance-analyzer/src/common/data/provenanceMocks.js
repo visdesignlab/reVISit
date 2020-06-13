@@ -690,7 +690,7 @@ allTaskData.forEach(taskData => {
     trimmedProvGraph["nodes"].forEach(node => {
 
       node.time = (node.time - startTime) / (totalTime); // relative time
-
+      node.absoluteTime = (node.time - startTime);
     })
     trimmedProvGraph["nodes"].sort((nodeA, nodeB) => nodeA.time - nodeB.time)
 
@@ -698,6 +698,7 @@ allTaskData.forEach(taskData => {
     trimmedProvGraph["startTime"] = (startTime - startTime) / (totalTime); // 0
     trimmedProvGraph["stopTime"] = (stopTime - startTime) / (totalTime); // 1
     trimmedProvGraph["totalTime"] = totalTime;
+    console.log('TOTAL TIME', totalTime, stopTime, startTime)
     trimmedProvGraph["correct"] = 1;
 
     return trimmedProvGraph;

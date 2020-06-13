@@ -6,30 +6,34 @@ import { brushX } from "d3-brush";
 import { axisBottom } from "d3-axis";
 
 export const Histogram = ({ data, width, height }) => {
-  const binner = d3.histogram();
-  const buckets = binner(data);
+  const max = d3.max(data),
+    min = d3.min(data);
 
   // the scale
   let x = d3.scaleLinear().range([0, width]);
-  let y = d3.scaleLinear().range([height, 0]);
+  let y = d3.scaleLinear().range([height - 2, 0]);
+  let niceX = d3.scaleLinear().range([0, width]).domain([min, max]).nice();
+  const binner = d3.histogram().domain(niceX.domain());
+  const buckets = binner(data);
 
   let xBand = d3
     .scaleBand()
-    .domain(d3.range(-1, buckets.length))
+    .domain(d3.range(0, buckets.length))
     .range([0, width]);
 
-  x.domain([-1, buckets.length]);
+  x.domain([d3.min(data), d3.max(data)]);
   y.domain([0, d3.max(buckets, (bucket) => bucket.length)]);
-  console.log(buckets, x);
+  console.log("buckets", buckets, x);
+  const binWidth = xBand.bandwidth() * 0.9;
   const bars = (
-    <g>
+    <g transform={`translate(${(1 / 2) * binWidth},0)`}>
       {buckets.map((bucket, index) => {
         return (
           <rect
             key={index}
-            x={x(index) - xBand.bandwidth() * 0.9} // 1/2 xBandwidth to move to middle 1/2 another because of -1 index on xBand domain
+            x={x(bucket.x0) - 0.5 * binWidth} // 1/2 xBandwidth to move to middle 1/2 another because of -1 index on xBand domain
             y={y(bucket.length)}
-            width={xBand.bandwidth() * 0.9}
+            width={binWidth}
             height={height - y(bucket.length)}></rect>
         );
       })}
@@ -57,17 +61,6 @@ const Brush = (props) => {
         [width, height],
       ])
       .on("brush", brushed);
-    //const dayAxis = axisBottom().scale(scale);
-
-    select(node)
-      .selectAll("g.brushaxis")
-      .data([0])
-      .enter()
-      .append("g")
-      .attr("class", "brushaxis")
-      .attr("transform", "translate(0,25)");
-
-    //select(node).select("g.brushaxis").call(dayAxis);
 
     select(node)
       .selectAll("g.brush")
