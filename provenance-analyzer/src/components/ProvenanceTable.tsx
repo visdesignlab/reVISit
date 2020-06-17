@@ -53,7 +53,7 @@ const tableIcons: Icons = {
 // import data
 const width = 200;
 const MaterialTableWrapper = ({ provenanceData }) => {
-  const [checkedTag, setCheckedTag] = React.useState(null);
+  const [checkedTags, setCheckedTags] = React.useState([]);
   const [min, max] = d3.extent(
     provenanceData,
     (datum) => datum.provGraph.totalTime
@@ -82,31 +82,52 @@ const MaterialTableWrapper = ({ provenanceData }) => {
     );
   }
 
-  function defaultRenderTag(props) {
-    let {
-      tag,
-      key,
-      disabled,
-      onRemove,
-      classNameRemove,
-      getTagDisplayValue,
-      ...other
-    } = props;
-    return (
-      <span key={key} className={"lol" /*react-tagsinput-tag*/} {...other}>
-        {getTagDisplayValue(tag)}
-        {!disabled && (
-          <a className={classNameRemove} onClick={(e) => onRemove(key)} />
-        )}
-      </span>
-    );
-  }
-
   const TimeFilterObj = TimeFilter;
   console.log("dywootto provenance", provenanceData);
   return (
     <MaterialTable
-      title="Render Image Preview"
+      title={"Provenance Table"}
+      components={{
+        Toolbar: (props) => {
+          console.log("title values", props);
+          return (
+            <div>
+              <MTableToolbar {...props} />
+              {props.selectedRows.length !== 0 ? (
+                <div
+                  style={{ direction: "rtl" }}
+                  classname={`MuiToolbar-root MuiToolbar-regular MTableToolbar-root-192 MTableToolbar-highlight-193 MuiToolbar-gutters`}>
+                  <TagWrapper
+                    tags={checkedTags}
+                    onTagChange={(action, tag) => {
+                      // check if rowData is selected;
+                      if (action === "Add") {
+                        let temp = Object.assign([], checkedTags);
+
+                        temp.push(tag);
+                        setCheckedTags(temp);
+                      } else {
+                        let index = checkedTags.findIndex(
+                          (item) => item.name === tag.name
+                        );
+                        console.log(index, tag);
+                        let temp = Object.assign([], checkedTags);
+
+                        if (index > -1) {
+                          temp.splice(index, 1);
+                        }
+                        setCheckedTags(temp);
+                      }
+                      console.log("here in tag change", action, tag);
+                    }}></TagWrapper>
+                </div>
+              ) : (
+                <div style={{ height: "20px" }}></div>
+              )}
+            </div>
+          );
+        },
+      }}
       columns={[
         {
           title: "Time To Complete",
@@ -124,7 +145,7 @@ const MaterialTableWrapper = ({ provenanceData }) => {
               datum.provGraph.totalTime <= filterResults[1]
             );
           },
-          //filterComponent: () => <div></div>,
+
           filterComponent: (props) => (
             <TimeFilterObj
               {...props}
@@ -144,12 +165,13 @@ const MaterialTableWrapper = ({ provenanceData }) => {
           customSort: (a, b) =>
             a.provGraph.nodes.length - b.provGraph.nodes.length,
           render: renderProvenanceNodes,
-          //filterComponent: <div></div>,
+          filterComponent: () => <div></div>,
         },
         {
           title: "Notes",
           field: "None",
           width: 500,
+          filterComponent: () => <div></div>,
           render: (rowData) => {
             if (!Array.isArray(rowData.tableData?.tags)) {
               rowData.tableData.tags = [];
@@ -159,12 +181,15 @@ const MaterialTableWrapper = ({ provenanceData }) => {
                 tags={rowData.tableData.tags}
                 onTagChange={(action, tag) => {
                   // check if rowData is selected;
-                  if (rowData.tableData.checked) {
-                    //add tag to all
-                    setCheckedTag({ action: action, tag: tag });
-                  }
                   if (action === "Add") {
                     rowData.tableData.tags.push(tag);
+                  } else {
+                    const index = rowData.tableData.tags.findIndex(
+                      (iterTag) => iterTag.name === tag.name
+                    );
+                    if (index > -1) {
+                      rowData.tableData.tags.splice(index, 1);
+                    }
                   }
                   console.log("here in tag change", action, tag);
                 }}></TagWrapper>
@@ -176,17 +201,17 @@ const MaterialTableWrapper = ({ provenanceData }) => {
       actions={[
         {
           tooltip: "Add most recent tag to all.",
-          icon: "delete",
+          icon: "add",
           onClick: (evt, data) => {
             data.forEach((datum) => {
-              if (checkedTag.action === "Add") {
-                console.log("dywootto tag chagne", checkedTag);
-                datum.tableData.tags.push(checkedTag.tag);
-              } else {
-                //data.tableData.tags.
+              if (datum.tableData.checked) {
+                console.log("datum before", datum, checkedTags);
+                datum.tableData.tags = datum.tableData.tags.concat(checkedTags);
+                console.log("datum after", datum);
               }
             });
-            console.log("after data set", evt, data, checkedTag);
+            setCheckedTags([]);
+            console.log("after data set", evt, data, checkedTags);
           },
         },
       ]}
