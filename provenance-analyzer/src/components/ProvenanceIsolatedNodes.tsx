@@ -17,11 +17,17 @@ const IsolatedNode = ({ node }) => {
 
   return node.event !== "startedProvenance" &&
     node.event !== "Finished Task" ? (
-    <div
-      title={node.event}
-      className={`${node.event} node`}
-      style={{ backgroundColor: eventMapping[node.event].color }}>
-      {icon}
+    <div title={node.event} className={`${node.event} node`}>
+      <svg width={34} height={30}>
+        <rect
+          x={0}
+          y={0}
+          width={30}
+          height={30}
+          rx={5}
+          fill={eventMapping[node.event].color}></rect>
+        <g transform={`translate(7,5)`}>{icon}</g>
+      </svg>
     </div>
   ) : (
     <div></div>

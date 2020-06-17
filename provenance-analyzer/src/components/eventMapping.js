@@ -7,7 +7,8 @@ import RadioButtonUncheckedIcon from '@material-ui/icons/RadioButtonUnchecked';
 import Search from "@material-ui/icons/Search";
 import Clear from "@material-ui/icons/Clear";
 import Start from "@material-ui/icons/Star";
-const colors = ["rgb(194,99,159)", "rgb(227,2,147)", "rgb(83,66,79)", "rgb(199,179,194)", "rgb(120,40,87)", "rgb(255,172,236)"]
+const colors = ["#c6e0d6", "#8fcab4", "#67aca9", "#5d83d2", "#6b56dd", "#9e93a1"];
+// generated from https://leonardocolor.io/?colorKeys=%235b89d2%2C%235dbb9c%2C%23723ce7%2C%238e18b9&base=ffffff&ratios=1.4%2C1.64%2C2.12%2C2.80%2C3.71%2C4.88%2C6.35%2C9.00&mode=CAM02
 const answerSelectColor = colors[0];
 const dragColor = colors[1];
 const sortColor = colors[2];

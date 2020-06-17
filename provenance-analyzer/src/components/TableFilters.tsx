@@ -10,23 +10,23 @@ export const Histogram = ({ data, width, height }) => {
     min = d3.min(data);
 
   // the scale
-  let x = d3.scaleLinear().range([0, width]);
+  let x = d3.scaleLinear().range([0, width - 10]);
   let y = d3.scaleLinear().range([height - 2, 0]);
-  let niceX = d3.scaleLinear().range([0, width]).domain([min, max]).nice();
+  let niceX = d3.scaleLinear().range([0, width]).domain([0, max]).nice();
   const binner = d3.histogram().domain(niceX.domain());
   const buckets = binner(data);
-
+  console.log("dywootto bands", d3.range(0, buckets.length), buckets, width);
   let xBand = d3
     .scaleBand()
     .domain(d3.range(0, buckets.length))
     .range([0, width]);
 
-  x.domain([d3.min(data), d3.max(data)]);
+  x.domain([0, d3.max(data)]);
   y.domain([0, d3.max(buckets, (bucket) => bucket.length)]);
   console.log("buckets", buckets, x);
-  const binWidth = xBand.bandwidth() * 0.9;
+  const binWidth = xBand.bandwidth();
   const bars = (
-    <g transform={`translate(${(1 / 2) * binWidth},0)`}>
+    <g transform={`translate(${(1 / 3) * binWidth},0)`}>
       {buckets.map((bucket, index) => {
         return (
           <rect
@@ -77,7 +77,7 @@ const Brush = (props) => {
     }
   });
   return (
-    <svg ref={brushRef} width={width} height={50}>
+    <svg ref={brushRef} height={50} width={width}>
       {props.children}
     </svg>
   );

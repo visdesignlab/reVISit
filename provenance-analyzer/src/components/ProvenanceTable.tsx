@@ -21,7 +21,7 @@ import ViewColumn from "@material-ui/icons/ViewColumn";
 // typings are here:
 import { Icons } from "material-table";
 import * as d3 from "d3";
-
+import { DraggableArea } from "react-draggable-tags";
 import TimeFilter from "./TableFilters";
 
 const tableIcons: Icons = {
@@ -88,6 +88,9 @@ const MaterialTableWrapper = ({ provenanceData }) => {
           title: "Time To Complete",
           field: "provGraph",
           width: 250,
+          cellStyle: {
+            maxWidth: 250,
+          },
           customSort: (a, b) => a.provGraph.totalTime - b.provGraph.totalTime,
           render: renderProvenanceTime,
           customFilterAndSearch: (filterResults, datum) => {
@@ -118,6 +121,23 @@ const MaterialTableWrapper = ({ provenanceData }) => {
             a.provGraph.nodes.length - b.provGraph.nodes.length,
           render: renderProvenanceNodes,
           //filterComponent: <div></div>,
+        },
+        {
+          title: "Notes",
+          field: "None",
+          width: 500,
+          render: () => (
+            <DraggableArea
+              tags={[
+                { id: "Thailand", text: "Thailand" },
+                { id: "Thailand2", text: "Thailand" },
+              ]}
+              render={({ tag, index }) => (
+                <div className="tag">{tag.content}</div>
+              )}
+              onChange={(tags) => console.log(tags)}
+            />
+          ),
         },
       ]}
       data={provenanceData}
