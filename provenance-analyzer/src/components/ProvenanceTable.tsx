@@ -21,7 +21,9 @@ import ViewColumn from "@material-ui/icons/ViewColumn";
 // typings are here:
 import { Icons } from "material-table";
 import * as d3 from "d3";
-import { DraggableArea } from "react-draggable-tags";
+import TagsInput from "react-tagsinput";
+import TagStyles from "./tagstyles.module.css";
+import TagWrapper from "./reactTagWrapper";
 import TimeFilter from "./TableFilters";
 
 const tableIcons: Icons = {
@@ -51,6 +53,7 @@ const tableIcons: Icons = {
 // import data
 const width = 200;
 const MaterialTableWrapper = ({ provenanceData }) => {
+  const [checkedTag, setCheckedTag] = React.useState(null);
   const [min, max] = d3.extent(
     provenanceData,
     (datum) => datum.provGraph.totalTime
@@ -78,6 +81,27 @@ const MaterialTableWrapper = ({ provenanceData }) => {
       </svg>
     );
   }
+
+  function defaultRenderTag(props) {
+    let {
+      tag,
+      key,
+      disabled,
+      onRemove,
+      classNameRemove,
+      getTagDisplayValue,
+      ...other
+    } = props;
+    return (
+      <span key={key} className={"lol" /*react-tagsinput-tag*/} {...other}>
+        {getTagDisplayValue(tag)}
+        {!disabled && (
+          <a className={classNameRemove} onClick={(e) => onRemove(key)} />
+        )}
+      </span>
+    );
+  }
+
   const TimeFilterObj = TimeFilter;
   console.log("dywootto provenance", provenanceData);
   return (
@@ -126,18 +150,44 @@ const MaterialTableWrapper = ({ provenanceData }) => {
           title: "Notes",
           field: "None",
           width: 500,
-          render: () => (
-            <DraggableArea
-              tags={[
-                { id: "Thailand", text: "Thailand" },
-                { id: "Thailand2", text: "Thailand" },
-              ]}
-              render={({ tag, index }) => (
-                <div className="tag">{tag.content}</div>
-              )}
-              onChange={(tags) => console.log(tags)}
-            />
-          ),
+          render: (rowData) => {
+            if (!Array.isArray(rowData.tableData?.tags)) {
+              rowData.tableData.tags = [];
+            }
+            return (
+              <TagWrapper
+                tags={rowData.tableData.tags}
+                onTagChange={(action, tag) => {
+                  // check if rowData is selected;
+                  if (rowData.tableData.checked) {
+                    //add tag to all
+                    setCheckedTag({ action: action, tag: tag });
+                  }
+                  if (action === "Add") {
+                    rowData.tableData.tags.push(tag);
+                  }
+                  console.log("here in tag change", action, tag);
+                }}></TagWrapper>
+            );
+          },
+        },
+      ]}
+      onSelectionChange={(sels) => console.log(sels)}
+      actions={[
+        {
+          tooltip: "Add most recent tag to all.",
+          icon: "delete",
+          onClick: (evt, data) => {
+            data.forEach((datum) => {
+              if (checkedTag.action === "Add") {
+                console.log("dywootto tag chagne", checkedTag);
+                datum.tableData.tags.push(checkedTag.tag);
+              } else {
+                //data.tableData.tags.
+              }
+            });
+            console.log("after data set", evt, data, checkedTag);
+          },
         },
       ]}
       data={provenanceData}

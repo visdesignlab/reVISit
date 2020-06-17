@@ -24,6 +24,9 @@
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-scripts": "3.4.1",
+    "react-tag-autocomplete": "^5.13.1",
+    "react-tagging": "0.0.8",
+    "react-tagsinput": "^3.19.0",
     "typescript": "^3.7.5"
   },
   "scripts": {

@@ -21,7 +21,7 @@ import {
     Icons
 } from 'material-table';
 
-const tableIcons: Icons = {
+const tableIcons = {
         Add: forwardRef((props, ref) => < AddBox {
                     ...props
                 }
