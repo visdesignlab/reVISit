@@ -54,6 +54,7 @@ const tableIcons: Icons = {
 const width = 200;
 const MaterialTableWrapper = ({ provenanceData }) => {
   const [checkedTags, setCheckedTags] = React.useState([]);
+  const [rerender, setRerender] = React.useState(false);
   const [min, max] = d3.extent(
     provenanceData,
     (datum) => datum.provGraph.totalTime
@@ -81,7 +82,48 @@ const MaterialTableWrapper = ({ provenanceData }) => {
       </svg>
     );
   }
+  const [timeColumn] = React.useState({
+    title: "Time To Complete",
+    field: "provGraph",
+    width: 250,
+    cellStyle: {
+      maxWidth: 250,
+    },
+    customSort: (a, b) => a.provGraph.totalTime - b.provGraph.totalTime,
+    render: renderProvenanceTime,
+    customFilterAndSearch: (filterResults, datum) => {
+      console.log("custom filter", filterResults, datum); // https://github.com/mbrn/material-table/pull/1351
+      if (
+        datum.provGraph.totalTime >= filterResults[0] &&
+        datum.provGraph.totalTime <= filterResults[1]
+      ) {
+        return true;
+      }
+      delete datum.tableData.checked;
 
+      return false;
+    },
+
+    filterComponent: (props) => (
+      <TimeFilterObj
+        {...props}
+        xScale={xScale}
+        data={provenanceData.map(
+          (graph) => graph.provGraph.totalTime
+        )}></TimeFilterObj>
+    ),
+  });
+  const [eventsCol] = React.useState({
+    title: "Events Used",
+    field: "provGraph",
+    width: 500,
+    cellStyle: {
+      maxWidth: 500,
+    },
+    customSort: (a, b) => a.provGraph.nodes.length - b.provGraph.nodes.length,
+    render: renderProvenanceNodes,
+    filterComponent: () => <div></div>,
+  });
   const TimeFilterObj = TimeFilter;
   console.log("dywootto provenance", provenanceData);
   return (
@@ -129,44 +171,8 @@ const MaterialTableWrapper = ({ provenanceData }) => {
         },
       }}
       columns={[
-        {
-          title: "Time To Complete",
-          field: "provGraph",
-          width: 250,
-          cellStyle: {
-            maxWidth: 250,
-          },
-          customSort: (a, b) => a.provGraph.totalTime - b.provGraph.totalTime,
-          render: renderProvenanceTime,
-          customFilterAndSearch: (filterResults, datum) => {
-            console.log("custom filter", filterResults, datum); // https://github.com/mbrn/material-table/pull/1351
-            return (
-              datum.provGraph.totalTime >= filterResults[0] &&
-              datum.provGraph.totalTime <= filterResults[1]
-            );
-          },
-
-          filterComponent: (props) => (
-            <TimeFilterObj
-              {...props}
-              xScale={xScale}
-              data={provenanceData.map(
-                (graph) => graph.provGraph.totalTime
-              )}></TimeFilterObj>
-          ),
-        },
-        {
-          title: "Events Used",
-          field: "provGraph",
-          width: 500,
-          cellStyle: {
-            maxWidth: 500,
-          },
-          customSort: (a, b) =>
-            a.provGraph.nodes.length - b.provGraph.nodes.length,
-          render: renderProvenanceNodes,
-          filterComponent: () => <div></div>,
-        },
+        timeColumn,
+        eventsCol,
         {
           title: "Notes",
           field: "None",
@@ -185,8 +191,12 @@ const MaterialTableWrapper = ({ provenanceData }) => {
                     rowData.tableData.tags.push(tag);
                   } else {
                     const index = rowData.tableData.tags.findIndex(
-                      (iterTag) => iterTag.name === tag.name
+                      (iterTag) => {
+                        console.log(iterTag, tag);
+                        return iterTag.name === tag[0]?.name;
+                      }
                     );
+                    console.log(index, rowData.tableData.tags, tag);
                     if (index > -1) {
                       rowData.tableData.tags.splice(index, 1);
                     }
@@ -210,7 +220,7 @@ const MaterialTableWrapper = ({ provenanceData }) => {
                 console.log("datum after", datum);
               }
             });
-            setCheckedTags([]);
+            setRerender(!rerender);
             console.log("after data set", evt, data, checkedTags);
           },
         },

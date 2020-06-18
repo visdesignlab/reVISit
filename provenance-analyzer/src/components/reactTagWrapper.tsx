@@ -1,7 +1,8 @@
 import React from "react";
 import ReactTags from "react-tag-autocomplete";
+import "./reacttags.css";
 
-const TagWrapper = ({ tags, onTagChange }) => {
+const TagWrapper = ({ tags, onTagChange, isMaster }) => {
   function handleAddTag(tag) {
     onTagChange("Add", tag);
   }
@@ -16,8 +17,16 @@ const TagWrapper = ({ tags, onTagChange }) => {
       allowNew={true}
       handleDelete={handleDeleteTag}
       handleAddition={handleAddTag}
+      tagComponent={TagComponent}
     />
   );
 };
-
+const TagComponent = (props) => {
+  const { value, onDelete } = props;
+  return (
+    <React.Fragment>
+      <div className={"react-tags__selected-tag-name"}>{value}</div>
+    </React.Fragment>
+  );
+};
 export default TagWrapper;

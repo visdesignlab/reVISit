@@ -4,6 +4,7 @@
   overflow: hidden;
   padding-left: 5px;
   padding-top: 5px;
+  direction: "ltr";
 }
 
 .react-tagsinput--focused {

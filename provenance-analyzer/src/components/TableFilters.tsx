@@ -60,7 +60,8 @@ const Brush = (props) => {
         [0, 0],
         [width, height],
       ])
-      .on("brush", brushed);
+      //.on("brush", brushed)
+      .on("end", cleared);
 
     select(node)
       .selectAll("g.brush")
@@ -71,8 +72,14 @@ const Brush = (props) => {
 
     select(node).select("g.brush").call(dayBrush);
 
+    /*
+    Code for updating brush if we want it to dynamically update while brushing
     function brushed() {
-      console.log(event);
+      console.warn(event);
+      onBrushFunction(event.selection);
+    }*/
+    function cleared() {
+      console.warn("clear", event);
       onBrushFunction(event.selection);
     }
   });
@@ -90,6 +97,9 @@ const BrushableHistogram = ({ data, xScale, setMinimum, setMaximum }) => {
   console.log("width dywootto;", xScale.range(), xScale.domain());
 
   function setFilterBounds(inputs) {
+    if (inputs?.length !== 2) {
+      inputs = xScale.domain();
+    }
     // scale inversion
     setMinimum(scale.invert(inputs[0]));
     // set bounds
