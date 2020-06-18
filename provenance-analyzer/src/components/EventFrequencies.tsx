@@ -9,7 +9,6 @@ import * as d3 from "d3";
 import chroma from "chroma-js";
 
 const EventFrequencies = ({ frequencies, scaleFactor, width, height }: any) => {
-  console.log("freqs", frequencies);
   const icons = Object.keys(frequencies).map((eventName, index) => {
     let icon;
     if (eventMapping[eventName] !== undefined) {
@@ -21,22 +20,7 @@ const EventFrequencies = ({ frequencies, scaleFactor, width, height }: any) => {
     //let xTranslate = finish - start < 48 ? -12 : 0;
     scaleFactor = 0.75;
     const iconSize = 16;
-    /*return (
-      <g
-        transform={`translate(${xTranslate},0)`}
-        onClick={(e) => {
-          console.log(frequencies, start, finish);
-        }}>
-        <g transform={`translate(${index * 20},0)scale(${scaleFactor})`}>
-          {icon}
-          <g transform={`translate(${iconSize},${5 + iconSize / 2})`}>
-            <text fontFamily={"Roboto"} fontSize={"14"}>
-              {frequencies[eventName]}
-            </text>
-          </g>
-        </g>
-      </g>
-    );*/
+
     return (
       <g transform={`scale(${scaleFactor})`}>
         {icon}
@@ -62,21 +46,12 @@ const EventFrequencies = ({ frequencies, scaleFactor, width, height }: any) => {
 const SvgGrid = ({ items, itemHeight, itemWidth, gridHeight, gridWidth }) => {
   let maxRows = Math.floor(gridHeight / itemHeight);
   let maxColumns = Math.floor(gridWidth / itemWidth);
-  console.log(
-    maxRows,
-    maxColumns,
-    items,
-    itemHeight,
-    itemWidth,
-    gridHeight,
-    gridWidth
-  );
+
   let numberItems = items.length;
 
   let numberColumns = numberItems > maxColumns ? maxColumns : numberItems;
   let numberRows =
     numberItems === numberColumns ? 1 : Math.ceil(numberItems / numberColumns);
-  console.log(numberColumns, numberRows);
   if (numberItems > maxRows * maxColumns) {
     // render ...
     console.warn("over number of items on", items);
@@ -102,29 +77,12 @@ const SvgGrid = ({ items, itemHeight, itemWidth, gridHeight, gridWidth }) => {
     }
 
     for (currentCol = startingCol; currentCol < numberColumns; currentCol++) {
-      console.log(currentCol);
       gridItems.push(
         <g
           transform={`translate(${(currentCol + leftPadding) * itemWidth},${
             currentRow * itemHeight
           })`}
-          onClick={() => {
-            console.log(
-              "col",
-              JSON.parse(JSON.stringify(currentCol)),
-              "row",
-              JSON.parse(JSON.stringify(currentRow)),
-              itemCounter,
-              numberColumns,
-              numberRows,
-              leftPadding,
-              allPadding,
-              isLastRow,
-              "num items remain",
-              numberItems - itemCounter,
-              numberColumns - numberItems - itemCounter
-            );
-          }}>
+          onClick={() => {}}>
           {items[itemCounter]}
         </g>
       );

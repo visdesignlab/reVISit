@@ -15,7 +15,6 @@ export const Histogram = ({ data, width, height }) => {
   let niceX = d3.scaleLinear().range([0, width]).domain([0, max]).nice();
   const binner = d3.histogram().domain(niceX.domain());
   const buckets = binner(data);
-  console.log("dywootto bands", d3.range(0, buckets.length), buckets, width);
   let xBand = d3
     .scaleBand()
     .domain(d3.range(0, buckets.length))
@@ -23,7 +22,6 @@ export const Histogram = ({ data, width, height }) => {
 
   x.domain([0, d3.max(data)]);
   y.domain([0, d3.max(buckets, (bucket) => bucket.length)]);
-  console.log("buckets", buckets, x);
   const binWidth = xBand.bandwidth();
   const bars = (
     <g transform={`translate(${(1 / 3) * binWidth},0)`}>
@@ -44,7 +42,6 @@ export const Histogram = ({ data, width, height }) => {
 };
 
 const Brush = (props) => {
-  console.log(props);
   const width = props.width;
   const scale = props.scale;
   const height = props.height;
@@ -84,7 +81,7 @@ const Brush = (props) => {
     }
   });
   return (
-    <svg ref={brushRef} height={50} width={width}>
+    <svg ref={brushRef} height={height} width={width}>
       {props.children}
     </svg>
   );
@@ -94,7 +91,6 @@ const BrushableHistogram = ({ data, xScale, setMinimum, setMaximum }) => {
   const width = xScale.range()[1];
   const height = 30;
   const scale = xScale;
-  console.log("width dywootto;", xScale.range(), xScale.domain());
 
   function setFilterBounds(inputs) {
     if (inputs?.length !== 2) {

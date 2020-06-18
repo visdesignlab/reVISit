@@ -73,14 +73,11 @@ stories.add("small", () => {
     return parseInt(matches[0]) - 1;
   });
 
-  console.log("filter to index", indexToAdd);
   let tempRelativeProvenanceData = relativeProvenanceData.filter(
     (data, index) => {
-      console.log(index, indexToAdd);
       return indexToAdd.includes(index);
     }
   );
-  console.log("relative prov data", relativeProvenanceData);
   let tempUnrelativeProvenanceData = unrelativeProvenanceData.filter(
     (data, index) => indexToAdd.includes(index)
   );

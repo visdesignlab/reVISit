@@ -18,6 +18,7 @@ import Remove from "@material-ui/icons/Remove";
 import SaveAlt from "@material-ui/icons/SaveAlt";
 import Search from "@material-ui/icons/Search";
 import ViewColumn from "@material-ui/icons/ViewColumn";
+import Label from "@material-ui/icons/Label";
 // typings are here:
 import { Icons } from "material-table";
 import * as d3 from "d3";
@@ -63,14 +64,14 @@ const MaterialTableWrapper = ({ provenanceData }) => {
   const xScale = d3.scaleLinear().domain([0, max]).range([0, width]);
 
   function renderProvenanceNodes(data) {
-    console.log(data);
+    console.log("render provenance nodes called");
     return (
       <ProvenanceIsolatedNodes
         nodes={data.provGraph.nodes}></ProvenanceIsolatedNodes>
     );
   }
   function renderProvenanceTime(data) {
-    console.log(data);
+    console.log("render provenance time called");
     return (
       <svg width={250} height={20}>
         <ProvenanceGraph
@@ -92,7 +93,7 @@ const MaterialTableWrapper = ({ provenanceData }) => {
     customSort: (a, b) => a.provGraph.totalTime - b.provGraph.totalTime,
     render: renderProvenanceTime,
     customFilterAndSearch: (filterResults, datum) => {
-      console.log("custom filter", filterResults, datum); // https://github.com/mbrn/material-table/pull/1351
+      // https://github.com/mbrn/material-table/pull/1351
       if (
         datum.provGraph.totalTime >= filterResults[0] &&
         datum.provGraph.totalTime <= filterResults[1]
@@ -125,42 +126,44 @@ const MaterialTableWrapper = ({ provenanceData }) => {
     filterComponent: () => <div></div>,
   });
   const TimeFilterObj = TimeFilter;
-  console.log("dywootto provenance", provenanceData);
   return (
     <MaterialTable
       title={"Provenance Table"}
       components={{
         Toolbar: (props) => {
-          console.log("title values", props);
           return (
             <div>
               <MTableToolbar {...props} />
               {props.selectedRows.length !== 0 ? (
                 <div
-                  style={{ direction: "rtl" }}
                   classname={`MuiToolbar-root MuiToolbar-regular MTableToolbar-root-192 MTableToolbar-highlight-193 MuiToolbar-gutters`}>
                   <TagWrapper
-                    tags={checkedTags}
+                    tags={checkedTags.filter((tag) => !tag.removed)}
                     onTagChange={(action, tag) => {
                       // check if rowData is selected;
                       if (action === "Add") {
                         let temp = Object.assign([], checkedTags);
+                        let existing = temp.find(
+                          (checkedTags) => checkedTags.name === tag.name
+                        );
+                        if (existing) {
+                          existing.removed = false;
+                        } else {
+                          temp.push(tag);
+                        }
 
-                        temp.push(tag);
                         setCheckedTags(temp);
                       } else {
                         let index = checkedTags.findIndex(
-                          (item) => item.name === tag.name
+                          (item) => item.name === tag?.[0].name
                         );
-                        console.log(index, tag);
                         let temp = Object.assign([], checkedTags);
 
                         if (index > -1) {
-                          temp.splice(index, 1);
+                          temp[index].removed = true;
                         }
                         setCheckedTags(temp);
                       }
-                      console.log("here in tag change", action, tag);
                     }}></TagWrapper>
                 </div>
               ) : (
@@ -192,36 +195,47 @@ const MaterialTableWrapper = ({ provenanceData }) => {
                   } else {
                     const index = rowData.tableData.tags.findIndex(
                       (iterTag) => {
-                        console.log(iterTag, tag);
                         return iterTag.name === tag[0]?.name;
                       }
                     );
-                    console.log(index, rowData.tableData.tags, tag);
                     if (index > -1) {
                       rowData.tableData.tags.splice(index, 1);
                     }
                   }
-                  console.log("here in tag change", action, tag);
                 }}></TagWrapper>
             );
           },
         },
       ]}
-      onSelectionChange={(sels) => console.log(sels)}
+      onSelectionChange={(selections) => {
+        if (selections.length === 0) {
+          setCheckedTags([]);
+        }
+      }}
       actions={[
         {
-          tooltip: "Add most recent tag to all.",
-          icon: "add",
+          tooltip: "Update tags of selected rows (appends ontop).",
+          icon: (props, ref) => <Label {...props} ref={ref} />,
           onClick: (evt, data) => {
             data.forEach((datum) => {
               if (datum.tableData.checked) {
-                console.log("datum before", datum, checkedTags);
-                datum.tableData.tags = datum.tableData.tags.concat(checkedTags);
-                console.log("datum after", datum);
+                checkedTags.forEach((tag) => {
+                  const datumTagIndex = datum.tableData.tags.findIndex(
+                    (currentTag) => currentTag.name === tag.name
+                  );
+                  if (datumTagIndex === -1) {
+                    if (!tag.removed) {
+                      datum.tableData.tags.push(tag);
+                    }
+                  } else {
+                    if (tag.removed) {
+                      datum.tableData.tags.splice(datumTagIndex, 1);
+                    }
+                  }
+                });
               }
             });
             setRerender(!rerender);
-            console.log("after data set", evt, data, checkedTags);
           },
         },
       ]}

@@ -15,7 +15,6 @@ const ProvenanceNodes = ({
   eventType,
 }: any) => {
   if (!provenanceGraph) {
-    console.log(provenanceGraph);
     return <div></div>;
   }
 
@@ -35,9 +34,6 @@ const ProvenanceNodes = ({
   let currentGroup = [];
 
   provenanceGraph.nodes.forEach((node) => {
-    if (node.time > 1 || node.time < 0) {
-      console.log("GREATER THAN 1", node);
-    }
     if (
       node.event === "startedProvenance" ||
       node.event === "Finished Task" ||

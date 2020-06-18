@@ -10,7 +10,6 @@ const ProvenanceGraph = ({
   renderIcons,
   collapseEvents,
 }) => {
-  console.log("dywoott in provenance graph", provenanceGraph);
   const [showEvents, setShowEvents] = React.useState(!collapseEvents);
 
   React.useEffect(() => {

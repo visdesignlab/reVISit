@@ -17,16 +17,7 @@ const TagWrapper = ({ tags, onTagChange, isMaster }) => {
       allowNew={true}
       handleDelete={handleDeleteTag}
       handleAddition={handleAddTag}
-      tagComponent={TagComponent}
     />
-  );
-};
-const TagComponent = (props) => {
-  const { value, onDelete } = props;
-  return (
-    <React.Fragment>
-      <div className={"react-tags__selected-tag-name"}>{value}</div>
-    </React.Fragment>
   );
 };
 export default TagWrapper;

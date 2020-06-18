@@ -698,8 +698,7 @@ allTaskData.forEach(taskData => {
     trimmedProvGraph["startTime"] = (startTime - startTime) / (totalTime); // 0
     trimmedProvGraph["stopTime"] = (stopTime - startTime) / (totalTime); // 1
     trimmedProvGraph["totalTime"] = totalTime;
-    console.log('TOTAL TIME', totalTime, stopTime, startTime)
-    trimmedProvGraph["correct"] = 1;
+    trimmedProvGraph["correct"] = Math.random() > .1; //90% accuracy
 
     return trimmedProvGraph;
   }
@@ -716,8 +715,6 @@ allTaskData.forEach(taskData => {
     return 0;
 
   });
-  let provData;
-  console.log('filter here', unrelativeProvData)
   if (unrelativeProvData.length === 0) {
     return;
   }
@@ -743,7 +740,6 @@ allTaskData.forEach(taskData => {
   //const provData = allData.data.provGraphs;
 })
 
-console.log('provSet', provset)
 
 export {
   relativeProvenanceData,

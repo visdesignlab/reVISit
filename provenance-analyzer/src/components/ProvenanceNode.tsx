@@ -14,7 +14,6 @@ const ProvenanceNode = ({ circle, barHeight, renderIcons }: any) => {
 
   if (renderIcons) {
     let iconSize = barHeight / 2;
-    console.log(circle.info);
     // Note when rendering other things in svgs, you must only render things that are svg elements can render- they can't render most react components
     let icon;
     if (eventMapping[circle.info] !== undefined) {

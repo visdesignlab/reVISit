@@ -1,5 +1,7 @@
 import React from "react";
 import eventMapping from "./eventMapping.js";
+import Tooltip from "@material-ui/core/Tooltip";
+import Fade from "@material-ui/core/Fade";
 import styles from "./ProvenanceIsolatedNodes.module.css";
 const ProvenanceIsolatedNodes = ({ nodes }) => {
   return (
@@ -12,13 +14,26 @@ const ProvenanceIsolatedNodes = ({ nodes }) => {
 };
 
 const IsolatedNode = ({ node }) => {
-  console.log("dywootto node data", node, eventMapping);
   const icon = eventMapping[node.event].icon;
 
   return node.event !== "startedProvenance" &&
     node.event !== "Finished Task" ? (
-    <div title={node.event} className={`${node.event} node`}>
-      <svg width={34} height={30}>
+    <Tooltip
+      TransitionComponent={Fade}
+      TransitionProps={{ timeout: 600 }}
+      title={node.event}
+      PopperProps={{
+        popperOptions: {
+          modifiers: {
+            offset: {
+              enabled: true,
+              offset: "0px, -6px",
+            },
+          },
+        },
+      }}
+      arrow>
+      <svg width={34} height={34}>
         <rect
           x={0}
           y={0}
@@ -28,7 +43,7 @@ const IsolatedNode = ({ node }) => {
           fill={eventMapping[node.event].color}></rect>
         <g transform={`translate(7,5)`}>{icon}</g>
       </svg>
-    </div>
+    </Tooltip>
   ) : (
     <div></div>
   );
