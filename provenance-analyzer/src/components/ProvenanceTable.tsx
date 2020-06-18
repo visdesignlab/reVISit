@@ -1,5 +1,9 @@
 import React, { forwardRef } from "react";
-import MaterialTable, { MTableToolbar } from "material-table";
+import MaterialTable, {
+  MTableToolbar,
+  MTableAction,
+  MTableActions,
+} from "material-table";
 import ProvenanceGraph from "./ProvenanceGraph";
 import ProvenanceIsolatedNodes from "./ProvenanceIsolatedNodes";
 
@@ -114,6 +118,38 @@ const MaterialTableWrapper = ({ provenanceData }) => {
         )}></TimeFilterObj>
     ),
   });
+
+  /*const [correct] = React.useState({
+    title: "Accuracy",
+    field: "provGraph",
+    width: 250,
+    cellStyle: {
+      maxWidth: 250,
+    },
+    customSort: (a, b) => a.provGraph.correct - b.provGraph.correct,
+    render: renderProvenanceTime,
+    customFilterAndSearch: (filterResults, datum) => {
+      // https://github.com/mbrn/material-table/pull/1351
+      if (
+        datum.provGraph.totalTime >= filterResults[0] &&
+        datum.provGraph.totalTime <= filterResults[1]
+      ) {
+        return true;
+      }
+      delete datum.tableData.checked;
+
+      return false;
+    },
+
+    filterComponent: (props) => (
+      <TimeFilterObj
+        {...props}
+        xScale={xScale}
+        data={provenanceData.map(
+          (graph) => graph.provGraph.totalTime
+        )}></TimeFilterObj>
+    ),
+  });*/
   const [eventsCol] = React.useState({
     title: "Events Used",
     field: "provGraph",
@@ -130,47 +166,25 @@ const MaterialTableWrapper = ({ provenanceData }) => {
     <MaterialTable
       title={"Provenance Table"}
       components={{
-        Toolbar: (props) => {
+        Actions: (props) => {
           return (
-            <div>
-              <MTableToolbar {...props} />
-              {props.selectedRows.length !== 0 ? (
-                <div
-                  classname={`MuiToolbar-root MuiToolbar-regular MTableToolbar-root-192 MTableToolbar-highlight-193 MuiToolbar-gutters`}>
-                  <TagWrapper
-                    tags={checkedTags.filter((tag) => !tag.removed)}
-                    onTagChange={(action, tag) => {
-                      // check if rowData is selected;
-                      if (action === "Add") {
-                        let temp = Object.assign([], checkedTags);
-                        let existing = temp.find(
-                          (checkedTags) => checkedTags.name === tag.name
-                        );
-                        if (existing) {
-                          existing.removed = false;
-                        } else {
-                          temp.push(tag);
-                        }
-
-                        setCheckedTags(temp);
-                      } else {
-                        let index = checkedTags.findIndex(
-                          (item) => item.name === tag?.[0].name
-                        );
-                        let temp = Object.assign([], checkedTags);
-
-                        if (index > -1) {
-                          temp[index].removed = true;
-                        }
-                        setCheckedTags(temp);
-                      }
-                    }}></TagWrapper>
-                </div>
-              ) : (
-                <div style={{ height: "20px" }}></div>
-              )}
+            <div
+              style={{
+                display: "flex",
+                float: "left",
+                backgroundColor: "#ffe2ec",
+              }}>
+              <MTableActions {...props}></MTableActions>
             </div>
           );
+        },
+        Action: (props) => {
+          console.log("dywootto", props);
+          if (props.action.myComponent) {
+            let ActionComponent = props.action.myComponent;
+            return <ActionComponent {...props}></ActionComponent>;
+          }
+          return <MTableAction {...props}></MTableAction>;
         },
       }}
       columns={[
@@ -213,6 +227,40 @@ const MaterialTableWrapper = ({ provenanceData }) => {
         }
       }}
       actions={[
+        {
+          myComponent: (props) => {
+            return (
+              <TagWrapper
+                tags={checkedTags.filter((tag) => !tag.removed)}
+                onTagChange={(action, tag) => {
+                  // check if rowData is selected;
+                  if (action === "Add") {
+                    let temp = Object.assign([], checkedTags);
+                    let existing = temp.find(
+                      (checkedTags) => checkedTags.name === tag.name
+                    );
+                    if (existing) {
+                      existing.removed = false;
+                    } else {
+                      temp.push(tag);
+                    }
+
+                    setCheckedTags(temp);
+                  } else {
+                    let index = checkedTags.findIndex(
+                      (item) => item.name === tag?.[0].name
+                    );
+                    let temp = Object.assign([], checkedTags);
+
+                    if (index > -1) {
+                      temp[index].removed = true;
+                    }
+                    setCheckedTags(temp);
+                  }
+                }}></TagWrapper>
+            );
+          },
+        },
         {
           tooltip: "Update tags of selected rows (appends ontop).",
           icon: (props, ref) => <Label {...props} ref={ref} />,

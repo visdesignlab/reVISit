@@ -45,7 +45,6 @@
 
 .react-tags__search {
   display: inline-block;
-
   /* match tag layout */
   padding: 7px 2px;
   margin-bottom: 6px;
@@ -53,7 +52,12 @@
   /* prevent autoresize overflowing the container */
   max-width: 100%;
 }
-
+.react-tags__search input {
+  color: black;
+}
+.MuiToolbar-root input {
+  background-color: #ffe2ec;
+}
 @media screen and (min-width: 30em) {
   .react-tags__search {
     /* this will become the offsetParent for suggestions */
