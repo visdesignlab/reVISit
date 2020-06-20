@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "/provenance-data-analysis-frontend/precache-manifest.8e44cc123e7884ed1093d942f616c025.js"
+  "/provenance-data-analysis-frontend/precache-manifest.5a5282f3231bbf40c5923abaf5d5402f.js"
 );
 
 self.addEventListener('message', (event) => {
