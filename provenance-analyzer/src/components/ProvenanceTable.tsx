@@ -1,4 +1,6 @@
-import React, { forwardRef } from "react";
+//@ts-nocheck
+
+import React, { forwardRef, useMemo } from "react";
 import MaterialTable, {
   MTableToolbar,
   MTableAction,
@@ -27,9 +29,10 @@ import Label from "@material-ui/icons/Label";
 import { Icons } from "material-table";
 import * as d3 from "d3";
 import TagsInput from "react-tagsinput";
+import eventMapping from "./eventMapping";
 import TagStyles from "./tagstyles.module.css";
 import TagWrapper from "./reactTagWrapper";
-import TimeFilter from "./TableFilters";
+import { TimeFilter, CategoricalFilter } from "./TableFilters";
 
 const tableIcons: Icons = {
   Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
@@ -87,6 +90,7 @@ const MaterialTableWrapper = ({ provenanceData }) => {
       </svg>
     );
   }
+
   const [timeColumn] = React.useState({
     title: "Time To Complete",
     field: "provGraph",
@@ -118,22 +122,65 @@ const MaterialTableWrapper = ({ provenanceData }) => {
         )}></TimeFilterObj>
     ),
   });
+  function generateCategoricalScale(data, width) {
+    const uniqueValues = Array.from(new Set(data));
+    return d3
+      .scaleBand()
+      .rangeRound([0, width])
+      .padding(0)
+      .domain(uniqueValues);
+  }
 
-  /*const [correct] = React.useState({
+  let correctWidth = 50;
+  let correctScale = generateCategoricalScale(["true", "false"], correctWidth);
+
+  const eventNodes = useMemo(() => {
+    return provenanceData
+      .map((graph) => graph.provGraph.nodes.map((node) => node.event))
+      .flat()
+      .filter(
+        (item) => item !== "startedProvenance" && item !== "Finished Task"
+      );
+  });
+
+  let eventWidth = 250;
+  let eventScale = generateCategoricalScale(eventNodes, eventWidth);
+  /*let correctScale = d3
+    .scaleBand()
+    .rangeRound([0, correctWidth])
+    .padding(0)
+    .domain([true, false]);*/
+
+  function renderProvenanceAccuracy(rowData) {
+    console.log(rowData);
+    //const values = [true, false];
+    console.log("x", correctScale(rowData.provGraph.correct));
+    return (
+      <svg width={100} height={20}>
+        <rect
+          x={correctScale(rowData.provGraph.correct)}
+          width={20}
+          height={20}></rect>
+      </svg>
+    );
+  }
+  const allObj = {};
+  Object.keys(eventMapping).forEach((eventKey) => {
+    allObj[eventKey] = eventMapping[eventKey].icon;
+  });
+
+  const [correct] = React.useState({
     title: "Accuracy",
-    field: "provGraph",
-    width: 250,
+    field: "provGraph correct",
+    width: correctWidth + 10,
     cellStyle: {
-      maxWidth: 250,
+      maxWidth: correctWidth + 10,
     },
     customSort: (a, b) => a.provGraph.correct - b.provGraph.correct,
-    render: renderProvenanceTime,
+    render: renderProvenanceAccuracy,
     customFilterAndSearch: (filterResults, datum) => {
       // https://github.com/mbrn/material-table/pull/1351
-      if (
-        datum.provGraph.totalTime >= filterResults[0] &&
-        datum.provGraph.totalTime <= filterResults[1]
-      ) {
+      if (filterResults.includes(datum.provGraph.correct)) {
         return true;
       }
       delete datum.tableData.checked;
@@ -142,14 +189,17 @@ const MaterialTableWrapper = ({ provenanceData }) => {
     },
 
     filterComponent: (props) => (
-      <TimeFilterObj
+      <CategoricalFilter
         {...props}
-        xScale={xScale}
+        width={correctWidth}
+        scale={correctScale}
+        labels={{ true: "true", false: "false" }}
         data={provenanceData.map(
-          (graph) => graph.provGraph.totalTime
-        )}></TimeFilterObj>
+          (graph) => graph.provGraph.correct
+        )}></CategoricalFilter>
     ),
-  });*/
+  });
+
   const [eventsCol] = React.useState({
     title: "Events Used",
     field: "provGraph",
@@ -159,7 +209,55 @@ const MaterialTableWrapper = ({ provenanceData }) => {
     },
     customSort: (a, b) => a.provGraph.nodes.length - b.provGraph.nodes.length,
     render: renderProvenanceNodes,
+    customFilterAndSearch: (filterResults, datum) => {
+      console.log(filterResults, datum);
+      // https://github.com/mbrn/material-table/pull/1351
+      for (let i = 0; i < datum.provGraph.nodes.length; i++) {
+        if (filterResults.includes(datum.provGraph.nodes[i].event)) {
+          return true;
+        }
+      }
+      // unselect any filtered items
+      delete datum.tableData.checked;
+      return false;
+    },
+    filterComponent: (props) => (
+      <CategoricalFilter
+        {...props}
+        width={eventWidth}
+        scale={eventScale}
+        labels={allObj}
+        data={eventNodes}></CategoricalFilter>
+    ),
+  });
+  const [notesColumn] = React.useState({
+    title: "Notes",
+    field: "None",
+    width: 500,
+    customSort: (a, b) => b.tableData.tags.length - a.tableData.tags.length,
     filterComponent: () => <div></div>,
+    render: (rowData) => {
+      if (!Array.isArray(rowData.tableData?.tags)) {
+        rowData.tableData.tags = [];
+      }
+      return (
+        <TagWrapper
+          tags={rowData.tableData.tags}
+          onTagChange={(action, tag) => {
+            // check if rowData is selected;
+            if (action === "Add") {
+              rowData.tableData.tags.push(tag);
+            } else {
+              const index = rowData.tableData.tags.findIndex((iterTag) => {
+                return iterTag.name === tag[0]?.name;
+              });
+              if (index > -1) {
+                rowData.tableData.tags.splice(index, 1);
+              }
+            }
+          }}></TagWrapper>
+      );
+    },
   });
   const TimeFilterObj = TimeFilter;
   return (
@@ -179,48 +277,15 @@ const MaterialTableWrapper = ({ provenanceData }) => {
           );
         },
         Action: (props) => {
-          console.log("dywootto", props);
           if (props.action.myComponent) {
             let ActionComponent = props.action.myComponent;
+            //@ts-ignore
             return <ActionComponent {...props}></ActionComponent>;
           }
           return <MTableAction {...props}></MTableAction>;
         },
       }}
-      columns={[
-        timeColumn,
-        eventsCol,
-        {
-          title: "Notes",
-          field: "None",
-          width: 500,
-          filterComponent: () => <div></div>,
-          render: (rowData) => {
-            if (!Array.isArray(rowData.tableData?.tags)) {
-              rowData.tableData.tags = [];
-            }
-            return (
-              <TagWrapper
-                tags={rowData.tableData.tags}
-                onTagChange={(action, tag) => {
-                  // check if rowData is selected;
-                  if (action === "Add") {
-                    rowData.tableData.tags.push(tag);
-                  } else {
-                    const index = rowData.tableData.tags.findIndex(
-                      (iterTag) => {
-                        return iterTag.name === tag[0]?.name;
-                      }
-                    );
-                    if (index > -1) {
-                      rowData.tableData.tags.splice(index, 1);
-                    }
-                  }
-                }}></TagWrapper>
-            );
-          },
-        },
-      ]}
+      columns={[timeColumn, correct, eventsCol, notesColumn]}
       onSelectionChange={(selections) => {
         if (selections.length === 0) {
           setCheckedTags([]);
@@ -294,6 +359,8 @@ const MaterialTableWrapper = ({ provenanceData }) => {
         search: false,
         paging: false,
         filtering: true,
+        maxBodyHeight: "93vh",
+        emptyRowsWhenPaging: true,
       }}
     />
   );

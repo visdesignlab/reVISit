@@ -1,9 +1,95 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import * as d3 from "d3";
 import { select, event } from "d3-selection";
 import { scaleLinear } from "d3-scale";
 import { brushX } from "d3-brush";
 import { axisBottom } from "d3-axis";
+import Tooltip from "@material-ui/core/Tooltip";
+import Fade from "@material-ui/core/Fade";
+
+function obtainItemCounts(arr) {
+  let occurrences = {};
+  for (let i = 0, j = arr.length; i < j; i++) {
+    occurrences[arr[i]] = (occurrences[arr[i]] || 0) + 1;
+  }
+  return occurrences;
+}
+export const CategoricalFilter = ({
+  data,
+  width,
+  scale,
+  labels,
+  columnDef,
+  onFilterChanged,
+}) => {
+  const occurrences = useMemo(() => obtainItemCounts(data), [data]);
+  // search through data for all states
+  const [currentFilter, setCurrentFilter] = useState(Object.keys(occurrences));
+  const height = 20;
+  const fullHeight = 20 + 15;
+  console.log("labels", labels);
+  const maxOccurance = Object.values(occurrences).reduce((a, b) =>
+    a > b ? a : b
+  );
+  const yScale = d3.scaleLinear().domain([0, maxOccurance]).range([0, height]);
+  useEffect(() => {
+    onFilterChanged(columnDef.tableData.id, currentFilter);
+  }, [currentFilter]);
+
+  return (
+    <svg width={width} height={fullHeight}>
+      {Object.entries(occurrences).map(([key, value], index) => {
+        console.log("dywootto,", key === true, value);
+        //key = key === "true" ? true : false;
+        console.log("labelkey", key, labels[key]);
+        const color = currentFilter.includes(key) ? "black" : "#cfcfcf";
+        return (
+          <Tooltip
+            TransitionComponent={Fade}
+            TransitionProps={{ timeout: 600 }}
+            title={key}
+            PopperProps={{
+              popperOptions: {
+                modifiers: {
+                  offset: {
+                    enabled: true,
+                    offset: "0px, -6px",
+                  },
+                },
+              },
+            }}>
+            <g
+              pointerEvents={"bounding-box"}
+              onClick={() => {
+                const indexOfValue = currentFilter.indexOf(key);
+                let temp = Object.assign([], currentFilter);
+
+                if (indexOfValue > -1) {
+                  temp.splice(indexOfValue, 1);
+                } else {
+                  temp.push(key);
+                }
+                setCurrentFilter(temp);
+              }}
+              cursor={"pointer"}
+              fill={"none"}>
+              <rect
+                x={scale(key)}
+                width={20}
+                height={yScale(value)}
+                y={height - yScale(value)}
+                fill={color}></rect>
+
+              <g transform={`translate(${scale(key)},${height})`} fill={color}>
+                {labels[key]}
+              </g>
+            </g>
+          </Tooltip>
+        );
+      })}
+    </svg>
+  );
+};
 
 export const Histogram = ({ data, width, height }) => {
   const max = d3.max(data),
@@ -89,7 +175,7 @@ const Brush = (props) => {
 
 const BrushableHistogram = ({ data, xScale, setMinimum, setMaximum }) => {
   const width = xScale.range()[1];
-  const height = 30;
+  const height = 20;
   const scale = xScale;
 
   function setFilterBounds(inputs) {
@@ -117,7 +203,7 @@ const BrushableHistogram = ({ data, xScale, setMinimum, setMaximum }) => {
   );
 };
 
-const TimeFilter = ({ data, xScale, columnDef, onFilterChanged }) => {
+export const TimeFilter = ({ data, xScale, columnDef, onFilterChanged }) => {
   const [minimum, setMinimum] = useState(d3.min(data));
   const [maximum, setMaximum] = useState(d3.max(data));
   const debouncedMin = useDebounce(minimum, 100);
@@ -133,8 +219,6 @@ const TimeFilter = ({ data, xScale, columnDef, onFilterChanged }) => {
       setMaximum={setMaximum}></BrushableHistogram>
   );
 };
-export default TimeFilter;
-
 function useDebounce(value, delay) {
   // State and setters for debounced value
   const [debouncedValue, setDebouncedValue] = useState(value);

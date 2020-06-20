@@ -13,6 +13,7 @@ const TagWrapper = ({ tags, onTagChange, isMaster }) => {
   }
   return (
     <ReactTags
+      autofocus={false}
       tags={tags}
       allowNew={true}
       handleDelete={handleDeleteTag}

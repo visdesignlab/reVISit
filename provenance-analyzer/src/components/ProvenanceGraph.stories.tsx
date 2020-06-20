@@ -28,7 +28,7 @@ const valuesObj = {
 };
 const defaultValue = "Task 1";
 
-const optionsObj = {
+const optionsObj: any = {
   display: "multi-select",
 };
 

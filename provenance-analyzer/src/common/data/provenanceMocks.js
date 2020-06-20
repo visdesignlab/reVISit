@@ -698,7 +698,7 @@ allTaskData.forEach(taskData => {
     trimmedProvGraph["startTime"] = (startTime - startTime) / (totalTime); // 0
     trimmedProvGraph["stopTime"] = (stopTime - startTime) / (totalTime); // 1
     trimmedProvGraph["totalTime"] = totalTime;
-    trimmedProvGraph["correct"] = Math.random() > .1; //90% accuracy
+    trimmedProvGraph["correct"] = Math.random() > .4 ? 'true' : 'false'; //60% accuracy, true and false string are used to keep data inline with categorical variables.
 
     return trimmedProvGraph;
   }

@@ -4,6 +4,7 @@ import * as d3 from "d3";
 import { relativeProvenanceData } from "../common/data/provenanceMocks.js";
 import ProvenanceGraph from "./ProvenanceGraph";
 import { start } from "repl";
+import _ from "lodash";
 import {
   withKnobs,
   text,
@@ -11,6 +12,7 @@ import {
   number,
   optionsKnob as options,
 } from "@storybook/addon-knobs";
+
 import MaterialTableWrapper from "./ProvenanceTable";
 import { Options } from "@material-ui/core";
 
@@ -41,8 +43,11 @@ stories.add("small", () => {
     let matches = value.match(/\d+/g);
     return parseInt(matches[0]) - 1;
   });
-  const newData = relativeProvenanceData[indexToAdd[0]].map((dataArr) => {
+  let newData = relativeProvenanceData[indexToAdd[0]].map((dataArr) => {
     return { provGraph: dataArr };
   });
+  for (let i = 0; i < 0; i++) {
+    newData = newData.concat(_.cloneDeep(newData));
+  }
   return <MaterialTableWrapper provenanceData={newData} />;
 });
