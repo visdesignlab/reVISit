@@ -7,16 +7,10 @@ import _ from "lodash";
 import { relativeProvenanceData } from "./common/data/provenanceMocks.js";
 import MaterialTableWrapper from "./components/ProvenanceTable";
 import { TransitionGroup, CSSTransition } from "react-transition-group";
-
-const Table = ({ location }) => {
-  let newData = relativeProvenanceData[0].map((dataArr) => {
-    return { provGraph: dataArr };
-  });
-  for (let i = 0; i < 2; i++) {
-    newData = newData.concat(_.cloneDeep(newData));
-  }
-  return <MaterialTableWrapper provenanceData={newData} />;
-};
+import Upload from "./pages/Upload";
+import Overview from "./pages/Overview";
+import Export from "./pages/Export";
+import Table from "./pages/Table";
 
 const Main = ({ location }) => {
   return (
@@ -25,7 +19,10 @@ const Main = ({ location }) => {
         <CSSTransition key={location.key} timeout={500} classNames="fade">
           <section className="route-section">
             <Switch location={location}>
+              <Route path="/Upload" component={Upload}></Route>
+              <Route path="/Overview" component={Overview}></Route>
               <Route path="/Table" component={Table}></Route>
+              <Route path="/Export" component={Export}></Route>
             </Switch>
           </section>
         </CSSTransition>

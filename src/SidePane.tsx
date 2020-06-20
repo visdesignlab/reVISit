@@ -41,7 +41,7 @@ const SidePane = ({}) => {
       <Divider />
       <List>
         <ListItem component={HomeLink}>
-          <img className={styles.logo} src={"/Experi.png"}></img>
+          <img className={styles.logo} src={"./Experi.png"}></img>
         </ListItem>
         {[
           { text: "Upload", link: Upload, icon: <CloudUpload></CloudUpload> },
