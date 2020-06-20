@@ -1,4 +1,5 @@
 import pointEqual from "../pointEqual.js";
+import {epsilon} from "../math.js";
 
 function Intersection(point, points, other, entry) {
   this.x = point;
@@ -22,14 +23,15 @@ export default function(segments, compareIntersection, startInside, interpolate,
     if ((n = segment.length - 1) <= 0) return;
     var n, p0 = segment[0], p1 = segment[n], x;
 
-    // If the first and last points of a segment are coincident, then treat as a
-    // closed ring. TODO if all rings are closed, then the winding order of the
-    // exterior ring should be checked.
     if (pointEqual(p0, p1)) {
-      stream.lineStart();
-      for (i = 0; i < n; ++i) stream.point((p0 = segment[i])[0], p0[1]);
-      stream.lineEnd();
-      return;
+      if (!p0[2] && !p1[2]) {
+        stream.lineStart();
+        for (i = 0; i < n; ++i) stream.point((p0 = segment[i])[0], p0[1]);
+        stream.lineEnd();
+        return;
+      }
+      // handle degenerate cases by moving the point
+      p1[0] += 2 * epsilon;
     }
 
     subject.push(x = new Intersection(p0, segment, null, true));

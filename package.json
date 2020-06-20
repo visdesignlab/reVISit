@@ -23,13 +23,15 @@
     "prop-types": "^15.7.2",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
+    "react-router-dom": "^5.2.0",
     "react-scripts": "3.4.1",
     "react-tag-autocomplete": "^5.13.1",
     "react-tagging": "0.0.8",
     "react-tagsinput": "^3.19.0",
     "react-transition-group": "^4.4.1",
     "styled-components": "^5.1.1",
-    "typescript": "^3.7.5"
+    "typescript": "^3.7.5",
+    "webpack": "^4.42.0"
   },
   "scripts": {
     "start": "react-scripts start",
