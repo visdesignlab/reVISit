@@ -1,7 +1,7 @@
 import React from "react";
 
 const Upload = () => {
-  return <div></div>;
+  return <div>This Is upload</div>;
 };
 
 export default Upload;

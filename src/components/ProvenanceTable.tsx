@@ -97,6 +97,7 @@ const MaterialTableWrapper = ({ provenanceData }) => {
     width: 250,
     cellStyle: {
       maxWidth: 250,
+      padding: "4px 16px",
     },
     customSort: (a, b) => a.provGraph.totalTime - b.provGraph.totalTime,
     render: renderProvenanceTime,
@@ -175,6 +176,7 @@ const MaterialTableWrapper = ({ provenanceData }) => {
     width: correctWidth + 10,
     cellStyle: {
       maxWidth: correctWidth + 10,
+      padding: "4px 16px",
     },
     customSort: (a, b) => a.provGraph.correct - b.provGraph.correct,
     render: renderProvenanceAccuracy,
@@ -206,6 +208,7 @@ const MaterialTableWrapper = ({ provenanceData }) => {
     width: 500,
     cellStyle: {
       maxWidth: 500,
+      padding: "4px 16px",
     },
     customSort: (a, b) => a.provGraph.nodes.length - b.provGraph.nodes.length,
     render: renderProvenanceNodes,
@@ -233,6 +236,9 @@ const MaterialTableWrapper = ({ provenanceData }) => {
   const [notesColumn] = React.useState({
     title: "Notes",
     field: "None",
+    cellStyle: {
+      padding: "4px 16px",
+    },
     width: 500,
     customSort: (a, b) => b.tableData.tags.length - a.tableData.tags.length,
     filterComponent: () => <div></div>,
@@ -360,7 +366,6 @@ const MaterialTableWrapper = ({ provenanceData }) => {
         paging: false,
         filtering: true,
         maxBodyHeight: "93vh",
-        emptyRowsWhenPaging: true,
       }}
     />
   );

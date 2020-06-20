@@ -1,6 +1,6 @@
 import React from "react";
-import { relativeProvenanceData } from "./common/data/provenanceMocks.js";
-import MaterialTableWrapper from "./components/ProvenanceTable";
+import { relativeProvenanceData } from "../common/data/provenanceMocks.js";
+import MaterialTableWrapper from "../components/ProvenanceTable";
 
 const Table = ({ location }) => {
   let newData = relativeProvenanceData[0].map((dataArr) => {
