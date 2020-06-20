@@ -14,34 +14,48 @@ import CloudUpload from "@material-ui/icons/CloudUpload";
 import TableChart from "@material-ui/icons/TableChart";
 import GetApp from "@material-ui/icons/GetApp";
 import BarChart from "@material-ui/icons/BarChart";
-import { Link as RouterLink } from "react-router-dom";
+import { Link, LinkProps } from "react-router-dom";
 const SidePane = ({}) => {
+  const HomeLink = React.forwardRef<
+    HTMLAnchorElement,
+    Omit<LinkProps, "innerRef" | "to">
+  >((props, ref) => <Link innerRef={ref as any} to="/Home" {...props} />);
+  const Upload = React.forwardRef<
+    HTMLAnchorElement,
+    Omit<LinkProps, "innerRef" | "to">
+  >((props, ref) => <Link innerRef={ref as any} to="/Upload" {...props} />);
+  const Overview = React.forwardRef<
+    HTMLAnchorElement,
+    Omit<LinkProps, "innerRef" | "to">
+  >((props, ref) => <Link innerRef={ref as any} to="/Overview" {...props} />);
+  const Table = React.forwardRef<
+    HTMLAnchorElement,
+    Omit<LinkProps, "innerRef" | "to">
+  >((props, ref) => <Link innerRef={ref as any} to="/Table" {...props} />);
+  const Export = React.forwardRef<
+    HTMLAnchorElement,
+    Omit<LinkProps, "innerRef" | "to">
+  >((props, ref) => <Link innerRef={ref as any} to="/Export" {...props} />);
   return (
     <Drawer variant="permanent" anchor="left">
       <Divider />
       <List>
-        <ListItem>
+        <ListItem component={HomeLink}>
           <img className={styles.logo} src={"/Experi.png"}></img>
         </ListItem>
         {[
-          { text: "Upload", to: "Upload", icon: <CloudUpload></CloudUpload> },
-          { text: "Overview", to: "Overview", icon: <BarChart></BarChart> },
+          { text: "Upload", link: Upload, icon: <CloudUpload></CloudUpload> },
+          { text: "Overview", link: Overview, icon: <BarChart></BarChart> },
           {
             text: "Participant Table",
-            to: "Table",
+            link: Table,
             icon: <TableChart></TableChart>,
           },
-          { text: "Export", to: "Export", icon: <GetApp></GetApp> },
+          { text: "Export", link: Export, icon: <GetApp></GetApp> },
         ].map((item, index) => {
           return (
             <React.Fragment>
-              {/*
-            //@ts-ignore*/}
-              <ListItem
-                button
-                ContainerComponent={() => (
-                  <RouterLink to={item.to}></RouterLink>
-                )}>
+              <ListItem button component={item.link}>
                 <ListItemIcon>{item.icon}</ListItemIcon>
                 <ListItemText primary={item.text} />
               </ListItem>
