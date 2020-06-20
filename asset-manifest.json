@@ -1,22 +1,22 @@
 {
   "files": {
-    "main.css": "/provenance-data-analysis-frontend/static/css/main.76b67573.chunk.css",
-    "main.js": "/provenance-data-analysis-frontend/static/js/main.265ca226.chunk.js",
-    "main.js.map": "/provenance-data-analysis-frontend/static/js/main.265ca226.chunk.js.map",
-    "runtime-main.js": "/provenance-data-analysis-frontend/static/js/runtime-main.8e1c6390.js",
-    "runtime-main.js.map": "/provenance-data-analysis-frontend/static/js/runtime-main.8e1c6390.js.map",
-    "static/js/2.dc63802a.chunk.js": "/provenance-data-analysis-frontend/static/js/2.dc63802a.chunk.js",
-    "static/js/2.dc63802a.chunk.js.map": "/provenance-data-analysis-frontend/static/js/2.dc63802a.chunk.js.map",
-    "index.html": "/provenance-data-analysis-frontend/index.html",
-    "precache-manifest.5a5282f3231bbf40c5923abaf5d5402f.js": "/provenance-data-analysis-frontend/precache-manifest.5a5282f3231bbf40c5923abaf5d5402f.js",
-    "service-worker.js": "/provenance-data-analysis-frontend/service-worker.js",
-    "static/css/main.76b67573.chunk.css.map": "/provenance-data-analysis-frontend/static/css/main.76b67573.chunk.css.map",
-    "static/js/2.dc63802a.chunk.js.LICENSE.txt": "/provenance-data-analysis-frontend/static/js/2.dc63802a.chunk.js.LICENSE.txt"
+    "main.css": "/ExperiVis/static/css/main.76b67573.chunk.css",
+    "main.js": "/ExperiVis/static/js/main.816ce79f.chunk.js",
+    "main.js.map": "/ExperiVis/static/js/main.816ce79f.chunk.js.map",
+    "runtime-main.js": "/ExperiVis/static/js/runtime-main.54e9e864.js",
+    "runtime-main.js.map": "/ExperiVis/static/js/runtime-main.54e9e864.js.map",
+    "static/js/2.0a1369d5.chunk.js": "/ExperiVis/static/js/2.0a1369d5.chunk.js",
+    "static/js/2.0a1369d5.chunk.js.map": "/ExperiVis/static/js/2.0a1369d5.chunk.js.map",
+    "index.html": "/ExperiVis/index.html",
+    "precache-manifest.655f6c06359efe1648b1a94e4f40afd6.js": "/ExperiVis/precache-manifest.655f6c06359efe1648b1a94e4f40afd6.js",
+    "service-worker.js": "/ExperiVis/service-worker.js",
+    "static/css/main.76b67573.chunk.css.map": "/ExperiVis/static/css/main.76b67573.chunk.css.map",
+    "static/js/2.0a1369d5.chunk.js.LICENSE.txt": "/ExperiVis/static/js/2.0a1369d5.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
-    "static/js/runtime-main.8e1c6390.js",
-    "static/js/2.dc63802a.chunk.js",
+    "static/js/runtime-main.54e9e864.js",
+    "static/js/2.0a1369d5.chunk.js",
     "static/css/main.76b67573.chunk.css",
-    "static/js/main.265ca226.chunk.js"
+    "static/js/main.816ce79f.chunk.js"
   ]
 }
