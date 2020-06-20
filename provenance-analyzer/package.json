@@ -27,6 +27,8 @@
     "react-tag-autocomplete": "^5.13.1",
     "react-tagging": "0.0.8",
     "react-tagsinput": "^3.19.0",
+    "react-transition-group": "^4.4.1",
+    "styled-components": "^5.1.1",
     "typescript": "^3.7.5"
   },
   "scripts": {

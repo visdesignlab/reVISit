@@ -1,16 +1,32 @@
 .container {
   display: grid;
-  grid-template-columns: 125px 1150px;
+  grid-template-columns: 207px 1150px;
+  grid-template-rows: 32px auto;
 }
 
+.header {
+  grid-row: 1;
+  width: 100%;
+}
+
+.logo {
+  grid-column: 1;
+  object-fit: contain;
+  height: 100%;
+  width: 75%;
+}
 .sidePane {
   grid-column: 1;
-  height: 100vh;
+  top: 32px;
+  grid-row: 2;
+  height: 100%;
   background-color: black;
 }
 
 .main {
   grid-column: 2;
+  grid-row: 2;
+
   background-color: whitesmoke;
   height: 100vh;
 }
