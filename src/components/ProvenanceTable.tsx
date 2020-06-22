@@ -5,6 +5,7 @@ import MaterialTable, {
   MTableToolbar,
   MTableAction,
   MTableActions,
+  MTableFilterRow,
 } from "material-table";
 import ProvenanceGraph from "./ProvenanceGraph";
 import ProvenanceIsolatedNodes from "./ProvenanceIsolatedNodes";
@@ -289,6 +290,16 @@ const MaterialTableWrapper = ({ provenanceData }) => {
             return <ActionComponent {...props}></ActionComponent>;
           }
           return <MTableAction {...props}></MTableAction>;
+        },
+        FilterRow: (props) => {
+          let styles = {
+            "&:nth-child(2)": {
+              position: "sticky",
+              top: "64px",
+              background: "white",
+            },
+          };
+          return <MTableFilterRow styles={styles} {...props}></MTableFilterRow>;
         },
       }}
       columns={[timeColumn, correct, eventsCol, notesColumn]}
