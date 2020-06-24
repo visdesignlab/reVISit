@@ -1,16 +1,15 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import 'antd/dist/antd.css';
-import { Tree, Input } from 'antd';
+import React from "react";
+import ReactDOM from "react-dom";
+import "antd/dist/antd.css";
+import { Tree, Input } from "antd";
 
 class EventLayers extends React.Component {
-
     constructor(props) {
         super(props);
-        console.log('props are', props)
+        console.log("props are", props);
         this.state = {
             gData: props.gData,
-            expandedKeys: ['0-0'],
+            expandedKeys: ["0-0"],
         };
     }
 
@@ -19,7 +18,7 @@ class EventLayers extends React.Component {
 
     // };
 
-    onDragEnter = info => {
+    onDragEnter = (info) => {
         console.log(info);
         // expandedKeys 需要受控时设置
         // this.setState({
@@ -27,12 +26,13 @@ class EventLayers extends React.Component {
         // });
     };
 
-    onDrop = info => {
+    onDrop = (info) => {
         console.log(info);
         const dropKey = info.node.props.eventKey;
         const dragKey = info.dragNode.props.eventKey;
-        const dropPos = info.node.props.pos.split('-');
-        const dropPosition = info.dropPosition - Number(dropPos[dropPos.length - 1]);
+        const dropPos = info.node.props.pos.split("-");
+        const dropPosition =
+            info.dropPosition - Number(dropPos[dropPos.length - 1]);
 
         const loop = (data, key, callback) => {
             for (let i = 0; i < data.length; i++) {
@@ -55,7 +55,7 @@ class EventLayers extends React.Component {
 
         if (!info.dropToGap) {
             // Drop on the content
-            loop(data, dropKey, item => {
+            loop(data, dropKey, (item) => {
                 item.children = item.children || [];
                 // where to insert 示例添加到尾部，可以是随意位置
                 item.children.push(dragObj);
@@ -65,7 +65,7 @@ class EventLayers extends React.Component {
             info.node.props.expanded && // Is expanded
             dropPosition === 1 // On the bottom gap
         ) {
-            loop(data, dropKey, item => {
+            loop(data, dropKey, (item) => {
                 item.children = item.children || [];
                 // where to insert 示例添加到头部，可以是随意位置
                 item.children.unshift(dragObj);
@@ -93,7 +93,7 @@ class EventLayers extends React.Component {
         return (
             <Tree
                 // checkable
-                showIcon
+                // showIcon
                 // showLine
                 className="draggable-tree hide-file-icon"
                 defaultExpandedKeys={this.state.expandedKeys}
@@ -102,11 +102,10 @@ class EventLayers extends React.Component {
                 onDragEnter={this.onDragEnter}
                 onDrop={this.onDrop}
                 treeData={this.state.gData}
-
+                TreeNode={() => "value"}
             />
         );
     }
 }
-
 
 export default EventLayers;
