@@ -3,6 +3,7 @@ import { MemoryRouter, Link as RouterLink } from "react-router-dom";
 import styles from "./App.module.css";
 import Main from "./Main";
 import SidePane from "./SidePane";
+import 'antd/dist/antd.css';
 
 function App() {
   return (

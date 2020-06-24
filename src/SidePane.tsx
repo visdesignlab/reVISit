@@ -15,7 +15,7 @@ import TableChart from "@material-ui/icons/TableChart";
 import GetApp from "@material-ui/icons/GetApp";
 import BarChart from "@material-ui/icons/BarChart";
 import { Link, LinkProps } from "react-router-dom";
-const SidePane = ({}) => {
+const SidePane = ({ }) => {
   const HomeLink = React.forwardRef<
     HTMLAnchorElement,
     Omit<LinkProps, "innerRef" | "to">
@@ -54,7 +54,8 @@ const SidePane = ({}) => {
           { text: "Export", link: Export, icon: <GetApp></GetApp> },
         ].map((item, index) => {
           return (
-            <React.Fragment>
+            //added key={index} to get rid of unique key error
+            <React.Fragment key={index}>
               <ListItem button component={item.link}>
                 <ListItemIcon>{item.icon}</ListItemIcon>
                 <ListItemText primary={item.text} />
