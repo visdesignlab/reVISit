@@ -36,8 +36,7 @@
     "react-transition-group": "^4.4.1",
     "styled-components": "^5.1.1",
     "ts-loader": "^7.0.5",
-    "typescript": "^3.7.5",
-    "webpack": "^4.42.0"
+    "typescript": "^3.7.5"
   },
   "scripts": {
     "start": "react-scripts start",
