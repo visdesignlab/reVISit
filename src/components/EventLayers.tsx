@@ -1,24 +1,13 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import "antd/dist/antd.css";
-import { Tree, Input } from "antd";
+import { Tree } from "antd";
 
-class EventLayers extends React.Component {
-    constructor(props) {
-        super(props);
-        console.log("props are", props);
-        this.state = {
-            gData: props.gData,
-            expandedKeys: ["0-0"],
-        };
-    }
 
-    // state = {
-    //     gData,
+const EventLayers = (props) => {
 
-    // };
-
-    onDragEnter = (info) => {
+    console.log('data in EventLayers is ', props.data)
+    let onDragEnter = (info) => {
         console.log(info);
         // expandedKeys 需要受控时设置
         // this.setState({
@@ -26,7 +15,7 @@ class EventLayers extends React.Component {
         // });
     };
 
-    onDrop = (info) => {
+    let onDrop = (info) => {
         console.log(info);
         const dropKey = info.node.props.eventKey;
         const dragKey = info.dragNode.props.eventKey;
@@ -44,7 +33,7 @@ class EventLayers extends React.Component {
                 }
             }
         };
-        const data = [...this.state.gData];
+        const data = [...props.data];
 
         // Find dragObject
         let dragObj;
@@ -84,28 +73,25 @@ class EventLayers extends React.Component {
             }
         }
 
-        this.setState({
-            gData: data,
-        });
+        props.onChange(data)
     };
 
-    render() {
-        return (
-            <Tree
-                // checkable
-                // showIcon
-                // showLine
-                className="draggable-tree hide-file-icon"
-                defaultExpandedKeys={this.state.expandedKeys}
-                draggable
-                blockNode
-                onDragEnter={this.onDragEnter}
-                onDrop={this.onDrop}
-                treeData={this.state.gData}
-                TreeNode={() => "value"}
-            />
-        );
-    }
+
+    return (
+        <Tree
+            // checkable
+            // showIcon
+            // showLine
+            className="draggable-tree hide-file-icon"
+            // defaultExpandedKeys={this.state.expandedKeys}
+            draggable
+            blockNode
+            onDragEnter={onDragEnter}
+            onDrop={onDrop}
+            treeData={props.data}
+            TreeNode={() => "value"}
+        />
+    );
 }
 
 export default EventLayers;

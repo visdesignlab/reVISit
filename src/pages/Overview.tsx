@@ -47,6 +47,8 @@ const ItemNameWrapper = ({ itemName, onItemNameChange }) => {
   );
 };
 const Overview = ({ location }) => {
+
+
   let newData = relativeProvenanceData[0].map((dataArr) => {
     return { provGraph: dataArr };
   });
@@ -92,24 +94,40 @@ const Overview = ({ location }) => {
     };
   });
 
+  const [data, setData] = React.useState(allEvents);
+
+  function newEvent(value) {
+    {
+      console.log('new Event is', value)
+      let newEvent = {
+        title: () => (
+          <ItemNameWrapper
+            itemName={value}
+            onItemNameChange={(name) => console.log("to change", name)}
+          />
+        ),
+
+        key: value,
+        children: []
+      };
+      const newData = [...data, newEvent]
+      // data.push(newEvent)
+      setData(newData);
+      // console.log('new data is ', data)
+    }
+  }
+
+
   return <div style={{ padding: "15px" }}>
     <Search
       placeholder="Create Event Type"
       enterButton={<PlusSquareOutlined />}
       size="large"
-      onSearch={value => allEvents.push({
-        title: () => {
-          return <div className={"bonkers"}>{value}</div>;
-        },
-        key: value,
-        icon: <EyeTwoTone />,
-        children: [],
-      })
-      }
+      onSearch={newEvent}
       style={{ width: 300 }}
     />
-    <div style={{ 'padding-top': "15px" }}>
-      <EventLayers gData={allEvents} />
+    <div style={{ 'paddingTop': "15px" }}>
+      <EventLayers data={data} onChange={setData} />
     </div>
   </div >;
 };
