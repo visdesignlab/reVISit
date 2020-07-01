@@ -1,53 +1,24 @@
 import React from "react";
 import { Input } from 'antd';
 import { relativeProvenanceData } from "../common/data/provenanceMocks.js";
-import EventLayers from "../components/EventLayers";
+import EventAccordion from "../components/EventAccordion";
+import EcoIcon from '@material-ui/icons/Eco';
 import {
   EyeInvisibleTwoTone,
   EyeTwoTone,
   MenuOutlined,
   AppstoreOutlined,
   UserAddOutlined,
-  PlusSquareOutlined
+  PlusSquareOutlined,
+  FileOutlined,
+  FileAddOutlined
 
 } from "@ant-design/icons";
-import TextField from "@material-ui/core/TextField";
-import { getAllJSDocTags } from "typescript";
 
 
 const { Search } = Input;
-const ItemNameWrapper = ({ itemName, onItemNameChange }) => {
-  const [doubleClicked, setDoubleClicked] = React.useState(false);
-  const [currentName, setCurrentName] = React.useState(itemName);
-  return (
-    <div onDoubleClick={() => setDoubleClicked(true)}>
-      {doubleClicked ? (
-        <div>
-          <TextField
-            id={itemName}
-            label={itemName}
-            onChange={(ev) => {
-              const newName = ev.target.value;
-              // do checks here to verify name is unique?
-              setCurrentName(newName);
-            }}
-            onKeyPress={(ev) => {
-              console.log(`Pressed keyCode ${ev.key}`);
-              if (ev.key === "Enter") {
-                onItemNameChange(currentName);
-                setDoubleClicked(false);
-              }
-            }}
-          />
-        </div>
-      ) : (
-          <div>{currentName}  <EyeTwoTone />  <AppstoreOutlined /></div>
-        )}
-    </div>
-  );
-};
-const Overview = ({ location }) => {
 
+const Overview = ({ location }) => {
 
   let newData = relativeProvenanceData[0].map((dataArr) => {
     return { provGraph: dataArr };
@@ -66,28 +37,29 @@ const Overview = ({ location }) => {
     })
   );
 
-  function handleDataUpdate(key, newValue) {
-    // in here, put the code to reorganize and set the data.
-  }
-
   allEvents = [...new Set(allEvents)].map((d) => {
     return {
-      title: () => (
-        <ItemNameWrapper
-          itemName={d}
-          onItemNameChange={(name) => console.log("to change", name)}
-        />
-      ),
-
+      // title: () => (
+      //   <ItemNameWrapper
+      //     itemName={d}
+      //     itemIcon={<EcoIcon />}
+      //     onItemNameChange={(name) => console.log("to change", name)}
+      //   />
+      // ),
+      label: d,
       key: d,
-      // icon: <EyeTwoTone />,
+      type: 'nativeEvent',
+      count: Math.random(),
       children: ["Alex", "Lane", "Jeff", "Noeska"].map((t) => {
         return {
           title: () => {
             return <div className={"bonkers"}>{d + "_" + t}</div>;
           },
           key: d + "_" + t,
+          label: t,
           icon: <EyeTwoTone />,
+          count: Math.random(),
+          type: 'nativeEvent',
           children: [],
         };
       }),
@@ -100,23 +72,22 @@ const Overview = ({ location }) => {
     {
       console.log('new Event is', value)
       let newEvent = {
-        title: () => (
-          <ItemNameWrapper
-            itemName={value}
-            onItemNameChange={(name) => console.log("to change", name)}
-          />
-        ),
-
+        // title: () => (
+        //   <ItemNameWrapper
+        //     itemName={value}
+        //     itemIcon={<FileAddOutlined />}
+        //     onItemNameChange={handleDataUpdate}
+        //   />
+        // ),
+        label: value,
+        type: 'customEvent',
         key: value,
         children: []
       };
-      const newData = [...data, newEvent]
-      // data.push(newEvent)
+      const newData = [newEvent, ...data]
       setData(newData);
-      // console.log('new data is ', data)
     }
   }
-
 
   return <div style={{ padding: "15px" }}>
     <Search
@@ -127,7 +98,7 @@ const Overview = ({ location }) => {
       style={{ width: 300 }}
     />
     <div style={{ 'paddingTop': "15px" }}>
-      <EventLayers data={data} onChange={setData} />
+      <EventAccordion data={data} onChange={setData} />
     </div>
   </div >;
 };

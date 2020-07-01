@@ -2,12 +2,77 @@ import React from "react";
 import ReactDOM from "react-dom";
 import "antd/dist/antd.css";
 import { Tree } from "antd";
+import TextField from "@material-ui/core/TextField";
+import { getAllJSDocTags } from "typescript";
+import EcoIcon from '@material-ui/icons/Eco';
+import {
+    EyeInvisibleTwoTone,
+    EyeTwoTone,
+    MenuOutlined,
+    AppstoreOutlined,
+    UserAddOutlined,
+    PlusSquareOutlined,
+    FileOutlined,
+    FileAddOutlined,
+    MoreOutlined
+
+} from "@ant-design/icons";
+
+
+const ItemNameWrapper = ({ itemName, itemIcon, onItemNameChange }) => {
+    const [doubleClicked, setDoubleClicked] = React.useState(false);
+    const [currentName, setCurrentName] = React.useState(itemName);
+    return (
+        <div onDoubleClick={() => setDoubleClicked(true)}>
+            {doubleClicked ? (
+                <div>
+                    <TextField
+                        id={itemName}
+                        label={itemName}
+                        onChange={(ev) => {
+                            const newName = ev.target.value;
+                            // do checks here to verify name is unique?
+                            setCurrentName(newName);
+                        }}
+                        onKeyPress={(ev) => {
+                            // console.log(`Pressed keyCode ${ev.key}`);
+                            if (ev.key === "Enter") {
+                                onItemNameChange(itemName, currentName);
+                                setDoubleClicked(false);
+                            }
+                        }}
+                    />
+                </div>
+            ) : (
+                    // <div>{itemIcon} {currentName}  <EyeTwoTone /> <MoreOutlined /> </div>
+                    <div> {currentName}  <EyeTwoTone /> <MoreOutlined /> </div>
+
+                )}
+        </div>
+    );
+};
+
 
 
 const EventLayers = (props) => {
 
-    console.log('data in EventLayers is ', props.data)
-    let onDragEnter = (info) => {
+    console.log(props.data)
+
+    function handleNameChange(key, newValue) {
+
+        //search for data that has the key, and change label to newValue;
+        let d = [...props.data];
+        d.map(dd => {
+            if (dd.key == key) {
+                dd.label = `${newValue} [${dd.key}]`
+            }
+            return dd
+        })
+
+        props.onChange(d)
+    }
+
+    function onDragEnter(info) {
         console.log(info);
         // expandedKeys 需要受控时设置
         // this.setState({
@@ -15,7 +80,7 @@ const EventLayers = (props) => {
         // });
     };
 
-    let onDrop = (info) => {
+    function onDrop(info) {
         console.log(info);
         const dropKey = info.node.props.eventKey;
         const dragKey = info.dragNode.props.eventKey;
@@ -76,6 +141,20 @@ const EventLayers = (props) => {
         props.onChange(data)
     };
 
+    //create treeData
+    let treeData = props.data.map(d => {
+        d.title = () => (
+            <ItemNameWrapper
+                itemName={d.label}
+                itemIcon={<EcoIcon />}
+                onItemNameChange={handleNameChange}
+            />
+        )
+        return d
+    })
+
+    console.log(props.data.map(e => e.title()))
+
 
     return (
         <Tree
@@ -88,7 +167,7 @@ const EventLayers = (props) => {
             blockNode
             onDragEnter={onDragEnter}
             onDrop={onDrop}
-            treeData={props.data}
+            treeData={treeData}
             TreeNode={() => "value"}
         />
     );
