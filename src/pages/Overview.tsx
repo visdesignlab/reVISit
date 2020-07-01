@@ -4,15 +4,7 @@ import { relativeProvenanceData } from "../common/data/provenanceMocks.js";
 import EventAccordion from "../components/EventAccordion";
 import EcoIcon from '@material-ui/icons/Eco';
 import {
-  EyeInvisibleTwoTone,
-  EyeTwoTone,
-  MenuOutlined,
-  AppstoreOutlined,
-  UserAddOutlined,
-  PlusSquareOutlined,
-  FileOutlined,
-  FileAddOutlined
-
+  PlusSquareOutlined
 } from "@ant-design/icons";
 
 
@@ -50,6 +42,8 @@ const Overview = ({ location }) => {
       key: d,
       type: 'nativeEvent',
       count: Math.random(),
+      heatMap: [...Array(30).keys()].map(d => ({ freq: Math.round(Math.random() * 50) })),
+
       children: ["Alex", "Lane", "Jeff", "Noeska"].map((t) => {
         return {
           title: () => {
@@ -57,9 +51,9 @@ const Overview = ({ location }) => {
           },
           key: d + "_" + t,
           label: t,
-          icon: <EyeTwoTone />,
           count: Math.random(),
-          type: 'nativeEvent',
+          type: 'nativeEvent_filtered',
+          heatMap: [...Array(30).keys()].map(d => ({ freq: Math.round(Math.random() * 50) })),
           children: [],
         };
       }),
@@ -67,21 +61,18 @@ const Overview = ({ location }) => {
   });
 
   const [data, setData] = React.useState(allEvents);
+  const [search, setSearch] = React.useState('');
 
   function newEvent(value) {
     {
+      setSearch('')
       console.log('new Event is', value)
       let newEvent = {
-        // title: () => (
-        //   <ItemNameWrapper
-        //     itemName={value}
-        //     itemIcon={<FileAddOutlined />}
-        //     onItemNameChange={handleDataUpdate}
-        //   />
-        // ),
         label: value,
+        count: 0,
         type: 'customEvent',
         key: value,
+        heatMap: [...Array(30).keys()].map(d => ({ freq: Math.round(Math.random() * 50) })),
         children: []
       };
       const newData = [newEvent, ...data]
@@ -95,7 +86,9 @@ const Overview = ({ location }) => {
       enterButton={<PlusSquareOutlined />}
       size="large"
       onSearch={newEvent}
-      style={{ width: 300 }}
+      // onChange={event => setSearch(event.target.value)}
+      style={{ width: 672 }}
+    // value={search}
     />
     <div style={{ 'paddingTop': "15px" }}>
       <EventAccordion data={data} onChange={setData} />
