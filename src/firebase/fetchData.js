@@ -250,7 +250,7 @@ async function fetchResults() {
 async function fetchDataForTaskId(taskId = "task01") {
   let ref;
 
-  ref = db.collection("provenance").orderBy("initialSetup").limit(300);
+  ref = db.collection("provenance").limit(300);
   console.log(ref);
 
   ref.get().then((snapshot) => {
