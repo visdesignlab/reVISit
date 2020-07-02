@@ -34,6 +34,12 @@ import eventMapping from "./eventMapping";
 import TagStyles from "./tagstyles.module.css";
 import TagWrapper from "./reactTagWrapper";
 import { TimeFilter, CategoricalFilter } from "./TableFilters";
+import { fireFetch } from "../firebase/fetchData";
+
+const trimmedPromise = fireFetch("provenance");
+trimmedPromise.then((promise) => {
+  console.log(promise);
+});
 
 const tableIcons: Icons = {
   Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
