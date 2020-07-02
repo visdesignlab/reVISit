@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 24.1.2, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="Layer_1" class="MuiSvgIcon-root" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 24 24" style="enable-background:new 0 0 24 24;" xml:space="preserve">
+<style type="text/css">
+	.st0{display:none;}
+	.st1{display:inline;}
+	.st2{fill:#F2F28F;}
+	.st3{fill:none;stroke:#000000;stroke-width:0.5;stroke-miterlimit:10;}
+	.st4{fill:none;stroke:#000000;stroke-width:0.5;stroke-miterlimit:10;stroke-dasharray:0.9462,0.9462;}
+	.st5{fill:none;stroke:#000000;stroke-width:0.5;stroke-miterlimit:10;stroke-dasharray:1.0434,1.0434;}
+	.st6{fill:none;stroke:#393939;stroke-miterlimit:10;}
+	.st7{stroke:#FFFFFF;stroke-width:0.2;stroke-miterlimit:10;}
+</style>
+<g id="Layer_1_1_" focusable="false" class="st0">
+	<path class="st1" d="M10,20v-6h4v6h5v-8h3L12,3L2,12h3v8H10z"/>
+</g>
+<g>
+	<rect x="5.1" y="7.4" class="st2" width="13.3" height="4.1"/>
+	<g>
+		<polyline class="st3" points="18.4,11 18.4,11.5 17.9,11.5 		"/>
+		<line class="st4" x1="16.9" y1="11.5" x2="6" y2="11.5"/>
+		<polyline class="st3" points="5.6,11.5 5.1,11.5 5.1,11 		"/>
+		<line class="st5" x1="5.1" y1="9.9" x2="5.1" y2="8.4"/>
+		<polyline class="st3" points="5.1,7.9 5.1,7.4 5.6,7.4 		"/>
+		<line class="st4" x1="6.5" y1="7.4" x2="17.4" y2="7.4"/>
+		<polyline class="st3" points="17.9,7.4 18.4,7.4 18.4,7.9 		"/>
+		<line class="st5" x1="18.4" y1="8.9" x2="18.4" y2="10.5"/>
+	</g>
+</g>
+<rect x="5.1" y="4.3" class="st6" width="13.3" height="12.8"/>
+<path class="st7" d="M13.4,9.7l6,5.6l-2.9,0.3l1.6,3.7l-1.1,0.5L15.5,16L13.4,18L13.4,9.7"/>
+</svg>

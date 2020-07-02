@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 24.1.2, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" class="MuiSvgIcon-root" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 24 24" style="enable-background:new 0 0 24 24;" xml:space="preserve">
+<style type="text/css">
+	.st0{display:none;}
+	.st1{display:inline;}
+	.st2{fill:#FFFFFF;stroke:#393939;stroke-miterlimit:10;}
+	.st3{stroke:#FFFFFF;stroke-width:0.2;stroke-miterlimit:10;}
+</style>
+<g id="Layer_1" focusable="false" class="st0">
+	<path class="st1" d="M10,20v-6h4v6h5v-8h3L12,3L2,12h3v8H10z"/>
+</g>
+<g id="Layer_2">
+	<rect x="5.5" y="4.6" class="st2" width="13.3" height="12.8"/>
+	<path class="st3" d="M13.9,10l6,5.6L17,15.9l1.6,3.7l-1.1,0.5L16,16.3l-2.1,1.9L13.9,10"/>
+</g>
+</svg>
