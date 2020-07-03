@@ -1,52 +1,17 @@
 import React from "react";
 import { Input } from 'antd';
 import { relativeProvenanceData } from "../common/data/provenanceMocks.js";
-import EventLayers from "../components/EventLayers";
+import EventAccordion from "../components/EventAccordion";
+import EcoIcon from '@material-ui/icons/Eco';
 import {
-  EyeInvisibleTwoTone,
-  EyeTwoTone,
-  MenuOutlined,
-  AppstoreOutlined,
-  UserAddOutlined,
   PlusSquareOutlined
-
 } from "@ant-design/icons";
-import TextField from "@material-ui/core/TextField";
-import { getAllJSDocTags } from "typescript";
 
 
 const { Search } = Input;
-const ItemNameWrapper = ({ itemName, onItemNameChange }) => {
-  const [doubleClicked, setDoubleClicked] = React.useState(false);
-  const [currentName, setCurrentName] = React.useState(itemName);
-  return (
-    <div onDoubleClick={() => setDoubleClicked(true)}>
-      {doubleClicked ? (
-        <div>
-          <TextField
-            id={itemName}
-            label={itemName}
-            onChange={(ev) => {
-              const newName = ev.target.value;
-              // do checks here to verify name is unique?
-              setCurrentName(newName);
-            }}
-            onKeyPress={(ev) => {
-              console.log(`Pressed keyCode ${ev.key}`);
-              if (ev.key === "Enter") {
-                onItemNameChange(currentName);
-                setDoubleClicked(false);
-              }
-            }}
-          />
-        </div>
-      ) : (
-          <div>{currentName}  <EyeTwoTone />  <AppstoreOutlined /></div>
-        )}
-    </div>
-  );
-};
+
 const Overview = ({ location }) => {
+
   let newData = relativeProvenanceData[0].map((dataArr) => {
     return { provGraph: dataArr };
   });
@@ -64,52 +29,69 @@ const Overview = ({ location }) => {
     })
   );
 
-  function handleDataUpdate(key, newValue) {
-    // in here, put the code to reorganize and set the data.
-  }
-
   allEvents = [...new Set(allEvents)].map((d) => {
     return {
-      title: () => (
-        <ItemNameWrapper
-          itemName={d}
-          onItemNameChange={(name) => console.log("to change", name)}
-        />
-      ),
-
+      // title: () => (
+      //   <ItemNameWrapper
+      //     itemName={d}
+      //     itemIcon={<EcoIcon />}
+      //     onItemNameChange={(name) => console.log("to change", name)}
+      //   />
+      // ),
+      label: d,
       key: d,
-      // icon: <EyeTwoTone />,
+      type: 'nativeEvent',
+      count: Math.random(),
+      heatMap: [...Array(30).keys()].map(d => ({ freq: Math.round(Math.random() * 50) })),
+
       children: ["Alex", "Lane", "Jeff", "Noeska"].map((t) => {
         return {
           title: () => {
             return <div className={"bonkers"}>{d + "_" + t}</div>;
           },
           key: d + "_" + t,
-          icon: <EyeTwoTone />,
+          label: t,
+          count: Math.random(),
+          type: 'nativeEvent_filtered',
+          heatMap: [...Array(30).keys()].map(d => ({ freq: Math.round(Math.random() * 50) })),
           children: [],
         };
       }),
     };
   });
 
+  const [data, setData] = React.useState(allEvents);
+  const [search, setSearch] = React.useState('');
+
+  function newEvent(value) {
+    {
+      setSearch('')
+      console.log('new Event is', value)
+      let newEvent = {
+        label: value,
+        count: 0,
+        type: 'customEvent',
+        key: value,
+        heatMap: [...Array(30).keys()].map(d => ({ freq: Math.round(Math.random() * 50) })),
+        children: []
+      };
+      const newData = [newEvent, ...data]
+      setData(newData);
+    }
+  }
+
   return <div style={{ padding: "15px" }}>
     <Search
       placeholder="Create Event Type"
       enterButton={<PlusSquareOutlined />}
       size="large"
-      onSearch={value => allEvents.push({
-        title: () => {
-          return <div className={"bonkers"}>{value}</div>;
-        },
-        key: value,
-        icon: <EyeTwoTone />,
-        children: [],
-      })
-      }
-      style={{ width: 300 }}
+      onSearch={newEvent}
+      // onChange={event => setSearch(event.target.value)}
+      style={{ width: 672 }}
+    // value={search}
     />
-    <div style={{ 'padding-top': "15px" }}>
-      <EventLayers gData={allEvents} />
+    <div style={{ 'paddingTop': "15px" }}>
+      <EventAccordion data={data} onChange={setData} />
     </div>
   </div >;
 };

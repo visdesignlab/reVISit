@@ -85,7 +85,7 @@ const MaterialTableWrapper = ({ provenanceData }) => {
     );
   }
   function renderProvenanceTime(data) {
-    console.log("render provenance time called");
+    console.log("render provenance time called", data.provGraph);
     return (
       <svg width={250} height={20}>
         <ProvenanceGraph
