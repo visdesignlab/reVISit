@@ -1,0 +1,9 @@
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" x="0" y="0" viewBox="0 0 24 24" xml:space="preserve">
+  <style>
+    .st2{fill:#fff;stroke:#393939;stroke-miterlimit:10}
+  </style>
+  <path class="st2" d="M9.2 1.6h13.3v12.8H9.2z"/>
+  <path class="st2" d="M6.1 4.7h13.3v12.8H6.1z"/>
+  <path class="st2" d="M3.3 8.3h13.3v12.8H3.3z"/>
+  <path d="M11.7 13.8l6 5.6-2.9.3 1.6 3.7-1.1.5-1.6-3.7-2 1.8v-8.2" stroke="#fff" stroke-width=".2" stroke-miterlimit="10"/>
+</svg>

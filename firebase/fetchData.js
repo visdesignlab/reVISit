@@ -4,28 +4,129 @@ console.log("running node script");
 const firebase = require("firebase");
 // Required for side-effects
 require("firebase/firestore");
+let studyParticipants = require(`./study_participants`);
 
 const fs = require("fs");
 
 // require("../libs/firebase-app.js");
 let firestore = require("./firebaseApi.js");
 let db = firestore.connect();
-export const fireFetch = async (mode) => {
-  let mode = process.argv[2];
-  console.log("mode is ", mode);
-  switch (mode) {
-    case "results":
-      await fetchResults();
-      break;
-    case "provenance":
-      return await fetchProvenance();
-      break;
-    case "updateResults": //uploads graded results to firebase.
-      await writeResults();
-      break;
+// export const fireFetch = async (mode) => {
+//   let mode = process.argv[2];
+//   console.log("mode is ", mode);
+//   switch (mode) {
+//     case "results":
+//       await fetchResults();
+//       break;
+//     case "provenance":
+//       return await fetchProvenance();
+//       break;
+//     case "updateResults": //uploads graded results to firebase.
+//       await writeResults();
+//       break;
+//     case "test": //uploads graded results to firebase.
+//       await writeSkinnyProvenance('545d6768fdf99b7f9fca24e3');
+//       break;
+//   }
+// };
+// (async function () { })();
+
+(async function () {
+  //get all participants;
+  // studyParticipants.map(async (participant, i) => {
+  //   // if (i < 10) {
+  //   await writeSkinnyProvenance(participant)
+  //   // }
+  // })
+  // fetchSkinnyProvenance();
+  console.log("done");
+})();
+
+async function fetchSkinnyProvenance() {
+  let querySnapshot = await db.collection("provenance_summary").get();
+
+  let provenance_summary = [];
+  querySnapshot.forEach(function (doc) {
+    let data = doc.data();
+    provenance_summary.push({
+      id: doc.id,
+      data,
+    });
+  });
+
+  //array of ids for valid participants;
+
+  fs.writeFileSync(
+    "./provenance_summary.json",
+    JSON.stringify(provenance_summary),
+    { flag: "w" }
+  );
+
+  console.log("exported provenance_summary.json");
+}
+async function writeSkinnyProvenance(participant) {
+  let participantID = participant.id;
+  // Create a reference to the results_graded collection
+  const resultsCollection = db.collection("results_graded");
+
+  const resultsRef = resultsCollection.where("workerID", "==", participantID);
+
+  let snapshot = await resultsRef.get();
+  if (snapshot.empty) {
+    console.log("No matching documents.");
+    return;
+  } else {
+    snapshot.forEach(async (doc) => {
+      let result = doc.data();
+      result.participant = participant;
+      // Create a reference to the provenance collection
+      const provenanceCollection = db.collection("provenance");
+
+      // Find a ref for all provenance documents for this participant;
+      const provenanceRef = provenanceCollection.where(
+        "id",
+        "==",
+        participantID
+      );
+
+      snapshot = await provenanceRef.get();
+      if (snapshot.empty) {
+        console.log("No matching documents.");
+        return;
+      } else {
+        // console.log('there are ', snapshot, 'docs')
+        snapshot.forEach((doc, i) => {
+          let provData = doc.data();
+          //insert skinny provenance into results
+          //find out what task this prov graph is for:
+          if (provData.provGraphs) {
+            let taskKey = provData.provGraphs[0].taskID;
+            // (if taskId is an Object, grab taskID from that object)
+            if (typeof taskKey !== "string") {
+              taskKey = taskKey.taskID;
+            }
+
+            let trimmedProv = provData.provGraphs.map((p) => ({
+              event: p.event || "startedProvenance",
+              time: p.time,
+            }));
+            // console.log('taskKey is ', taskKey)
+            trimmedProv.map((p) => {
+              if (!p.event || !p.time) {
+                console.log(p);
+              }
+            });
+            result[taskKey].provenance = trimmedProv;
+          } else {
+            console.log("no prov data for", participantID);
+          }
+        });
+      }
+
+      db.collection("provenance_summary").doc(participantID).set(result);
+    });
   }
-};
-(async function () {})();
+}
 
 function writeResults() {
   let rawdata = fs.readFileSync("firebase/data/processed_results.json");

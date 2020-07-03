@@ -7,29 +7,56 @@ import {
   PlusSquareOutlined
 } from "@ant-design/icons";
 
+let allData = require(`../common/data/provenance_summary.json`);
+
+//wrange data into provenance first format: 
+let provDict = {};
+let participantDict = {};
+
+allData.map(p => {
+  let id = p.id;
+  let keys = Object.keys(p.data);
+  //tasks are objects that have a provenance array
+  let tasks = keys.filter(k => p.data[k].provenance);
+  tasks.map(taskID => {
+    let task = p.data[taskID];
+    let lastAction;
+    task.provenance.map((event, i) => {
+      let eventName = event.event
+      let instance = {
+        event: eventName,
+        taskID: task,
+        participantID: id,
+        condition: task.visType,
+        time: event.time,
+        target: [],
+        actionBefore: i > 0 ? lastAction : undefined,
+        actionAfter: undefined,
+        taskAccuracy: task.answer.accuracy,
+        taskMinutes: task.minutesToComplete,
+      }
+
+      if (lastAction) {
+        lastAction.actionAfter = instance;
+      }
+      lastAction = instance;
+
+      provDict[eventName] ? provDict[eventName].instances.push(instance) : provDict[eventName] = { instances: [instance] };
+    })
+
+  })
+
+  // [{'event':'eventName', instances:[]}]
+})
+
+console.log(allData, provDict)
 
 const { Search } = Input;
 
 const Overview = ({ location }) => {
 
-  let newData = relativeProvenanceData[0].map((dataArr) => {
-    return { provGraph: dataArr };
-  });
-  // this is a mock for longer data sets w/ more participants.
-  for (let i = 0; i < 0; i++) {
-    newData = newData.concat(_.cloneDeep(newData));
-  }
 
-  //iterate through and create list of unique events;
-  let allEvents = [];
-
-  newData.map((d) =>
-    d.provGraph.nodes.map((n) => {
-      allEvents.push(n.event);
-    })
-  );
-
-  allEvents = [...new Set(allEvents)].map((d) => {
+  let allEvents = Object.keys(provDict).map((k) => {
     return {
       // title: () => (
       //   <ItemNameWrapper
@@ -38,29 +65,18 @@ const Overview = ({ location }) => {
       //     onItemNameChange={(name) => console.log("to change", name)}
       //   />
       // ),
-      label: d,
-      key: d,
+      label: k,
+      key: k,
       type: 'nativeEvent',
-      count: Math.random(),
-      heatMap: [...Array(30).keys()].map(d => ({ freq: Math.round(Math.random() * 50) })),
+      instances: provDict[k].instances,
+      count: provDict[k].instances.length,
+      // heatMap: .map(d => ({ freq: Math.round(Math.random() * 50) })),
 
-      children: ["Alex", "Lane", "Jeff", "Noeska"].map((t) => {
-        return {
-          title: () => {
-            return <div className={"bonkers"}>{d + "_" + t}</div>;
-          },
-          key: d + "_" + t,
-          label: t,
-          count: Math.random(),
-          type: 'nativeEvent_filtered',
-          heatMap: [...Array(30).keys()].map(d => ({ freq: Math.round(Math.random() * 50) })),
-          children: [],
-        };
-      }),
+      children: []
     };
   });
 
-  const [data, setData] = React.useState(allEvents);
+  const [data, setData] = React.useState(allEvents.sort((a, b) => a.count > b.count ? -1 : 1));
   const [search, setSearch] = React.useState('');
 
   function newEvent(value) {
@@ -69,10 +85,11 @@ const Overview = ({ location }) => {
       console.log('new Event is', value)
       let newEvent = {
         label: value,
+        instances: [],
         count: 0,
         type: 'customEvent',
         key: value,
-        heatMap: [...Array(30).keys()].map(d => ({ freq: Math.round(Math.random() * 50) })),
+        // heatMap: [...Array(30).keys()].map(d => ({ freq: Math.round(Math.random() * 50) })),
         children: []
       };
       const newData = [newEvent, ...data]
