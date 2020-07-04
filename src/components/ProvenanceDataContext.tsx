@@ -2,17 +2,18 @@ import React, { useState, useEffect, useMemo } from "react";
 import PropTypes from "prop-types";
 import initProvData from "../common/data/provenance_summary.json";
 import * as d3 from "d3";
+import _ from "lodash";
 const ProvenanceDataContext = React.createContext({});
 
 export const ProvenanceDataContextProvider = ({ children }) => {
-  const [provenanceData, setProvenanceData] = useState(
+  const [allProvenanceData, setAllProvenanceData] = useState(
     processRawProvenanceData(initProvData)
   );
-  console.log("relative", provenanceData);
+  console.log("relative", allProvenanceData);
   return (
     <ProvenanceDataContext.Provider
       value={{
-        provenanceData,
+        allProvenanceData,
       }}>
       {children}
     </ProvenanceDataContext.Provider>
@@ -22,14 +23,15 @@ function calculateRelativeProvGraph(taskPerformance, maxTime) {
   let totalTime =
     new Date(taskPerformance.endTime) - new Date(taskPerformance.startTime);
   let scale = maxTime / totalTime;
+  taskPerformance["totalTime"] = totalTime;
   taskPerformance["relativeStartTime"] = 0;
   taskPerformance["relativeStopTime"] = 1 / scale;
   if (taskPerformance["provenance"]) {
     taskPerformance["provenance"] = taskPerformance["provenance"].map(
       (node) => {
         node["percentTime"] =
-          new Date(node["time"]) -
-          new Date(taskPerformance["startTime"]) / totalTime;
+          (new Date(node["time"]) - new Date(taskPerformance["startTime"])) /
+          totalTime;
         node["relativeTime"] = node["percentTime"] / scale;
 
         return node;
@@ -60,6 +62,8 @@ function processRawProvenanceData(unrelativeProvenanceData) {
     "S-task15",
     "S-task16",
   ];
+
+  const relativeProvenanceData = _.cloneDeep(unrelativeProvenanceData);
   taskIds.forEach((taskId) => {
     let longestTimeForTask = d3.max(unrelativeProvenanceData, (participant) => {
       if (
@@ -75,18 +79,19 @@ function processRawProvenanceData(unrelativeProvenanceData) {
       return 0;
     });
     console.log("longest time", longestTimeForTask);
-    unrelativeProvenanceData.forEach((participant) => {
+    unrelativeProvenanceData.forEach((participant, index) => {
       if (participant.data && participant.data[taskId]) {
-        participant.data[taskId] = calculateRelativeProvGraph(
+        relativeProvenanceData[index].data[taskId] = calculateRelativeProvGraph(
           participant.data[taskId],
           longestTimeForTask
         );
       } else {
-        console.log("NO DATA", participant, taskId);
+        delete relativeProvenanceData[index][taskId];
+        console.log("NO DATA", relativeProvenanceData[index], taskId);
       }
     });
   });
-  return unrelativeProvenanceData;
+  return relativeProvenanceData;
 }
 
 export default ProvenanceDataContext;

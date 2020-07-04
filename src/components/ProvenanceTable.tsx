@@ -70,28 +70,26 @@ const tableIcons: Icons = {
 // import data
 const width = 200;
 const MaterialTableWrapper = ({ provenanceData }) => {
+  console.log("in Table", provenanceData);
   const [checkedTags, setCheckedTags] = React.useState([]);
   const [rerender, setRerender] = React.useState(false);
-  const [min, max] = d3.extent(
-    provenanceData,
-    (datum) => datum.provGraph.totalTime
-  );
+  const [min, max] = d3.extent(provenanceData, (datum) => datum.totalTime);
 
   const xScale = d3.scaleLinear().domain([0, max]).range([0, width]);
 
   function renderProvenanceNodes(data) {
-    console.log("render provenance nodes called");
+    console.log("render provenance nodes called", data);
     return (
       <ProvenanceIsolatedNodes
-        nodes={data.provGraph.nodes}></ProvenanceIsolatedNodes>
+        nodes={data.provenance}></ProvenanceIsolatedNodes>
     );
   }
   function renderProvenanceTime(data) {
-    console.log("render provenance time called", data.provGraph);
+    console.log("render provenance time called", data.provenance);
     return (
       <svg width={250} height={20}>
         <ProvenanceGraph
-          provenanceGraph={data.provGraph}
+          provenanceGraph={data.provenance}
           xScale={xScale}
           renderIcons={false}
           collapseEvents={true}
@@ -108,13 +106,13 @@ const MaterialTableWrapper = ({ provenanceData }) => {
       maxWidth: 250,
       padding: "4px 16px",
     },
-    customSort: (a, b) => a.provGraph.totalTime - b.provGraph.totalTime,
+    customSort: (a, b) => a.totalTime - b.totalTime,
     render: renderProvenanceTime,
     customFilterAndSearch: (filterResults, datum) => {
       // https://github.com/mbrn/material-table/pull/1351
       if (
-        datum.provGraph.totalTime >= filterResults[0] &&
-        datum.provGraph.totalTime <= filterResults[1]
+        datum.totalTime >= filterResults[0] &&
+        datum.totalTime <= filterResults[1]
       ) {
         return true;
       }
@@ -127,9 +125,7 @@ const MaterialTableWrapper = ({ provenanceData }) => {
       <TimeFilterObj
         {...props}
         xScale={xScale}
-        data={provenanceData.map(
-          (graph) => graph.provGraph.totalTime
-        )}></TimeFilterObj>
+        data={provenanceData.map((graph) => graph.totalTime)}></TimeFilterObj>
     ),
   });
   function generateCategoricalScale(data, width) {
@@ -142,33 +138,30 @@ const MaterialTableWrapper = ({ provenanceData }) => {
   }
 
   let correctWidth = 50;
-  let correctScale = generateCategoricalScale(["true", "false"], correctWidth);
+  let correctScale = generateCategoricalScale([1, 0], correctWidth);
 
   const eventNodes = useMemo(() => {
-    return provenanceData
-      .map((graph) => graph.provGraph.nodes.map((node) => node.event))
+    console.log("in Table Memo", JSON.stringify(provenanceData));
+    const val = provenanceData
+      .map((graph) => {
+        return graph.provenance.map((node) => node.event);
+      })
       .flat()
       .filter(
         (item) => item !== "startedProvenance" && item !== "Finished Task"
       );
+    return val;
   });
 
   let eventWidth = 250;
   let eventScale = generateCategoricalScale(eventNodes, eventWidth);
-  /*let correctScale = d3
-    .scaleBand()
-    .rangeRound([0, correctWidth])
-    .padding(0)
-    .domain([true, false]);*/
 
   function renderProvenanceAccuracy(rowData) {
-    console.log(rowData);
     //const values = [true, false];
-    console.log("x", correctScale(rowData.provGraph.correct));
     return (
       <svg width={100} height={20}>
         <rect
-          x={correctScale(rowData.provGraph.correct)}
+          x={correctScale(rowData.answer.accuracy)}
           width={20}
           height={20}></rect>
       </svg>
@@ -187,11 +180,11 @@ const MaterialTableWrapper = ({ provenanceData }) => {
       maxWidth: correctWidth + 10,
       padding: "4px 16px",
     },
-    customSort: (a, b) => a.provGraph.correct - b.provGraph.correct,
+    customSort: (a, b) => a.answer.accuracy - b.answer.accuracy,
     render: renderProvenanceAccuracy,
     customFilterAndSearch: (filterResults, datum) => {
       // https://github.com/mbrn/material-table/pull/1351
-      if (filterResults.includes(datum.provGraph.correct)) {
+      if (filterResults.includes(datum.answer.accuracy)) {
         return true;
       }
       delete datum.tableData.checked;
@@ -204,9 +197,9 @@ const MaterialTableWrapper = ({ provenanceData }) => {
         {...props}
         width={correctWidth}
         scale={correctScale}
-        labels={{ true: "true", false: "false" }}
+        labels={{ true: 1, false: 0 }}
         data={provenanceData.map(
-          (graph) => graph.provGraph.correct
+          (graph) => graph.answer.correct
         )}></CategoricalFilter>
     ),
   });
@@ -219,13 +212,13 @@ const MaterialTableWrapper = ({ provenanceData }) => {
       maxWidth: 500,
       padding: "4px 16px",
     },
-    customSort: (a, b) => a.provGraph.nodes.length - b.provGraph.nodes.length,
+    customSort: (a, b) => a.provenance.length - b.provenance.length,
     render: renderProvenanceNodes,
     customFilterAndSearch: (filterResults, datum) => {
       console.log(filterResults, datum);
       // https://github.com/mbrn/material-table/pull/1351
-      for (let i = 0; i < datum.provGraph.nodes.length; i++) {
-        if (filterResults.includes(datum.provGraph.nodes[i].event)) {
+      for (let i = 0; i < datum.provenance.length; i++) {
+        if (filterResults.includes(datum.provenance[i].event)) {
           return true;
         }
       }
@@ -275,6 +268,7 @@ const MaterialTableWrapper = ({ provenanceData }) => {
     },
   });
   const TimeFilterObj = TimeFilter;
+  console.log("about to render table", provenanceData);
   return (
     <MaterialTable
       title={"Provenance Table"}
@@ -317,7 +311,7 @@ const MaterialTableWrapper = ({ provenanceData }) => {
         }
       }}
       actions={[
-        {
+        /*{
           myComponent: (props) => {
             return (
               <TagWrapper
@@ -350,7 +344,7 @@ const MaterialTableWrapper = ({ provenanceData }) => {
                 }}></TagWrapper>
             );
           },
-        },
+        },*/
         {
           tooltip: "Update tags of selected rows (appends ontop).",
           icon: (props, ref) => <Label {...props} ref={ref} />,
@@ -382,7 +376,7 @@ const MaterialTableWrapper = ({ provenanceData }) => {
       options={{
         selection: true,
         search: false,
-        paging: false,
+        paging: true,
         filtering: true,
         maxBodyHeight: "93vh",
       }}

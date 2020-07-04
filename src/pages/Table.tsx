@@ -11,33 +11,45 @@ import Select from "@material-ui/core/Select";
 import ProvenanceDataContext from "../components/ProvenanceDataContext";
 
 const Table = ({ location }) => {
-  const { provenanceData } = useContext(ProvenanceDataContext);
-  console.log("PROV DATGA", provenanceData);
-  const [taskIndex, setTaskIndex] = React.useState(0);
+  const { allProvenanceData } = useContext(ProvenanceDataContext);
+  const [taskId, setTaskId] = React.useState("S-task01");
 
   function handleChange(event) {
-    console.log(event);
-    setTaskIndex(event.target.value);
+    setTaskId(event.target.value);
   }
-  let newData = relativeProvenanceData[taskIndex].map((dataArr) => {
-    console.log("in rerunnew data");
-    return { provGraph: dataArr };
-  });
+  let taskData = React.useMemo(() => {
+    let internalTaskData = [];
+    allProvenanceData.forEach((participant) => {
+      const newObj = Object.assign(
+        { id: participant.id },
+        participant.data[taskId]
+      );
 
-  for (let i = 0; i < 0; i++) {
-    newData = newData.concat(_.cloneDeep(newData));
-  }
+      if (participant.data[taskId]) {
+        internalTaskData.push(newObj);
+      }
+    });
+    return internalTaskData;
+  }, [allProvenanceData, taskId]);
+  console.log("TASK", taskData);
 
   const valuesArr = [
-    { name: "Task 1", key: 0 },
-    { name: "Task 2", key: 1 },
-    { name: "Task 3", key: 2 },
-    { name: "Task 4", key: 3 },
-    { name: "Task 5", key: 4 },
-    { name: "Task 6", key: 5 },
-    { name: "Task 7", key: 6 },
-    { name: "Task 8", key: 7 },
-    { name: "Task 9", key: 8 },
+    { name: "Task 1", key: "S-task01" },
+    { name: "Task 2", key: "S-task02" },
+    { name: "Task 3", key: "S-task03" },
+    { name: "Task 4", key: "S-task04" },
+    { name: "Task 5", key: "S-task05" },
+    { name: "Task 6", key: "S-task06" },
+    { name: "Task 7", key: "S-task07" },
+    { name: "Task 8", key: "S-task08" },
+    { name: "Task 9", key: "S-task09" },
+    { name: "Task 10", key: "S-task10" },
+    { name: "Task 11", key: "S-task11" },
+    { name: "Task 12", key: "S-task12" },
+    { name: "Task 13", key: "S-task13" },
+    { name: "Task 14", key: "S-task14" },
+    { name: "Task 15", key: "S-task15" },
+    { name: "Task 16", key: "S-task16" },
   ];
 
   return (
@@ -49,15 +61,19 @@ const Table = ({ location }) => {
         <Select
           labelId="demo-simple-select-outlined-label"
           id="demo-simple-select-outlined"
-          value={taskIndex}
+          value={taskId}
           onChange={handleChange}
           label="name">
           {valuesArr.map((value) => {
-            return <MenuItem value={value.key}>{value.name}</MenuItem>;
+            return (
+              <MenuItem key={value.key} value={value.key}>
+                {value.name}
+              </MenuItem>
+            );
           })}
         </Select>
       </FormControl>
-      <MaterialTableWrapper provenanceData={newData} />
+      <MaterialTableWrapper provenanceData={taskData} />
     </div>
   );
 };

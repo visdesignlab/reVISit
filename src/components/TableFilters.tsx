@@ -27,7 +27,6 @@ export const CategoricalFilter = ({
   const [currentFilter, setCurrentFilter] = useState(Object.keys(occurrences));
   const height = 20;
   const fullHeight = 20 + 15;
-  console.log("labels", labels);
   const maxOccurance = Object.values(occurrences).reduce((a, b) =>
     a > b ? a : b
   );
@@ -39,15 +38,13 @@ export const CategoricalFilter = ({
   return (
     <svg width={width} height={fullHeight}>
       {Object.entries(occurrences).map(([key, value], index) => {
-        console.log("dywootto,", key === true, value);
-        //key = key === "true" ? true : false;
-        console.log("labelkey", key, labels[key]);
         const color = currentFilter.includes(key) ? "black" : "#cfcfcf";
         return (
           <Tooltip
             TransitionComponent={Fade}
             TransitionProps={{ timeout: 600 }}
             title={key}
+            key={key}
             PopperProps={{
               popperOptions: {
                 modifiers: {
@@ -60,6 +57,7 @@ export const CategoricalFilter = ({
             }}>
             <g
               pointerEvents={"bounding-box"}
+              key={key}
               onClick={() => {
                 const indexOfValue = currentFilter.indexOf(key);
                 let temp = Object.assign([], currentFilter);
