@@ -36,11 +36,13 @@ import TagWrapper from "./reactTagWrapper";
 import { TimeFilter, CategoricalFilter } from "./TableFilters";
 import { fireFetch } from "../firebase/fetchData";
 
-const trimmedPromise = fireFetch("provenance");
-trimmedPromise.then((promise) => {
+import data from "../common/data/provenance_summary.json";
+console.log("DATA HERE", data);
+//const trimmedPromise = fireFetch("provenance");
+/*trimmedPromise.then((promise) => {
   console.log(promise);
 });
-
+*/
 const tableIcons: Icons = {
   Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
   Check: forwardRef((props, ref) => <Check {...props} ref={ref} />),

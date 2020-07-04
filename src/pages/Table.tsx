@@ -18,9 +18,11 @@ const Table = ({ location }) => {
     console.log("in rerunnew data");
     return { provGraph: dataArr };
   });
+
   for (let i = 0; i < 0; i++) {
     newData = newData.concat(_.cloneDeep(newData));
   }
+
   const valuesArr = [
     { name: "Task 1", key: 0 },
     { name: "Task 2", key: 1 },
