@@ -1,13 +1,18 @@
-import React from "react";
-import { relativeProvenanceData } from "../common/data/provenanceMocks.js";
+import React, { useContext } from "react";
+import {
+  relativeProvenanceData,
+  unrelativeProvenanceData,
+} from "../common/data/provenanceMocks.js";
 import InputLabel from "@material-ui/core/InputLabel";
-
 import MaterialTableWrapper from "../components/ProvenanceTable";
 import MenuItem from "@material-ui/core/MenuItem";
 import FormControl from "@material-ui/core/FormControl";
 import Select from "@material-ui/core/Select";
+import ProvenanceDataContext from "../components/ProvenanceDataContext";
 
 const Table = ({ location }) => {
+  const { provenanceData } = useContext(ProvenanceDataContext);
+  console.log("PROV DATGA", provenanceData);
   const [taskIndex, setTaskIndex] = React.useState(0);
 
   function handleChange(event) {

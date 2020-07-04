@@ -57,9 +57,9 @@ export const trimProvDataArr = (currentTaskData, filter) => {
         return _.transform(object, function (result, value, key) {
           if (!_.isEqual(value, base[key])) {
             result[key] =
-              _.isObject(value) && _.isObject(base[key])
-                ? changes(value, base[key])
-                : value;
+              _.isObject(value) && _.isObject(base[key]) ?
+              changes(value, base[key]) :
+              value;
           }
         });
       }
@@ -76,9 +76,9 @@ export const trimProvDataArr = (currentTaskData, filter) => {
         (provenanceNode, index) => {
           let trimmedNode = {};
           console.log("dywootto", provenanceNode);
-          trimmedNode.event = provenanceNode.event
-            ? provenanceNode.event
-            : "startedProvenance";
+          trimmedNode.event = provenanceNode.event ?
+            provenanceNode.event :
+            "startedProvenance";
           trimmedNode.time = new Date(provenanceNode.time);
           if (trimmedNode.event === "startedProvenance") {
             startTime = new Date(provenanceNode.time);
@@ -86,6 +86,27 @@ export const trimProvDataArr = (currentTaskData, filter) => {
           if (trimmedNode.event === "Finished Task") {
             stopTime = new Date(provenanceNode.time); //provenanceNode.time;
           }
+
+          /**
+           * Deep diff between two object, using lodash
+           * @param  {Object} object Object compared
+           * @param  {Object} base   Object to compare with
+           * @return {Object}        Return a new object who represent the diff
+           */
+          function difference(object, base) {
+            function changes(object, base) {
+              return _.transform(object, function (result, value, key) {
+                if (!_.isEqual(value, base[key])) {
+                  result[key] =
+                    _.isObject(value) && _.isObject(base[key]) ?
+                    changes(value, base[key]) :
+                    value;
+                }
+              });
+            }
+            return changes(object, base);
+          }
+
           if (index < entireProvGraph.length && index > 0) {
             trimmedNode.target = difference(
               provenanceNode,
@@ -103,7 +124,9 @@ export const trimProvDataArr = (currentTaskData, filter) => {
       );
       const totalTime = stopTime - startTime;
       if (isNaN(totalTime)) {
-        return { nodes: [] };
+        return {
+          nodes: []
+        };
       }
       console.log(totalTime, stopTime, startTime);
       trimmedProvGraph["nodes"].forEach((node) => {
@@ -127,7 +150,7 @@ export const trimProvDataArr = (currentTaskData, filter) => {
   console.log(newVals);
   let longestTime = d3.max(newVals, (d) => {
     console.log("dywoott d time", d);
-    if (d && d?.totalTime) {
+    if (d && d.totalTime) {
       return d.totalTime;
     }
     return 0;
@@ -161,7 +184,13 @@ export const trimProvDataArr = (currentTaskData, filter) => {
   return [relativeProvenanceData, unrelativeProvenanceData];
 };
 //const val = trimProvDataArr(allTaskData[0]);
-const val = [[], []];
+const val = [
+  [],
+  []
+];
 let unrelativeProvenanceData = val[1],
   relativeProvenanceData = val[0];
-export { relativeProvenanceData, unrelativeProvenanceData };
+export {
+  relativeProvenanceData,
+  unrelativeProvenanceData
+};
