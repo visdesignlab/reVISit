@@ -4,7 +4,7 @@ console.log("running node script");
 const firebase = require("firebase");
 // Required for side-effects
 require("firebase/firestore");
-let studyParticipants = require(`./study_participants`)
+let studyParticipants = require(`./study_participants`);
 
 const fs = require("fs");
 
@@ -31,10 +31,8 @@ let db = firestore.connect();
 // };
 // (async function () { })();
 
-
 (async function () {
-
-  //get all participants; 
+  //get all participants;
   // studyParticipants.map(async (participant, i) => {
   //   // if (i < 10) {
   //   await writeSkinnyProvenance(participant)
@@ -43,8 +41,8 @@ let db = firestore.connect();
   // fetchSkinnyProvenance();
   let NL_example = '545d6768fdf99b7f9fca24e3_S-task01';
   let AM_example = '546e3c21fdf99b2b8df983fd_S-task01';
-  getSampleProvenance(NL_example);
-  getSampleProvenance(AM_example);
+  // getSampleProvenance(NL_example);
+  // getSampleProvenance(AM_example);
   console.log('done')
 })();
 
@@ -64,11 +62,11 @@ async function fetchSkinnyProvenance() {
 
   fs.writeFileSync(
     "./provenance_summary.json",
-    JSON.stringify(provenance_summary), { flag: 'w' }
+    JSON.stringify(provenance_summary),
+    { flag: "w" }
   );
 
   console.log("exported provenance_summary.json");
-
 }
 
 async function getSampleProvenance(key) {
@@ -91,68 +89,67 @@ async function getSampleProvenance(key) {
   }
 }
 async function writeSkinnyProvenance(participant) {
-
   let participantID = participant.id;
   // Create a reference to the results_graded collection
-  const resultsCollection = db.collection('results_graded');
+  const resultsCollection = db.collection("results_graded");
 
-  const resultsRef = resultsCollection.where('workerID', '==', participantID);
+  const resultsRef = resultsCollection.where("workerID", "==", participantID);
 
   let snapshot = await resultsRef.get();
   if (snapshot.empty) {
-    console.log('No matching documents.');
+    console.log("No matching documents.");
     return;
   } else {
-    snapshot.forEach(async doc => {
+    snapshot.forEach(async (doc) => {
       let result = doc.data();
       result.participant = participant;
       // Create a reference to the provenance collection
-      const provenanceCollection = db.collection('provenance');
+      const provenanceCollection = db.collection("provenance");
 
-      // Find a ref for all provenance documents for this participant; 
-      const provenanceRef = provenanceCollection.where('id', '==', participantID);
+      // Find a ref for all provenance documents for this participant;
+      const provenanceRef = provenanceCollection.where(
+        "id",
+        "==",
+        participantID
+      );
 
       snapshot = await provenanceRef.get();
       if (snapshot.empty) {
-        console.log('No matching documents.');
+        console.log("No matching documents.");
         return;
       } else {
         // console.log('there are ', snapshot, 'docs')
         snapshot.forEach((doc, i) => {
           let provData = doc.data();
           //insert skinny provenance into results
-          //find out what task this prov graph is for: 
+          //find out what task this prov graph is for:
           if (provData.provGraphs) {
             let taskKey = provData.provGraphs[0].taskID;
             // (if taskId is an Object, grab taskID from that object)
-            if (typeof taskKey !== 'string') {
+            if (typeof taskKey !== "string") {
               taskKey = taskKey.taskID;
             }
 
-            let trimmedProv = provData.provGraphs.map(p => ({ event: p.event || 'startedProvenance', time: p.time }))
+            let trimmedProv = provData.provGraphs.map((p) => ({
+              event: p.event || "startedProvenance",
+              time: p.time,
+            }));
             // console.log('taskKey is ', taskKey)
-            trimmedProv.map(p => {
+            trimmedProv.map((p) => {
               if (!p.event || !p.time) {
-                console.log(p)
+                console.log(p);
               }
-
-            })
+            });
             result[taskKey].provenance = trimmedProv;
+          } else {
+            console.log("no prov data for", participantID);
           }
-          else {
-            console.log('no prov data for', participantID)
-          }
-
         });
-
       }
 
       db.collection("provenance_summary").doc(participantID).set(result);
-
     });
   }
-
-
 }
 
 function writeResults() {

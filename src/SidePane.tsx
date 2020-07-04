@@ -15,7 +15,19 @@ import TableChart from "@material-ui/icons/TableChart";
 import GetApp from "@material-ui/icons/GetApp";
 import BarChart from "@material-ui/icons/BarChart";
 import { Link, LinkProps } from "react-router-dom";
-const SidePane = ({ }) => {
+import ProvenanceDataContext from "./components/ProvenanceDataContext";
+import InputLabel from "@material-ui/core/InputLabel";
+import MenuItem from "@material-ui/core/MenuItem";
+import FormControl from "@material-ui/core/FormControl";
+import Select from "@material-ui/core/Select";
+
+const SidePane = ({}) => {
+  const {
+    taskStructure,
+    handleChangeSelectedTaskId,
+    selectedTaskId,
+  } = React.useContext(ProvenanceDataContext);
+
   const HomeLink = React.forwardRef<
     HTMLAnchorElement,
     Omit<LinkProps, "innerRef" | "to">
@@ -65,6 +77,23 @@ const SidePane = ({ }) => {
         })}
       </List>
       <Divider />
+      <FormControl variant="outlined" className={styles.SelectedTaskInput}>
+        <InputLabel id="demo-simple-select-outlined-label">Task</InputLabel>
+        <Select
+          labelId="demo-simple-select-outlined-label"
+          id="demo-simple-select-outlined"
+          value={selectedTaskId}
+          onChange={handleChangeSelectedTaskId}
+          label="name">
+          {taskStructure.map((value) => {
+            return (
+              <MenuItem key={value.key} value={value.key}>
+                {value.name}
+              </MenuItem>
+            );
+          })}
+        </Select>
+      </FormControl>
     </Drawer>
   );
 };

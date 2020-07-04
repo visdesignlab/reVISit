@@ -4,10 +4,11 @@ import Tooltip from "@material-ui/core/Tooltip";
 import Fade from "@material-ui/core/Fade";
 import styles from "./ProvenanceIsolatedNodes.module.css";
 const ProvenanceIsolatedNodes = ({ nodes }) => {
+  console.log("isolated", nodes);
   return (
     <div className={styles.wrapper}>
-      {nodes.map((node) => (
-        <IsolatedNode node={node}></IsolatedNode>
+      {nodes.map((node, index) => (
+        <IsolatedNode key={index} node={node}></IsolatedNode>
       ))}
     </div>
   );

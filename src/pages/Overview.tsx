@@ -1,11 +1,9 @@
 import React from "react";
-import { Input } from 'antd';
+import { Input } from "antd";
 import { relativeProvenanceData } from "../common/data/provenanceMocks.js";
 import EventAccordion from "../components/EventAccordion";
-import EcoIcon from '@material-ui/icons/Eco';
-import {
-  PlusSquareOutlined
-} from "@ant-design/icons";
+import EcoIcon from "@material-ui/icons/Eco";
+import { PlusSquareOutlined } from "@ant-design/icons";
 
 import CollapsibleTable from '../components/EventTable'
 import * as d3 from "d3";
@@ -13,19 +11,20 @@ import * as d3 from "d3";
 let allData = require(`../common/data/provenance_summary.json`);
 
 //wrangle data into provenance first format: 
+//wrange data into provenance first format:
 let provDict = {};
 let participantDict = {};
 
-allData.map(p => {
+allData.map((p) => {
   let id = p.id;
   let keys = Object.keys(p.data);
   //tasks are objects that have a provenance array
-  let tasks = keys.filter(k => p.data[k].provenance);
-  tasks.map(taskID => {
+  let tasks = keys.filter((k) => p.data[k].provenance);
+  tasks.map((taskID) => {
     let task = p.data[taskID];
     let lastAction;
     task.provenance.map((event, i) => {
-      let eventName = event.event
+      let eventName = event.event;
       let instance = {
         event: eventName,
         taskID: task,
@@ -37,7 +36,7 @@ allData.map(p => {
         actionAfter: undefined,
         taskAccuracy: task.answer.accuracy,
         taskMinutes: task.minutesToComplete,
-      }
+      };
 
       if (lastAction) {
         lastAction.actionAfter = instance;
@@ -51,7 +50,7 @@ allData.map(p => {
   })
 
   // [{'event':'eventName', instances:[]}]
-})
+});
 
 //map each event to a numeric index for sequence matching
 let allEvents = Object.keys(provDict);
@@ -112,8 +111,6 @@ d3.json('http://127.0.0.1:5000/prefix', {
 const { Search } = Input;
 
 const Overview = ({ location }) => {
-
-
   let allEvents = Object.keys(provDict).map((k) => {
     return {
       // title: () => (
@@ -125,32 +122,34 @@ const Overview = ({ location }) => {
       // ),
       label: k,
       key: k,
-      type: 'nativeEvent',
+      type: "nativeEvent",
       instances: provDict[k].instances,
       count: provDict[k].instances.length,
       // heatMap: .map(d => ({ freq: Math.round(Math.random() * 50) })),
 
-      children: []
+      children: [],
     };
   });
 
-  const [data, setData] = React.useState(allEvents.sort((a, b) => a.count > b.count ? -1 : 1));
-  const [search, setSearch] = React.useState('');
+  const [data, setData] = React.useState(
+    allEvents.sort((a, b) => (a.count > b.count ? -1 : 1))
+  );
+  const [search, setSearch] = React.useState("");
 
   function newEvent(value) {
     {
-      setSearch('')
-      console.log('new Event is', value)
+      setSearch("");
+      console.log("new Event is", value);
       let newEvent = {
         label: value,
         instances: [],
         count: 0,
-        type: 'customEvent',
+        type: "customEvent",
         key: value,
         // heatMap: [...Array(30).keys()].map(d => ({ freq: Math.round(Math.random() * 50) })),
-        children: []
+        children: [],
       };
-      const newData = [newEvent, ...data]
+      const newData = [newEvent, ...data];
       setData(newData);
     }
   }
@@ -171,7 +170,7 @@ const Overview = ({ location }) => {
       <CollapsibleTable data={data} onChange={setData} />
       {/* <EventAccordion data={data} onChange={setData} /> */}
     </div>
-  </div >;
+  );
 };
 
 export default Overview;

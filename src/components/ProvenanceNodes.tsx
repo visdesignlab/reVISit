@@ -8,13 +8,8 @@ const svgWidth = 200;
 const svgHeight = 100;
 const margin = { top: 5, right: 5, bottom: 5, left: 5 };
 
-const ProvenanceNodes = ({
-  provenanceGraph,
-  xScale,
-  renderIcons,
-  eventType,
-}: any) => {
-  if (!provenanceGraph) {
+const ProvenanceNodes = ({ performance, xScale, eventType }: any) => {
+  if (!performance) {
     return <div></div>;
   }
 
@@ -27,13 +22,8 @@ const ProvenanceNodes = ({
   const yOffset = 0;
 
   let provNodes = [];
-  let xExtents = [];
-  let minimumNodeWidth = 24;
 
-  // calculate groupings. Pass each grouping into <Grouping Etren
-  let currentGroup = [];
-
-  provenanceGraph.nodes.forEach((node) => {
+  performance.provenance.forEach((node) => {
     if (
       node.event === "startedProvenance" ||
       node.event === "Finished Task" ||
@@ -42,71 +32,26 @@ const ProvenanceNodes = ({
       return;
     }
 
-    xExtents.push({
-      start: xScale(node.time) - minimumNodeWidth / 2,
-      stop: xScale(node.time) + minimumNodeWidth / 2,
-    });
-
     provNodes.push({
-      x: xScale(node.time * provenanceGraph.totalTime),
+      x: xScale(node.time * performance.totalTime),
       y: yOffset + barHeight / 2,
-      r: minimumNodeWidth,
-      fill: "lightgray",
       info: node.event,
     });
   });
   let provElements = [];
-  if (renderIcons) {
-    for (let i = 0; i < provNodes.length; i++) {
-      let d = provNodes[i];
 
-      let item;
-      // if not last node and this element overlaps with next
-      if (i < xExtents.length - 1 && xExtents[i].stop > xExtents[i + 1].start) {
-        let groupedNodes = [];
-        let data = d;
-        // start grouping
-        groupedNodes.push(data);
-        // a group starts
-        while (
-          provNodes.length - 1 > i &&
-          xExtents[i].stop > xExtents[i + 1].start
-        ) {
-          data = provNodes[i + 1];
-          groupedNodes.push(data);
-          i++;
-        }
-        data = provNodes[i];
-        //groupedNodes.push(data);
-        item = (
-          <GroupedNodes
-            groupedNodes={groupedNodes}
-            barHeight={barHeight}></GroupedNodes>
-        );
-      } else {
-        item = (
-          <ProvenanceNode
-            circle={d}
-            barHeight={barHeight}
-            renderIcons={true}></ProvenanceNode>
-        );
-      }
-      provElements.push(
-        <g transform={`translate(${d.x - d.r},${0})`}>{item}</g>
-      );
-    }
-  } else {
-    for (let i = 0; i < provNodes.length; i++) {
-      let d = provNodes[i];
-      let item = (
-        <ProvenanceNode
-          circle={d}
-          barHeight={barHeight}
-          renderIcons={false}></ProvenanceNode>
-      );
+  for (let i = 0; i < provNodes.length; i++) {
+    let item = (
+      <ProvenanceNode
+        key={i}
+        data={provNodes[i]}
+        barHeight={barHeight}
+        renderIcons={false}></ProvenanceNode>
+    );
 
-      provElements.push(<g transform={`translate(${d.x},${0})`}>{item}</g>);
-    }
+    provElements.push(
+      <g transform={`translate(${provNodes[i].x},${0})`}>{item}</g>
+    );
   }
 
   // for any

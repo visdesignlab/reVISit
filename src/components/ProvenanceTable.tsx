@@ -34,7 +34,15 @@ import eventMapping from "./eventMapping";
 import TagStyles from "./tagstyles.module.css";
 import TagWrapper from "./reactTagWrapper";
 import { TimeFilter, CategoricalFilter } from "./TableFilters";
+import { fireFetch } from "../firebase/fetchData";
 
+import data from "../common/data/provenance_summary.json";
+console.log("DATA HERE", data);
+//const trimmedPromise = fireFetch("provenance");
+/*trimmedPromise.then((promise) => {
+  console.log(promise);
+});
+*/
 const tableIcons: Icons = {
   Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
   Check: forwardRef((props, ref) => <Check {...props} ref={ref} />),
@@ -62,68 +70,61 @@ const tableIcons: Icons = {
 // import data
 const width = 200;
 const MaterialTableWrapper = ({ provenanceData }) => {
+  console.log("in Table", provenanceData);
   const [checkedTags, setCheckedTags] = React.useState([]);
   const [rerender, setRerender] = React.useState(false);
-  const [min, max] = d3.extent(
-    provenanceData,
-    (datum) => datum.provGraph.totalTime
-  );
+  const [min, max] = d3.extent(provenanceData, (datum) => datum.totalTime);
 
   const xScale = d3.scaleLinear().domain([0, max]).range([0, width]);
 
   function renderProvenanceNodes(data) {
-    console.log("render provenance nodes called");
+    console.log("render provenance nodes called", data);
     return (
       <ProvenanceIsolatedNodes
-        nodes={data.provGraph.nodes}></ProvenanceIsolatedNodes>
+        nodes={data.provenance}></ProvenanceIsolatedNodes>
     );
   }
   function renderProvenanceTime(data) {
-    console.log("render provenance time called", data.provGraph);
+    console.log("render provenance time called", data.provenance);
     return (
       <svg width={250} height={20}>
-        <ProvenanceGraph
-          provenanceGraph={data.provGraph}
-          xScale={xScale}
-          renderIcons={false}
-          collapseEvents={true}
-        />
+        <ProvenanceGraph performance={data} xScale={xScale} />
       </svg>
     );
   }
 
-  const [timeColumn] = React.useState({
-    title: "Time To Complete",
-    field: "provGraph",
-    width: 250,
-    cellStyle: {
-      maxWidth: 250,
-      padding: "4px 16px",
-    },
-    customSort: (a, b) => a.provGraph.totalTime - b.provGraph.totalTime,
-    render: renderProvenanceTime,
-    customFilterAndSearch: (filterResults, datum) => {
-      // https://github.com/mbrn/material-table/pull/1351
-      if (
-        datum.provGraph.totalTime >= filterResults[0] &&
-        datum.provGraph.totalTime <= filterResults[1]
-      ) {
-        return true;
-      }
-      delete datum.tableData.checked;
+  const timeColumn = React.useMemo(() => {
+    return {
+      title: "Time To Complete",
+      field: "provGraph",
+      width: 250,
+      cellStyle: {
+        maxWidth: 250,
+        padding: "4px 16px",
+      },
+      customSort: (a, b) => a.totalTime - b.totalTime,
+      render: renderProvenanceTime,
+      customFilterAndSearch: (filterResults, datum) => {
+        // https://github.com/mbrn/material-table/pull/1351
+        if (
+          datum.totalTime >= filterResults[0] &&
+          datum.totalTime <= filterResults[1]
+        ) {
+          return true;
+        }
+        delete datum.tableData.checked;
 
-      return false;
-    },
+        return false;
+      },
 
-    filterComponent: (props) => (
-      <TimeFilterObj
-        {...props}
-        xScale={xScale}
-        data={provenanceData.map(
-          (graph) => graph.provGraph.totalTime
-        )}></TimeFilterObj>
-    ),
-  });
+      filterComponent: (props) => (
+        <TimeFilterObj
+          {...props}
+          xScale={xScale}
+          data={provenanceData.map((graph) => graph.totalTime)}></TimeFilterObj>
+      ),
+    };
+  }, [provenanceData]);
   function generateCategoricalScale(data, width) {
     const uniqueValues = Array.from(new Set(data));
     return d3
@@ -134,33 +135,30 @@ const MaterialTableWrapper = ({ provenanceData }) => {
   }
 
   let correctWidth = 50;
-  let correctScale = generateCategoricalScale(["true", "false"], correctWidth);
+  let correctScale = generateCategoricalScale([1, 0], correctWidth);
 
   const eventNodes = useMemo(() => {
-    return provenanceData
-      .map((graph) => graph.provGraph.nodes.map((node) => node.event))
+    console.log("in Table Memo", JSON.stringify(provenanceData));
+    const val = provenanceData
+      .map((graph) => {
+        return graph.provenance.map((node) => node.event);
+      })
       .flat()
       .filter(
         (item) => item !== "startedProvenance" && item !== "Finished Task"
       );
+    return val;
   });
 
   let eventWidth = 250;
   let eventScale = generateCategoricalScale(eventNodes, eventWidth);
-  /*let correctScale = d3
-    .scaleBand()
-    .rangeRound([0, correctWidth])
-    .padding(0)
-    .domain([true, false]);*/
 
   function renderProvenanceAccuracy(rowData) {
-    console.log(rowData);
-    //const values = [true, false];
-    console.log("x", correctScale(rowData.provGraph.correct));
+    console.log(rowData, correctScale(rowData.answer.accuracy));
     return (
       <svg width={100} height={20}>
         <rect
-          x={correctScale(rowData.provGraph.correct)}
+          x={correctScale(rowData.answer.accuracy)}
           width={20}
           height={20}></rect>
       </svg>
@@ -171,102 +169,110 @@ const MaterialTableWrapper = ({ provenanceData }) => {
     allObj[eventKey] = eventMapping[eventKey].icon;
   });
 
-  const [correct] = React.useState({
-    title: "Accuracy",
-    field: "provGraph correct",
-    width: correctWidth + 10,
-    cellStyle: {
-      maxWidth: correctWidth + 10,
-      padding: "4px 16px",
-    },
-    customSort: (a, b) => a.provGraph.correct - b.provGraph.correct,
-    render: renderProvenanceAccuracy,
-    customFilterAndSearch: (filterResults, datum) => {
-      // https://github.com/mbrn/material-table/pull/1351
-      if (filterResults.includes(datum.provGraph.correct)) {
-        return true;
-      }
-      delete datum.tableData.checked;
-
-      return false;
-    },
-
-    filterComponent: (props) => (
-      <CategoricalFilter
-        {...props}
-        width={correctWidth}
-        scale={correctScale}
-        labels={{ true: "true", false: "false" }}
-        data={provenanceData.map(
-          (graph) => graph.provGraph.correct
-        )}></CategoricalFilter>
-    ),
-  });
-
-  const [eventsCol] = React.useState({
-    title: "Events Used",
-    field: "provGraph",
-    width: 500,
-    cellStyle: {
-      maxWidth: 500,
-      padding: "4px 16px",
-    },
-    customSort: (a, b) => a.provGraph.nodes.length - b.provGraph.nodes.length,
-    render: renderProvenanceNodes,
-    customFilterAndSearch: (filterResults, datum) => {
-      console.log(filterResults, datum);
-      // https://github.com/mbrn/material-table/pull/1351
-      for (let i = 0; i < datum.provGraph.nodes.length; i++) {
-        if (filterResults.includes(datum.provGraph.nodes[i].event)) {
+  const correctColumn = React.useMemo(() => {
+    return {
+      title: "Accuracy",
+      field: "provGraph correct",
+      width: correctWidth + 10,
+      cellStyle: {
+        maxWidth: correctWidth + 10,
+        padding: "4px 16px",
+      },
+      customSort: (a, b) => a.answer.accuracy - b.answer.accuracy,
+      render: renderProvenanceAccuracy,
+      customFilterAndSearch: (filterResults, datum) => {
+        // https://github.com/mbrn/material-table/pull/1351
+        console.log(filterResults, datum.answer.accuracy);
+        if (filterResults.includes(`${datum.answer.accuracy}`)) {
           return true;
         }
-      }
-      // unselect any filtered items
-      delete datum.tableData.checked;
-      return false;
-    },
-    filterComponent: (props) => (
-      <CategoricalFilter
-        {...props}
-        width={eventWidth}
-        scale={eventScale}
-        labels={allObj}
-        data={eventNodes}></CategoricalFilter>
-    ),
-  });
-  const [notesColumn] = React.useState({
-    title: "Notes",
-    field: "None",
-    cellStyle: {
-      padding: "4px 16px",
-    },
-    width: 500,
-    customSort: (a, b) => b.tableData.tags.length - a.tableData.tags.length,
-    filterComponent: () => <div></div>,
-    render: (rowData) => {
-      if (!Array.isArray(rowData.tableData?.tags)) {
-        rowData.tableData.tags = [];
-      }
-      return (
-        <TagWrapper
-          tags={rowData.tableData.tags}
-          onTagChange={(action, tag) => {
-            // check if rowData is selected;
-            if (action === "Add") {
-              rowData.tableData.tags.push(tag);
-            } else {
-              const index = rowData.tableData.tags.findIndex((iterTag) => {
-                return iterTag.name === tag[0]?.name;
-              });
-              if (index > -1) {
-                rowData.tableData.tags.splice(index, 1);
+        delete datum.tableData.checked;
+
+        return false;
+      },
+
+      filterComponent: (props) => (
+        <CategoricalFilter
+          {...props}
+          width={correctWidth}
+          scale={correctScale}
+          labels={{ true: 1, false: 0 }}
+          data={provenanceData.map(
+            (graph) => graph.answer.correct
+          )}></CategoricalFilter>
+      ),
+    };
+  }, [provenanceData]);
+
+  const eventsColumn = React.useMemo(() => {
+    return {
+      title: "Events Used",
+      field: "provGraph",
+      width: 500,
+      cellStyle: {
+        maxWidth: 500,
+        padding: "4px 16px",
+      },
+      customSort: (a, b) => a.provenance.length - b.provenance.length,
+      render: renderProvenanceNodes,
+      customFilterAndSearch: (filterResults, datum) => {
+        console.log(filterResults, datum);
+        // https://github.com/mbrn/material-table/pull/1351
+        for (let i = 0; i < datum.provenance.length; i++) {
+          if (filterResults.includes(datum.provenance[i].event)) {
+            return true;
+          }
+        }
+        // unselect any filtered items
+        delete datum.tableData.checked;
+        return false;
+      },
+      filterComponent: (props) => (
+        <CategoricalFilter
+          {...props}
+          width={eventWidth}
+          scale={eventScale}
+          labels={allObj}
+          data={eventNodes}></CategoricalFilter>
+      ),
+    };
+  }, [provenanceData]);
+  const notesColumn = React.useMemo(() => {
+    return {
+      title: "Notes",
+      field: "None",
+      cellStyle: {
+        padding: "4px 16px",
+      },
+      width: 500,
+      customSort: (a, b) => b.tableData.tags.length - a.tableData.tags.length,
+      filterComponent: () => <div></div>,
+      render: (rowData) => {
+        if (!Array.isArray(rowData.tableData?.tags)) {
+          rowData.tableData.tags = [];
+        }
+        return (
+          <TagWrapper
+            tags={rowData.tableData.tags}
+            onTagChange={(action, tag) => {
+              // check if rowData is selected;
+              if (action === "Add") {
+                rowData.tableData.tags.push(tag);
+              } else {
+                const index = rowData.tableData.tags.findIndex((iterTag) => {
+                  return iterTag.name === tag[0]?.name;
+                });
+                if (index > -1) {
+                  rowData.tableData.tags.splice(index, 1);
+                }
               }
-            }
-          }}></TagWrapper>
-      );
-    },
-  });
+            }}></TagWrapper>
+        );
+      },
+    };
+  }, [provenanceData]);
   const TimeFilterObj = TimeFilter;
+  console.log("about to render table", provenanceData);
   return (
     <MaterialTable
       title={"Provenance Table"}
@@ -302,7 +308,7 @@ const MaterialTableWrapper = ({ provenanceData }) => {
           return <MTableFilterRow styles={styles} {...props}></MTableFilterRow>;
         },
       }}
-      columns={[timeColumn, correct, eventsCol, notesColumn]}
+      columns={[timeColumn, correctColumn, eventsColumn, notesColumn]}
       onSelectionChange={(selections) => {
         if (selections.length === 0) {
           setCheckedTags([]);
@@ -374,7 +380,8 @@ const MaterialTableWrapper = ({ provenanceData }) => {
       options={{
         selection: true,
         search: false,
-        paging: false,
+        paging: true,
+        pageSize: 15,
         filtering: true,
         maxBodyHeight: "93vh",
       }}
