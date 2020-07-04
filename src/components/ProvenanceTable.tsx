@@ -93,36 +93,38 @@ const MaterialTableWrapper = ({ provenanceData }) => {
     );
   }
 
-  const [timeColumn] = React.useState({
-    title: "Time To Complete",
-    field: "provGraph",
-    width: 250,
-    cellStyle: {
-      maxWidth: 250,
-      padding: "4px 16px",
-    },
-    customSort: (a, b) => a.totalTime - b.totalTime,
-    render: renderProvenanceTime,
-    customFilterAndSearch: (filterResults, datum) => {
-      // https://github.com/mbrn/material-table/pull/1351
-      if (
-        datum.totalTime >= filterResults[0] &&
-        datum.totalTime <= filterResults[1]
-      ) {
-        return true;
-      }
-      delete datum.tableData.checked;
+  const timeColumn = React.useMemo(() => {
+    return {
+      title: "Time To Complete",
+      field: "provGraph",
+      width: 250,
+      cellStyle: {
+        maxWidth: 250,
+        padding: "4px 16px",
+      },
+      customSort: (a, b) => a.totalTime - b.totalTime,
+      render: renderProvenanceTime,
+      customFilterAndSearch: (filterResults, datum) => {
+        // https://github.com/mbrn/material-table/pull/1351
+        if (
+          datum.totalTime >= filterResults[0] &&
+          datum.totalTime <= filterResults[1]
+        ) {
+          return true;
+        }
+        delete datum.tableData.checked;
 
-      return false;
-    },
+        return false;
+      },
 
-    filterComponent: (props) => (
-      <TimeFilterObj
-        {...props}
-        xScale={xScale}
-        data={provenanceData.map((graph) => graph.totalTime)}></TimeFilterObj>
-    ),
-  });
+      filterComponent: (props) => (
+        <TimeFilterObj
+          {...props}
+          xScale={xScale}
+          data={provenanceData.map((graph) => graph.totalTime)}></TimeFilterObj>
+      ),
+    };
+  }, [provenanceData]);
   function generateCategoricalScale(data, width) {
     const uniqueValues = Array.from(new Set(data));
     return d3
@@ -167,102 +169,108 @@ const MaterialTableWrapper = ({ provenanceData }) => {
     allObj[eventKey] = eventMapping[eventKey].icon;
   });
 
-  const [correct] = React.useState({
-    title: "Accuracy",
-    field: "provGraph correct",
-    width: correctWidth + 10,
-    cellStyle: {
-      maxWidth: correctWidth + 10,
-      padding: "4px 16px",
-    },
-    customSort: (a, b) => a.answer.accuracy - b.answer.accuracy,
-    render: renderProvenanceAccuracy,
-    customFilterAndSearch: (filterResults, datum) => {
-      // https://github.com/mbrn/material-table/pull/1351
-      console.log(filterResults, datum.answer.accuracy);
-      if (filterResults.includes(`${datum.answer.accuracy}`)) {
-        return true;
-      }
-      delete datum.tableData.checked;
-
-      return false;
-    },
-
-    filterComponent: (props) => (
-      <CategoricalFilter
-        {...props}
-        width={correctWidth}
-        scale={correctScale}
-        labels={{ true: 1, false: 0 }}
-        data={provenanceData.map(
-          (graph) => graph.answer.correct
-        )}></CategoricalFilter>
-    ),
-  });
-
-  const [eventsCol] = React.useState({
-    title: "Events Used",
-    field: "provGraph",
-    width: 500,
-    cellStyle: {
-      maxWidth: 500,
-      padding: "4px 16px",
-    },
-    customSort: (a, b) => a.provenance.length - b.provenance.length,
-    render: renderProvenanceNodes,
-    customFilterAndSearch: (filterResults, datum) => {
-      console.log(filterResults, datum);
-      // https://github.com/mbrn/material-table/pull/1351
-      for (let i = 0; i < datum.provenance.length; i++) {
-        if (filterResults.includes(datum.provenance[i].event)) {
+  const correctColumn = React.useMemo(() => {
+    return {
+      title: "Accuracy",
+      field: "provGraph correct",
+      width: correctWidth + 10,
+      cellStyle: {
+        maxWidth: correctWidth + 10,
+        padding: "4px 16px",
+      },
+      customSort: (a, b) => a.answer.accuracy - b.answer.accuracy,
+      render: renderProvenanceAccuracy,
+      customFilterAndSearch: (filterResults, datum) => {
+        // https://github.com/mbrn/material-table/pull/1351
+        console.log(filterResults, datum.answer.accuracy);
+        if (filterResults.includes(`${datum.answer.accuracy}`)) {
           return true;
         }
-      }
-      // unselect any filtered items
-      delete datum.tableData.checked;
-      return false;
-    },
-    filterComponent: (props) => (
-      <CategoricalFilter
-        {...props}
-        width={eventWidth}
-        scale={eventScale}
-        labels={allObj}
-        data={eventNodes}></CategoricalFilter>
-    ),
-  });
-  const [notesColumn] = React.useState({
-    title: "Notes",
-    field: "None",
-    cellStyle: {
-      padding: "4px 16px",
-    },
-    width: 500,
-    customSort: (a, b) => b.tableData.tags.length - a.tableData.tags.length,
-    filterComponent: () => <div></div>,
-    render: (rowData) => {
-      if (!Array.isArray(rowData.tableData?.tags)) {
-        rowData.tableData.tags = [];
-      }
-      return (
-        <TagWrapper
-          tags={rowData.tableData.tags}
-          onTagChange={(action, tag) => {
-            // check if rowData is selected;
-            if (action === "Add") {
-              rowData.tableData.tags.push(tag);
-            } else {
-              const index = rowData.tableData.tags.findIndex((iterTag) => {
-                return iterTag.name === tag[0]?.name;
-              });
-              if (index > -1) {
-                rowData.tableData.tags.splice(index, 1);
+        delete datum.tableData.checked;
+
+        return false;
+      },
+
+      filterComponent: (props) => (
+        <CategoricalFilter
+          {...props}
+          width={correctWidth}
+          scale={correctScale}
+          labels={{ true: 1, false: 0 }}
+          data={provenanceData.map(
+            (graph) => graph.answer.correct
+          )}></CategoricalFilter>
+      ),
+    };
+  }, [provenanceData]);
+
+  const eventsColumn = React.useMemo(() => {
+    return {
+      title: "Events Used",
+      field: "provGraph",
+      width: 500,
+      cellStyle: {
+        maxWidth: 500,
+        padding: "4px 16px",
+      },
+      customSort: (a, b) => a.provenance.length - b.provenance.length,
+      render: renderProvenanceNodes,
+      customFilterAndSearch: (filterResults, datum) => {
+        console.log(filterResults, datum);
+        // https://github.com/mbrn/material-table/pull/1351
+        for (let i = 0; i < datum.provenance.length; i++) {
+          if (filterResults.includes(datum.provenance[i].event)) {
+            return true;
+          }
+        }
+        // unselect any filtered items
+        delete datum.tableData.checked;
+        return false;
+      },
+      filterComponent: (props) => (
+        <CategoricalFilter
+          {...props}
+          width={eventWidth}
+          scale={eventScale}
+          labels={allObj}
+          data={eventNodes}></CategoricalFilter>
+      ),
+    };
+  }, [provenanceData]);
+  const notesColumn = React.useMemo(() => {
+    return {
+      title: "Notes",
+      field: "None",
+      cellStyle: {
+        padding: "4px 16px",
+      },
+      width: 500,
+      customSort: (a, b) => b.tableData.tags.length - a.tableData.tags.length,
+      filterComponent: () => <div></div>,
+      render: (rowData) => {
+        if (!Array.isArray(rowData.tableData?.tags)) {
+          rowData.tableData.tags = [];
+        }
+        return (
+          <TagWrapper
+            tags={rowData.tableData.tags}
+            onTagChange={(action, tag) => {
+              // check if rowData is selected;
+              if (action === "Add") {
+                rowData.tableData.tags.push(tag);
+              } else {
+                const index = rowData.tableData.tags.findIndex((iterTag) => {
+                  return iterTag.name === tag[0]?.name;
+                });
+                if (index > -1) {
+                  rowData.tableData.tags.splice(index, 1);
+                }
               }
-            }
-          }}></TagWrapper>
-      );
-    },
-  });
+            }}></TagWrapper>
+        );
+      },
+    };
+  }, [provenanceData]);
   const TimeFilterObj = TimeFilter;
   console.log("about to render table", provenanceData);
   return (
@@ -300,7 +308,7 @@ const MaterialTableWrapper = ({ provenanceData }) => {
           return <MTableFilterRow styles={styles} {...props}></MTableFilterRow>;
         },
       }}
-      columns={[timeColumn, correct, eventsCol, notesColumn]}
+      columns={[timeColumn, correctColumn, eventsColumn, notesColumn]}
       onSelectionChange={(selections) => {
         if (selections.length === 0) {
           setCheckedTags([]);
@@ -373,6 +381,7 @@ const MaterialTableWrapper = ({ provenanceData }) => {
         selection: true,
         search: false,
         paging: true,
+        pageSize: 15,
         filtering: true,
         maxBodyHeight: "93vh",
       }}
