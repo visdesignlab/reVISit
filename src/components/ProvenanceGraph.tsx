@@ -4,7 +4,7 @@ import eventMapping from "./eventMapping";
 import * as d3 from "d3";
 import chroma from "chroma-js";
 
-const ProvenanceGraph = ({ performance, xScale, renderIcons }) => {
+const ProvenanceGraph = ({ performance, xScale }) => {
   const svgWidth = 250;
   let svgHeight = 75;
 
@@ -26,6 +26,7 @@ const ProvenanceGraph = ({ performance, xScale, renderIcons }) => {
   ];
 
   let eventTypes = new Set();
+  console.log(performance);
   performance.provenance.forEach((node) => {
     if (node.event === "startedProvenance" || node.event === "Finished Task") {
       return;
@@ -38,10 +39,9 @@ const ProvenanceGraph = ({ performance, xScale, renderIcons }) => {
       <g>
         <rect key={i} width={d.width} height={d.height} fill={d.fill} />
         <ProvenanceNodes
-          key={i}
-          provenanceGraph={performance}
+          key={`${i}node`}
+          performance={performance}
           xScale={xScale}
-          renderIcons={renderIcons && d.type === "overall"}
           eventType={d.type}></ProvenanceNodes>
       </g>
     );

@@ -88,12 +88,7 @@ const MaterialTableWrapper = ({ provenanceData }) => {
     console.log("render provenance time called", data.provenance);
     return (
       <svg width={250} height={20}>
-        <ProvenanceGraph
-          provenanceGraph={data.provenance}
-          xScale={xScale}
-          renderIcons={false}
-          collapseEvents={true}
-        />
+        <ProvenanceGraph performance={data} xScale={xScale} />
       </svg>
     );
   }
@@ -157,7 +152,7 @@ const MaterialTableWrapper = ({ provenanceData }) => {
   let eventScale = generateCategoricalScale(eventNodes, eventWidth);
 
   function renderProvenanceAccuracy(rowData) {
-    //const values = [true, false];
+    console.log(rowData, correctScale(rowData.answer.accuracy));
     return (
       <svg width={100} height={20}>
         <rect
@@ -184,7 +179,8 @@ const MaterialTableWrapper = ({ provenanceData }) => {
     render: renderProvenanceAccuracy,
     customFilterAndSearch: (filterResults, datum) => {
       // https://github.com/mbrn/material-table/pull/1351
-      if (filterResults.includes(datum.answer.accuracy)) {
+      console.log(filterResults, datum.answer.accuracy);
+      if (filterResults.includes(`${datum.answer.accuracy}`)) {
         return true;
       }
       delete datum.tableData.checked;
@@ -311,7 +307,7 @@ const MaterialTableWrapper = ({ provenanceData }) => {
         }
       }}
       actions={[
-        /*{
+        {
           myComponent: (props) => {
             return (
               <TagWrapper
@@ -344,7 +340,7 @@ const MaterialTableWrapper = ({ provenanceData }) => {
                 }}></TagWrapper>
             );
           },
-        },*/
+        },
         {
           tooltip: "Update tags of selected rows (appends ontop).",
           icon: (props, ref) => <Label {...props} ref={ref} />,

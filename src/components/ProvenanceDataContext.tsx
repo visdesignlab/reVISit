@@ -9,11 +9,54 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   const [allProvenanceData, setAllProvenanceData] = useState(
     processRawProvenanceData(initProvData)
   );
+
+  const [selectedTaskId, setSelectedTaskId] = React.useState("S-task01");
+  const taskStructure = [
+    { name: "Task 1", key: "S-task01", prompt: "" },
+    { name: "Task 2", key: "S-task02" },
+    { name: "Task 3", key: "S-task03" },
+    { name: "Task 4", key: "S-task04" },
+    { name: "Task 5", key: "S-task05" },
+    { name: "Task 6", key: "S-task06" },
+    { name: "Task 7", key: "S-task07" },
+    { name: "Task 8", key: "S-task08" },
+    { name: "Task 9", key: "S-task09" },
+    { name: "Task 10", key: "S-task10" },
+    { name: "Task 11", key: "S-task11" },
+    { name: "Task 12", key: "S-task12" },
+    { name: "Task 13", key: "S-task13" },
+    { name: "Task 14", key: "S-task14" },
+    { name: "Task 15", key: "S-task15" },
+    { name: "Task 16", key: "S-task16" },
+  ];
+
+  function handleChangeSelectedTaskId(event) {
+    setSelectedTaskId(event.target.value);
+  }
+
+  let currentTaskData = React.useMemo(() => {
+    let internalTaskData = [];
+    allProvenanceData.forEach((participant) => {
+      const newObj = Object.assign(
+        { id: participant.id },
+        participant.data[selectedTaskId]
+      );
+
+      if (participant.data[selectedTaskId]) {
+        internalTaskData.push(newObj);
+      }
+    });
+    return internalTaskData;
+  }, [allProvenanceData, selectedTaskId]);
   console.log("relative", allProvenanceData);
   return (
     <ProvenanceDataContext.Provider
       value={{
         allProvenanceData,
+        currentTaskData,
+        taskStructure,
+        handleChangeSelectedTaskId,
+        selectedTaskId,
       }}>
       {children}
     </ProvenanceDataContext.Provider>

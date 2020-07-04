@@ -11,26 +11,23 @@ import Upload from "./pages/Upload";
 import Overview from "./pages/Overview";
 import Export from "./pages/Export";
 import Table from "./pages/Table";
-import { ProvenanceDataContextProvider } from "./components/ProvenanceDataContext";
 
 const Main = ({ location }) => {
   return (
-    <ProvenanceDataContextProvider>
-      <Wrapper>
-        <TransitionGroup className="transition-group">
-          <CSSTransition key={location.key} timeout={500} classNames="fade">
-            <section className="route-section">
-              <Switch location={location}>
-                <Route path="/Upload" component={Upload}></Route>
-                <Route path="/Overview" component={Overview}></Route>
-                <Route path="/Table" component={Table}></Route>
-                <Route path="/Export" component={Export}></Route>
-              </Switch>
-            </section>
-          </CSSTransition>
-        </TransitionGroup>
-      </Wrapper>
-    </ProvenanceDataContextProvider>
+    <Wrapper>
+      <TransitionGroup className="transition-group">
+        <CSSTransition key={location.key} timeout={500} classNames="fade">
+          <section className="route-section">
+            <Switch location={location}>
+              <Route path="/Upload" component={Upload}></Route>
+              <Route path="/Overview" component={Overview}></Route>
+              <Route path="/Table" component={Table}></Route>
+              <Route path="/Export" component={Export}></Route>
+            </Switch>
+          </section>
+        </CSSTransition>
+      </TransitionGroup>
+    </Wrapper>
   );
 };
 

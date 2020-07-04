@@ -8,12 +8,7 @@ const svgWidth = 200;
 const svgHeight = 100;
 const margin = { top: 5, right: 5, bottom: 5, left: 5 };
 
-const ProvenanceNodes = ({
-  performance,
-  xScale,
-  renderIcons,
-  eventType,
-}: any) => {
+const ProvenanceNodes = ({ performance, xScale, eventType }: any) => {
   if (!performance) {
     return <div></div>;
   }
@@ -48,12 +43,15 @@ const ProvenanceNodes = ({
   for (let i = 0; i < provNodes.length; i++) {
     let item = (
       <ProvenanceNode
+        key={i}
         data={provNodes[i]}
         barHeight={barHeight}
         renderIcons={false}></ProvenanceNode>
     );
 
-    provElements.push(<g transform={`translate(${d.x},${0})`}>{item}</g>);
+    provElements.push(
+      <g transform={`translate(${provNodes[i].x},${0})`}>{item}</g>
+    );
   }
 
   // for any
