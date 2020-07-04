@@ -7,9 +7,12 @@ import {
   PlusSquareOutlined
 } from "@ant-design/icons";
 
+import CollapsibleTable from '../components/EventTable'
+import * as d3 from "d3";
+
 let allData = require(`../common/data/provenance_summary.json`);
 
-//wrange data into provenance first format: 
+//wrangle data into provenance first format: 
 let provDict = {};
 let participantDict = {};
 
@@ -42,6 +45,7 @@ allData.map(p => {
       lastAction = instance;
 
       provDict[eventName] ? provDict[eventName].instances.push(instance) : provDict[eventName] = { instances: [instance] };
+
     })
 
   })
@@ -49,7 +53,61 @@ allData.map(p => {
   // [{'event':'eventName', instances:[]}]
 })
 
+//map each event to a numeric index for sequence matching
+let allEvents = Object.keys(provDict);
+allEvents.map((k, i) => {
+  provDict[k].index = i;
+})
+
+let sequences = [];
+//create sequence arrays
+allData.map(p => {
+  let id = p.id;
+  let keys = Object.keys(p.data);
+  //tasks are objects that have a provenance array
+  let tasks = keys.filter(k => p.data[k].provenance);
+  tasks.map(taskID => {
+    let task = p.data[taskID];
+    let user_task_seq = [];
+    task.provenance.map((event, i) => {
+      let eventName = event.event
+      let eventNumber = provDict[eventName].index;
+      user_task_seq.push(eventNumber)
+    })
+
+    sequences.push({ task, seq: user_task_seq });
+  })
+})
+// console.log(JSON.stringify(sequences['S-task01']))
+
+
+console.log(sequences)
 console.log(allData, provDict)
+//filter out sequences according to any taskInfo (id, accuracy, visType, etc..)
+
+let seq = sequences.filter(s => s.task.visType == 'adjMatrix' && s.task.taskID == 'S-task16')
+
+d3.json('http://127.0.0.1:5000/prefix', {
+  method: "POST",
+  body: JSON.stringify(seq.map(s => s.seq)),
+  headers: {
+    "Content-type": "application/json; charset=UTF-8"
+  }
+})
+  .then(array => {
+    let results = array.sort((a, b) => a[0] > b[0] ? 1 : -1).map(arr => {
+      return [arr[0], arr[1].map(e => allEvents[e])]
+    })
+    console.log(results);
+
+  });
+
+// d3.json("http://127.0.0.1:5000/test").then(
+//   function (d) {
+
+//   })
+
+
 
 const { Search } = Input;
 
@@ -97,6 +155,8 @@ const Overview = ({ location }) => {
     }
   }
 
+
+
   return <div style={{ padding: "15px" }}>
     <Search
       placeholder="Create Event Type"
@@ -108,7 +168,8 @@ const Overview = ({ location }) => {
     // value={search}
     />
     <div style={{ 'paddingTop': "15px" }}>
-      <EventAccordion data={data} onChange={setData} />
+      <CollapsibleTable data={data} onChange={setData} />
+      {/* <EventAccordion data={data} onChange={setData} /> */}
     </div>
   </div >;
 };
