@@ -77,10 +77,8 @@ const SidePane = ({}) => {
         })}
       </List>
       <Divider />
-      <FormControl variant="outlined">
-        <InputLabel id="demo-simple-select-outlined-label">
-          Selected Task
-        </InputLabel>
+      <FormControl variant="outlined" className={styles.SelectedTaskInput}>
+        <InputLabel id="demo-simple-select-outlined-label">Task</InputLabel>
         <Select
           labelId="demo-simple-select-outlined-label"
           id="demo-simple-select-outlined"
