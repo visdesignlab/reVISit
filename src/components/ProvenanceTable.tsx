@@ -1,6 +1,6 @@
 //@ts-nocheck
 
-import React, { forwardRef, useMemo } from "react";
+import React, { useState, forwardRef, useMemo } from "react";
 import MaterialTable, {
   MTableToolbar,
   MTableAction,
@@ -73,9 +73,6 @@ const MaterialTableWrapper = ({ provenanceData }) => {
   console.log("in Table", provenanceData);
   const [checkedTags, setCheckedTags] = React.useState([]);
   const [rerender, setRerender] = React.useState(false);
-  const [min, max] = d3.extent(provenanceData, (datum) => datum.totalTime);
-
-  const xScale = d3.scaleLinear().domain([0, max]).range([0, width]);
 
   function renderProvenanceNodes(data) {
     console.log("render provenance nodes called", data);
@@ -84,61 +81,11 @@ const MaterialTableWrapper = ({ provenanceData }) => {
         nodes={data.provenance}></ProvenanceIsolatedNodes>
     );
   }
-  function renderProvenanceTime(data) {
-    console.log("render provenance time called", data.provenance);
-    return (
-      <svg width={250} height={20}>
-        <ProvenanceGraph performance={data} xScale={xScale} />
-      </svg>
-    );
-  }
-
-  const timeColumn = React.useMemo(() => {
-    return {
-      title: "Time To Complete",
-      field: "provGraph",
-      width: 250,
-      cellStyle: {
-        maxWidth: 250,
-        padding: "4px 16px",
-      },
-      customSort: (a, b) => a.totalTime - b.totalTime,
-      render: renderProvenanceTime,
-      customFilterAndSearch: (filterResults, datum) => {
-        // https://github.com/mbrn/material-table/pull/1351
-        if (
-          datum.totalTime >= filterResults[0] &&
-          datum.totalTime <= filterResults[1]
-        ) {
-          return true;
-        }
-        delete datum.tableData.checked;
-
-        return false;
-      },
-
-      filterComponent: (props) => (
-        <TimeFilterObj
-          {...props}
-          xScale={xScale}
-          data={provenanceData.map((graph) => graph.totalTime)}></TimeFilterObj>
-      ),
-    };
-  }, [provenanceData]);
-  function generateCategoricalScale(data, width) {
-    const uniqueValues = Array.from(new Set(data));
-    return d3
-      .scaleBand()
-      .rangeRound([0, width])
-      .padding(0)
-      .domain(uniqueValues);
-  }
-
-  let correctWidth = 50;
-  let correctScale = generateCategoricalScale([1, 0], correctWidth);
+  const [timeColumn, setTimeColumn] = useState(
+    renderTimeColumn(provenanceData, 250)
+  );
 
   const eventNodes = useMemo(() => {
-    console.log("in Table Memo", JSON.stringify(provenanceData));
     const val = provenanceData
       .map((graph) => {
         return graph.provenance.map((node) => node.event);
@@ -148,63 +95,23 @@ const MaterialTableWrapper = ({ provenanceData }) => {
         (item) => item !== "startedProvenance" && item !== "Finished Task"
       );
     return val;
-  });
+  }, [provenanceData]);
 
   let eventWidth = 250;
   let eventScale = generateCategoricalScale(eventNodes, eventWidth);
 
-  function renderProvenanceAccuracy(rowData) {
-    console.log(rowData, correctScale(rowData.answer.accuracy));
-    return (
-      <svg width={100} height={20}>
-        <rect
-          x={correctScale(rowData.answer.accuracy)}
-          width={20}
-          height={20}></rect>
-      </svg>
-    );
-  }
   const allObj = {};
   Object.keys(eventMapping).forEach((eventKey) => {
     allObj[eventKey] = eventMapping[eventKey].icon;
   });
 
-  const correctColumn = React.useMemo(() => {
-    return {
-      title: "Accuracy",
-      field: "provGraph correct",
-      width: correctWidth + 10,
-      cellStyle: {
-        maxWidth: correctWidth + 10,
-        padding: "4px 16px",
-      },
-      customSort: (a, b) => a.answer.accuracy - b.answer.accuracy,
-      render: renderProvenanceAccuracy,
-      customFilterAndSearch: (filterResults, datum) => {
-        // https://github.com/mbrn/material-table/pull/1351
-        console.log(filterResults, datum.answer.accuracy);
-        if (filterResults.includes(`${datum.answer.accuracy}`)) {
-          return true;
-        }
-        delete datum.tableData.checked;
-
-        return false;
-      },
-
-      filterComponent: (props) => (
-        <CategoricalFilter
-          {...props}
-          width={correctWidth}
-          scale={correctScale}
-          labels={{ true: 1, false: 0 }}
-          data={provenanceData.map(
-            (graph) => graph.answer.correct
-          )}></CategoricalFilter>
-      ),
-    };
-  }, [provenanceData]);
+  let accuracyWidth = 50;
+  const [accuracyColumn, setAccuracyColumn] = useState(
+    renderAccuracyColumn(provenanceData, accuracyWidth)
+  );
 
   const eventsColumn = React.useMemo(() => {
+    console.log("IN NEW MEMO EVENTS");
     return {
       title: "Events Used",
       field: "provGraph",
@@ -308,7 +215,7 @@ const MaterialTableWrapper = ({ provenanceData }) => {
           return <MTableFilterRow styles={styles} {...props}></MTableFilterRow>;
         },
       }}
-      columns={[timeColumn, correctColumn, eventsColumn, notesColumn]}
+      columns={[timeColumn, accuracyColumn, eventsColumn, notesColumn]}
       onSelectionChange={(selections) => {
         if (selections.length === 0) {
           setCheckedTags([]);
@@ -355,6 +262,10 @@ const MaterialTableWrapper = ({ provenanceData }) => {
           onClick: (evt, data) => {
             data.forEach((datum) => {
               if (datum.tableData.checked) {
+                // if row has not been rendered yet, add tags array
+                if (!Array.isArray(datum.tableData?.tags)) {
+                  datum.tableData.tags = [];
+                }
                 checkedTags.forEach((tag) => {
                   const datumTagIndex = datum.tableData.tags.findIndex(
                     (currentTag) => currentTag.name === tag.name
@@ -371,7 +282,7 @@ const MaterialTableWrapper = ({ provenanceData }) => {
                 });
               }
             });
-            setRerender(!rerender);
+            //setRerender(!rerender);
           },
         },
       ]}
@@ -388,6 +299,111 @@ const MaterialTableWrapper = ({ provenanceData }) => {
     />
   );
 };
+
+function generateCategoricalScale(data, width) {
+  const uniqueValues = Array.from(new Set(data));
+  return d3.scaleBand().rangeRound([0, width]).padding(0).domain(uniqueValues);
+}
+/* Accuracy */
+function renderAccuracyCell(rowData, accuracyScale) {
+  return (
+    <svg width={100} height={20}>
+      <rect
+        x={accuracyScale(rowData.answer.accuracy)}
+        width={20}
+        height={20}></rect>
+    </svg>
+  );
+}
+
+function renderAccuracyColumn(currentProvenanceData, columnWidth) {
+  // TODO: Refactor to categorical or Numerical
+  let accuracyScale = generateCategoricalScale([1, 0], columnWidth);
+
+  return {
+    title: "Accuracy",
+    field: "provGraph correct",
+    width: columnWidth,
+    cellStyle: {
+      maxWidth: columnWidth,
+      padding: "4px 16px",
+    },
+    customSort: (a, b) => a.answer.accuracy - b.answer.accuracy,
+    render: (rowData) => renderAccuracyCell(rowData, accuracyScale),
+    customFilterAndSearch: (filterResults, datum) => {
+      // https://github.com/mbrn/material-table/pull/1351
+      // TODO: Refactor to categorical or Numerical
+      if (filterResults.includes(`${datum.answer.accuracy}`)) {
+        return true;
+      }
+      // if outside of filter, remove from item
+      delete datum.tableData.checked;
+
+      return false;
+    },
+
+    filterComponent: (props) => (
+      <CategoricalFilter
+        {...props}
+        width={columnWidth}
+        scale={accuracyScale}
+        labels={{ true: 1, false: 0 }}
+        data={currentProvenanceData.map(
+          // TODO: fix from hard coded
+          (graph) => graph.answer.correct
+        )}></CategoricalFilter>
+    ),
+  };
+}
+
+/* Time */
+
+function renderTimeCell(rowData, timeScale) {
+  return (
+    <svg width={timeScale.range()?.[1]} height={20}>
+      <ProvenanceGraph performance={rowData} xScale={timeScale} />
+    </svg>
+  );
+}
+function renderTimeColumn(currentProvenanceData, columnWidth) {
+  const max = d3.max(currentProvenanceData, (datum) => datum.totalTime);
+
+  const timeScale = d3.scaleLinear().domain([0, max]).range([0, columnWidth]);
+  console.log("MAX TIME", max, columnWidth);
+
+  return {
+    title: "Time To Complete",
+    field: "provGraph",
+    width: columnWidth,
+    cellStyle: {
+      maxWidth: columnWidth,
+      padding: "4px 16px",
+    },
+    customSort: (a, b) => a.totalTime - b.totalTime,
+    render: (rowData) => renderTimeCell(rowData, timeScale),
+    customFilterAndSearch: (filterResults, datum) => {
+      // https://github.com/mbrn/material-table/pull/1351
+      if (
+        datum.totalTime >= filterResults[0] &&
+        datum.totalTime <= filterResults[1]
+      ) {
+        return true;
+      }
+      delete datum.tableData.checked;
+
+      return false;
+    },
+
+    filterComponent: (props) => (
+      <TimeFilter
+        {...props}
+        xScale={timeScale}
+        data={currentProvenanceData.map(
+          (graph) => graph.totalTime
+        )}></TimeFilter>
+    ),
+  };
+}
 
 export default MaterialTableWrapper;
 
