@@ -125,32 +125,12 @@ d3.json('http://18.222.101.54//prefix', {
     console.log(allEvents, results)
   });
 
-// return output
-
-// }
-
-
-// console.log(JSON.stringify(sequences['S-task01']))
-
-
-// console.log(sequences)
-
-
-// console.log(allData, provDict)
-//filter out sequences according to any taskInfo (id, accuracy, visType, etc..)
-
-
-
-// d3.json("http://127.0.0.1:5000/test").then(
-//   function (d) {
-
-//   })
 
 
 
 const { Search } = Input;
 
-const Overview = async ({ location }) => {
+const Overview = ({ location }) => {
   let allEvents = Object.keys(provDict).map((k) => {
     return {
       // title: () => (
@@ -213,7 +193,7 @@ const Overview = async ({ location }) => {
     // value={search}
     />
     <div style={{ 'paddingTop': "15px" }}>
-      <CollapsibleTable data={data} onChange={setData} />
+      {/* <CollapsibleTable data={data} onChange={setData} /> */}
       {/* <EventAccordion data={data} onChange={setData} /> */}
     </div>
   </div>)
