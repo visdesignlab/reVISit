@@ -48,7 +48,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     });
     return internalTaskData;
   }, [allProvenanceData, selectedTaskId]);
-  console.log("relative", allProvenanceData);
+  // console.log("relative", allProvenanceData);
   return (
     <ProvenanceDataContext.Provider
       value={{
@@ -121,7 +121,7 @@ function processRawProvenanceData(unrelativeProvenanceData) {
       }
       return 0;
     });
-    console.log("longest time", longestTimeForTask);
+    // console.log("longest time", longestTimeForTask);
     unrelativeProvenanceData.forEach((participant, index) => {
       if (participant.data && participant.data[taskId]) {
         relativeProvenanceData[index].data[taskId] = calculateRelativeProvGraph(
@@ -130,7 +130,7 @@ function processRawProvenanceData(unrelativeProvenanceData) {
         );
       } else {
         delete relativeProvenanceData[index][taskId];
-        console.log("NO DATA", relativeProvenanceData[index], taskId);
+        // console.log("NO DATA", relativeProvenanceData[index], taskId);
       }
     });
   });

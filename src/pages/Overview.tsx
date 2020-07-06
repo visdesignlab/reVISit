@@ -74,32 +74,69 @@ allData.map(p => {
       user_task_seq.push(eventNumber)
     })
 
-    sequences.push({ task, seq: user_task_seq });
+    //remove duplicates
+    let nodups = user_task_seq.filter(function (item, pos, arr) {
+      // Always keep the 0th element as there is nothing before it
+      // Then check if each element is different than the one before it
+      return pos === 0 || item !== arr[pos - 1];
+    });
+
+
+    // 
+
+    sequences.push({ task, seq: user_task_seq, sum_seq: nodups });
   })
 })
-// console.log(JSON.stringify(sequences['S-task01']))
 
 
-console.log(sequences)
-console.log(allData, provDict)
-//filter out sequences according to any taskInfo (id, accuracy, visType, etc..)
+
 
 let seq = sequences.filter(s => s.task.visType == 'adjMatrix' && s.task.taskID == 'S-task16')
 
+// async function patternCount(sequence, seqField) {
+console.log('calling patternCount')
+let output;
+
 d3.json('http://127.0.0.1:5000/prefix', {
   method: "POST",
-  body: JSON.stringify(seq.map(s => s.seq)),
+  body: JSON.stringify(seq.map(s => s['sum_seq'])),
   headers: {
     "Content-type": "application/json; charset=UTF-8"
   }
 })
   .then(array => {
+
+    array.map(a => {
+      if (a[1][1] == a[1][2]) {
+        console.log('found a duplicate')
+        console.log(a[1])
+      }
+
+    })
+
+
+
     let results = array.sort((a, b) => a[0] > b[0] ? 1 : -1).map(arr => {
       return [arr[0], arr[1].map(e => allEvents[e])]
     })
-    console.log(results);
-
+    console.log(allEvents, results)
   });
+
+// return output
+
+// }
+
+
+// console.log(JSON.stringify(sequences['S-task01']))
+
+
+// console.log(sequences)
+
+
+// console.log(allData, provDict)
+//filter out sequences according to any taskInfo (id, accuracy, visType, etc..)
+
+
 
 // d3.json("http://127.0.0.1:5000/test").then(
 //   function (d) {
@@ -110,7 +147,7 @@ d3.json('http://127.0.0.1:5000/prefix', {
 
 const { Search } = Input;
 
-const Overview = ({ location }) => {
+const Overview = async ({ location }) => {
   let allEvents = Object.keys(provDict).map((k) => {
     return {
       // title: () => (
@@ -130,6 +167,12 @@ const Overview = ({ location }) => {
       children: [],
     };
   });
+
+
+
+  // let out = await patternCount(seq, 'seq');
+  // console.log(out)
+
 
   const [data, setData] = React.useState(
     allEvents.sort((a, b) => (a.count > b.count ? -1 : 1))
@@ -156,7 +199,7 @@ const Overview = ({ location }) => {
 
 
 
-  return <div style={{ padding: "15px" }}>
+  return (<div style={{ padding: "15px" }}>
     <Search
       placeholder="Create Event Type"
       enterButton={<PlusSquareOutlined />}
@@ -170,7 +213,7 @@ const Overview = ({ location }) => {
       <CollapsibleTable data={data} onChange={setData} />
       {/* <EventAccordion data={data} onChange={setData} /> */}
     </div>
-  );
+  </div>)
 };
 
 export default Overview;
