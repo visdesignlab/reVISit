@@ -202,6 +202,7 @@ const BrushableHistogram = ({ data, xScale, setMinimum, setMaximum }) => {
 };
 
 export const TimeFilter = ({ data, xScale, columnDef, onFilterChanged }) => {
+  console.log("new Time Filter");
   const [minimum, setMinimum] = useState(d3.min(data));
   const [maximum, setMaximum] = useState(d3.max(data));
   const debouncedMin = useDebounce(minimum, 100);
