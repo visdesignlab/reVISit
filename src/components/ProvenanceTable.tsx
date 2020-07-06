@@ -74,111 +74,37 @@ const MaterialTableWrapper = ({ provenanceData }) => {
   const [checkedTags, setCheckedTags] = React.useState([]);
   const [rerender, setRerender] = React.useState(false);
 
-  function renderProvenanceNodes(data) {
-    console.log("render provenance nodes called", data);
-    return (
-      <ProvenanceIsolatedNodes
-        nodes={data.provenance}></ProvenanceIsolatedNodes>
-    );
-  }
-  const [timeColumn, setTimeColumn] = useState(
+  const [userIdColumnDefinition, setUserIdColumnDefinition] = useState(
+    renderUserIdColumn(provenanceData, 100)
+  );
+
+  const [stimulusColumnDefinition, setStimulusColumnDefinition] = useState(
+    renderStimulusDefinition(provenanceData, 100)
+  );
+
+  const [timeColumnDefinition, setTimeColumnDefinition] = useState(
     renderTimeColumn(provenanceData, 250)
   );
 
-  const eventNodes = useMemo(() => {
-    const val = provenanceData
-      .map((graph) => {
-        return graph.provenance.map((node) => node.event);
-      })
-      .flat()
-      .filter(
-        (item) => item !== "startedProvenance" && item !== "Finished Task"
-      );
-    return val;
-  }, [provenanceData]);
-
-  let eventWidth = 250;
-  let eventScale = generateCategoricalScale(eventNodes, eventWidth);
-
-  const allObj = {};
-  Object.keys(eventMapping).forEach((eventKey) => {
-    allObj[eventKey] = eventMapping[eventKey].icon;
-  });
-
-  let accuracyWidth = 50;
-  const [accuracyColumn, setAccuracyColumn] = useState(
-    renderAccuracyColumn(provenanceData, accuracyWidth)
+  const [accuracyColumnDefinition, setAccuracyColumnDefinition] = useState(
+    renderAccuracyColumn(provenanceData, 50)
   );
 
-  const eventsColumn = React.useMemo(() => {
-    console.log("IN NEW MEMO EVENTS");
-    return {
-      title: "Events Used",
-      field: "provGraph",
-      width: 500,
-      cellStyle: {
-        maxWidth: 500,
-        padding: "4px 16px",
-      },
-      customSort: (a, b) => a.provenance.length - b.provenance.length,
-      render: renderProvenanceNodes,
-      customFilterAndSearch: (filterResults, datum) => {
-        console.log(filterResults, datum);
-        // https://github.com/mbrn/material-table/pull/1351
-        for (let i = 0; i < datum.provenance.length; i++) {
-          if (filterResults.includes(datum.provenance[i].event)) {
-            return true;
-          }
-        }
-        // unselect any filtered items
-        delete datum.tableData.checked;
-        return false;
-      },
-      filterComponent: (props) => (
-        <CategoricalFilter
-          {...props}
-          width={eventWidth}
-          scale={eventScale}
-          labels={allObj}
-          data={eventNodes}></CategoricalFilter>
-      ),
-    };
+  const [eventsColumnDefinition, setEventsColumnDefinition] = useState(
+    renderProvenanceNodeColumn(provenanceData, 500)
+  );
+
+  const [notesColumnDefinition, setNotesColumnDefinition] = useState(
+    renderNotesColumn(200)
+  );
+
+  React.useEffect(() => {
+    setTimeColumnDefinition(renderTimeColumn(provenanceData, 250));
+    setAccuracyColumnDefinition(renderAccuracyColumn(provenanceData, 50));
+    setEventsColumnDefinition(renderProvenanceNodeColumn(provenanceData, 500));
+    setNotesColumnDefinition(renderNotesColumn(200));
   }, [provenanceData]);
-  const notesColumn = React.useMemo(() => {
-    return {
-      title: "Notes",
-      field: "None",
-      cellStyle: {
-        padding: "4px 16px",
-      },
-      width: 500,
-      customSort: (a, b) => b.tableData.tags.length - a.tableData.tags.length,
-      filterComponent: () => <div></div>,
-      render: (rowData) => {
-        if (!Array.isArray(rowData.tableData?.tags)) {
-          rowData.tableData.tags = [];
-        }
-        return (
-          <TagWrapper
-            tags={rowData.tableData.tags}
-            onTagChange={(action, tag) => {
-              // check if rowData is selected;
-              if (action === "Add") {
-                rowData.tableData.tags.push(tag);
-              } else {
-                const index = rowData.tableData.tags.findIndex((iterTag) => {
-                  return iterTag.name === tag[0]?.name;
-                });
-                if (index > -1) {
-                  rowData.tableData.tags.splice(index, 1);
-                }
-              }
-            }}></TagWrapper>
-        );
-      },
-    };
-  }, [provenanceData]);
-  const TimeFilterObj = TimeFilter;
+
   console.log("about to render table", provenanceData);
   return (
     <MaterialTable
@@ -215,7 +141,14 @@ const MaterialTableWrapper = ({ provenanceData }) => {
           return <MTableFilterRow styles={styles} {...props}></MTableFilterRow>;
         },
       }}
-      columns={[timeColumn, accuracyColumn, eventsColumn, notesColumn]}
+      columns={[
+        userIdColumnDefinition,
+        stimulusColumnDefinition,
+        timeColumnDefinition,
+        accuracyColumnDefinition,
+        eventsColumnDefinition,
+        notesColumnDefinition,
+      ]}
       onSelectionChange={(selections) => {
         if (selections.length === 0) {
           setCheckedTags([]);
@@ -223,7 +156,7 @@ const MaterialTableWrapper = ({ provenanceData }) => {
       }}
       actions={[
         {
-          myComponent: (props) => {
+          myComponent: () => {
             return (
               <TagWrapper
                 tags={checkedTags.filter((tag) => !tag.removed)}
@@ -282,7 +215,7 @@ const MaterialTableWrapper = ({ provenanceData }) => {
                 });
               }
             });
-            //setRerender(!rerender);
+            setRerender(!rerender);
           },
         },
       ]}
@@ -304,6 +237,118 @@ function generateCategoricalScale(data, width) {
   const uniqueValues = Array.from(new Set(data));
   return d3.scaleBand().rangeRound([0, width]).padding(0).domain(uniqueValues);
 }
+
+function renderStimulusDefinition(provenanceData, stimulusColumnWidth) {
+  // TODO: Refactor to generalized
+  return {
+    title: "Stimulus",
+    field: "visType",
+    width: stimulusColumnWidth,
+  };
+}
+
+function renderUserIdColumn(provenanceData, userIdColumnWidth) {
+  console.log(provenanceData);
+  return {
+    title: "User Id",
+    field: "workerID",
+    width: userIdColumnWidth,
+  };
+}
+
+function renderNotesCell(rowData) {
+  if (!Array.isArray(rowData.tableData?.tags)) {
+    rowData.tableData.tags = [];
+  }
+  return (
+    <TagWrapper
+      tags={rowData.tableData.tags}
+      onTagChange={(action, tag) => {
+        // check if rowData is selected;
+        if (action === "Add") {
+          rowData.tableData.tags.push(tag);
+        } else {
+          const index = rowData.tableData.tags.findIndex((iterTag) => {
+            return iterTag.name === tag[0]?.name;
+          });
+          if (index > -1) {
+            rowData.tableData.tags.splice(index, 1);
+          }
+        }
+      }}></TagWrapper>
+  );
+}
+
+function renderNotesColumn(notesColumnWidth) {
+  return {
+    title: "Notes",
+    field: "None",
+    cellStyle: {
+      padding: "4px 16px",
+    },
+    width: notesColumnWidth,
+    customSort: (a, b) => b.tableData.tags.length - a.tableData.tags.length,
+    filterComponent: () => <div></div>,
+    render: renderNotesCell,
+  };
+}
+
+function renderProvenanceNodeCell(data) {
+  return (
+    <ProvenanceIsolatedNodes nodes={data.provenance}></ProvenanceIsolatedNodes>
+  );
+}
+
+function renderProvenanceNodeColumn(currentProvenanceData, eventColumnWidth) {
+  const eventWidth = 500;
+  const eventNodes = currentProvenanceData
+    .map((graph) => {
+      return graph.provenance.map((node) => node.event);
+    })
+    .flat()
+    .filter((item) => item !== "startedProvenance" && item !== "Finished Task");
+
+  let eventScale = generateCategoricalScale(eventNodes, eventWidth);
+
+  // Create mapping of event types to labels
+  const allObj = {};
+
+  Object.keys(eventMapping).forEach((eventKey) => {
+    allObj[eventKey] = eventMapping[eventKey].icon;
+  });
+
+  return {
+    title: "Events Used",
+    field: "provGraph",
+    width: eventWidth,
+    cellStyle: {
+      maxWidth: eventWidth,
+      padding: "4px 16px",
+    },
+    customSort: (a, b) => a.provenance.length - b.provenance.length,
+    render: renderProvenanceNodeCell,
+    customFilterAndSearch: (filterResults, datum) => {
+      // https://github.com/mbrn/material-table/pull/1351
+      for (let i = 0; i < datum.provenance.length; i++) {
+        if (filterResults.includes(datum.provenance[i].event)) {
+          return true;
+        }
+      }
+      // unselect any filtered items
+      delete datum.tableData.checked;
+      return false;
+    },
+    filterComponent: (props) => (
+      <CategoricalFilter
+        {...props}
+        width={eventWidth}
+        scale={eventScale}
+        labels={allObj}
+        data={eventNodes}></CategoricalFilter>
+    ),
+  };
+}
+
 /* Accuracy */
 function renderAccuracyCell(rowData, accuracyScale) {
   return (
@@ -357,7 +402,6 @@ function renderAccuracyColumn(currentProvenanceData, columnWidth) {
 }
 
 /* Time */
-
 function renderTimeCell(rowData, timeScale) {
   return (
     <svg width={timeScale.range()?.[1]} height={20}>
@@ -367,9 +411,7 @@ function renderTimeCell(rowData, timeScale) {
 }
 function renderTimeColumn(currentProvenanceData, columnWidth) {
   const max = d3.max(currentProvenanceData, (datum) => datum.totalTime);
-
   const timeScale = d3.scaleLinear().domain([0, max]).range([0, columnWidth]);
-  console.log("MAX TIME", max, columnWidth);
 
   return {
     title: "Time To Complete",
