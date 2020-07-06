@@ -97,7 +97,10 @@ let seq = sequences.filter(s => s.task.visType == 'adjMatrix' && s.task.taskID =
 console.log('calling patternCount')
 let output;
 
-d3.json('http://127.0.0.1:5000/prefix', {
+// d3.json('http://127.0.0.1:5000/prefix', {
+d3.json('http://18.222.101.54//prefix', {
+
+
   method: "POST",
   body: JSON.stringify(seq.map(s => s['sum_seq'])),
   headers: {
