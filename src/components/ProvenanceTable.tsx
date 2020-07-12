@@ -228,6 +228,7 @@ const MaterialTableWrapper = ({ provenanceData }) => {
         pageSize: 15,
         filtering: true,
         maxBodyHeight: "93vh",
+        grouping: true,
       }}
     />
   );
