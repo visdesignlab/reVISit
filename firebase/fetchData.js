@@ -39,7 +39,11 @@ let db = firestore.connect();
   //   // }
   // })
   // fetchSkinnyProvenance();
-  console.log("done");
+  let NL_example = '545d6768fdf99b7f9fca24e3_S-task01';
+  let AM_example = '546e3c21fdf99b2b8df983fd_S-task01';
+  // getSampleProvenance(NL_example);
+  // getSampleProvenance(AM_example);
+  console.log('done')
 })();
 
 async function fetchSkinnyProvenance() {
@@ -63,6 +67,26 @@ async function fetchSkinnyProvenance() {
   );
 
   console.log("exported provenance_summary.json");
+}
+
+async function getSampleProvenance(key) {
+  let NL_example = '545d6768fdf99b7f9fca24e3_S-task01';
+  let AM_example = '546e3c21fdf99b2b8df983fd_S-task01';
+  const provenanceCollection = db.collection('provenance');
+
+  let provenanceRef = db.collection('provenance').doc(key);
+  let doc = await provenanceRef.get();
+  if (!doc.exists) {
+    console.log('No such document!');
+  } else {
+    let data = doc.data();
+
+    fs.writeFileSync(
+      "./" + key + ".json",
+      JSON.stringify(data), { flag: 'w' }
+    );
+
+  }
 }
 async function writeSkinnyProvenance(participant) {
   let participantID = participant.id;
