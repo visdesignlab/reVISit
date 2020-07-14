@@ -1,0 +1,15 @@
+// NL
+{
+    hardClicked : ['node1','node2'],
+    softClicked : ['node1']
+}
+
+// AM
+{
+    selections : {
+        'node1':['hardClicked','softClicked'],
+        'node2:['hardClicked]
+    }
+}
+
+
