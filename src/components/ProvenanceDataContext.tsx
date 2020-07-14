@@ -10,7 +10,68 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     processRawProvenanceData(initProvData)
   );
 
+  const [events, setEvents] = useState(
+    extractNativeEvents(allProvenanceData)
+  );
+
+  console.log('events are ', events)
   const [selectedTaskId, setSelectedTaskId] = React.useState("S-task01");
+
+  const [patternsForTask, setPatternsForTask] = useState(null);
+
+  // useEffect(() => {
+  //   async function fetchData() {
+
+  //     let patternObj = {};
+
+  //     Object.keys(allEvents).map(k => {
+  //       patternObj[k] = { nlPatterns: [], amPatterns: [] }
+  //     });
+
+
+
+  //     Promise.all(allEvents.map(async (ev) => {
+  //       let nodeLink = ev.sequences.filter(s => s.visType == 'nodeLink');
+  //       let adjMatrix = ev.sequences.filter(s => s.visType == 'adjMatrix');
+
+  //       // You can await here
+  //       const nlPatterns = await getPatterns(nodeLink,events);
+  //       const amPatterns = await getPatterns(adjMatrix,events);
+
+  //       patternObj[ev.event] = { nlPatterns, amPatterns }
+
+  //     }))
+
+  //       .then(() => {
+  //         // patternObj['all'] = sequences;
+  //         setPatterns(patternObj);
+  //         console.log('patternObj', patternObj)
+
+  //       })
+  //     // ...
+  //   }
+  //   fetchData();
+
+  //   // put code in here to re-run on any update to selectedTaskId
+  //   //promise
+  //   //.then
+  //   // setPatternsForTask
+  // }, [selectedTaskId])
+
+  /*const [loadingPatterns, errorLoadingPatterns,patternsFromServer] = useFetchAPIResponse(
+    async ()=>{
+      return await getPatternsFromServer()
+    },
+    [selectedTaskId]
+  )
+
+  useEffect(()=>{
+    setPatternsForTask(patternsFromServer)
+  },[patternsFromServer])*/
+
+
+
+
   const taskStructure = [
     { name: "Task 1", key: "S-task01", prompt: "" },
     { name: "Task 2", key: "S-task02" },
@@ -30,6 +91,46 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     { name: "Task 16", key: "S-task16" },
   ];
 
+  //create state that maps events (including user created ones) to their children and a numeric index (for sequence mapping) 
+
+  function extractNativeEvents(data) {
+    let events = [];
+    data.map(participant => {
+      let userData = participant.data
+      //tasks are objects that contain a provenance field.
+      let tasks = Object.keys(userData).filter(k => userData[k].provenance);
+      tasks.map(task => {
+        userData[task].provenance.map(e => {
+          events.push(e.event)
+        })
+      })
+    });
+
+    events = [... new Set(events)];
+    events = events.map((e, i) => ({ event: e, children: [], id: i }));
+    return events;
+  }
+
+  //async function to grab data from server; 
+  async function getPatterns(seq, eventNames) {
+
+    let array = await d3.json('http://127.0.0.1:5000/prefix', {
+      // d3.json('http://18.222.101.54/prefix', {
+      method: "POST",
+      body: JSON.stringify(seq.map(s => s['seq'])),
+      headers: {
+        "Content-type": "application/json; charset=UTF-8"
+      }
+    });
+
+    let results = array.sort((a, b) => a[0] > b[0] ? 1 : -1).map(arr => {
+      return ({
+        count: arr[0], seq: arr[1].map(e => ({ event: eventNames.find(ev => ev.id == e).event }))
+      })
+    })
+    return results
+  }
+
   function handleChangeSelectedTaskId(event) {
     setSelectedTaskId(event.target.value);
   }
@@ -48,6 +149,10 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     });
     return internalTaskData;
   }, [allProvenanceData, selectedTaskId]);
+
+  console.log(allProvenanceData)
+
+
   // console.log("relative", allProvenanceData);
   return (
     <ProvenanceDataContext.Provider
@@ -62,6 +167,8 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     </ProvenanceDataContext.Provider>
   );
 };
+
+
 function calculateRelativeProvGraph(taskPerformance, maxTime) {
   let totalTime =
     new Date(taskPerformance.endTime) - new Date(taskPerformance.startTime);
@@ -134,7 +241,15 @@ function processRawProvenanceData(unrelativeProvenanceData) {
       }
     });
   });
+
+  //add label and 'origEvent' fields to provenance; 
+
+
   return relativeProvenanceData;
 }
+
+// function computeSequences(){
+
+// }
 
 export default ProvenanceDataContext;

@@ -14,6 +14,13 @@ import Chip from '@material-ui/core/Chip';
 import Button from '@material-ui/core/Button';
 import Divider from '@material-ui/core/Divider';
 import * as d3 from "d3";
+import ProvenanceIsolatedNodes from "./ProvenanceIsolatedNodes";
+import Box from '@material-ui/core/Box';
+
+
+import BarChart from "../components/BarChart"
+import TimeChart from "../components/timeChart"
+
 
 import { ReactComponent as ActionGroup } from "../icons/action_group.svg";
 // import { ReactComponent as Action } from "../icons/action.svg";
@@ -69,7 +76,8 @@ const styles = theme => ({
     },
     helper: {
         borderLeft: `2px solid ${theme.palette.divider}`,
-        padding: `${theme.spacing.unit}px ${theme.spacing.unit * 2}px`,
+        padding: `${theme.spacing(1)}px ${theme.spacing(2)}px`,
+
     },
     link: {
         color: theme.palette.primary.main,
@@ -83,7 +91,7 @@ const styles = theme => ({
 
 
 function EventAccordion(props) {
-    console.log(props.data)
+    console.log('data', props.data, 'patterns', props.patterns)
 
     let attr = 'count';
     const scale = countScale(props.data, 60, attr)
@@ -93,7 +101,7 @@ function EventAccordion(props) {
 
     function rectangle(d, attr) {
         return (
-            <svg width={150} height={20} >
+            <svg width={150} height={20} key={d.key} >
 
                 <rect className='count' style={{ fill: "#348385" }}
                     x={0}
@@ -115,7 +123,7 @@ function EventAccordion(props) {
         let data = [...props.data];
         //remove the event
         data = data.filter(el => el !== d);
-        props.onChange(data);
+        // props.onChange(data);
     }
 
 
@@ -124,7 +132,7 @@ function EventAccordion(props) {
         let data = [...props.data];
         //toggle hide status of the event
         data.map(el => el == d ? el.hidden = !el.hidden : el.hidden);
-        props.onChange(data);
+        // props.onChange(data);
     }
 
     function moveEvent(event, d) {
@@ -134,7 +142,7 @@ function EventAccordion(props) {
         let p = data.filter(d => d.type == "customEvent")[0];
         console.log(p)
         p.children.push(d)
-        props.onChange(data);
+        // props.onChange(data);
     }
 
     function newEvent(d, insertAfter) {
@@ -143,14 +151,14 @@ function EventAccordion(props) {
             let data = [...props.data]
             let i = data.indexOf(insertAfter);
             data.splice(i + 1, 0, d)
-            props.onChange(data);
+            // props.onChange(data);
         }
     }
 
     const { classes } = props;
     return (
         <div className={classes.root}>
-            {props.data.map(d => {
+            {props.data.map((d, i) => {
                 let hide = <span onClick={(event) => hideEvent(event, d)}>
                     {d.hidden ? (
                         <Tooltip title="Show this Event">
@@ -181,7 +189,7 @@ function EventAccordion(props) {
 
                 let icon;
 
-                console.log(d.type)
+                // console.log(d.type)
 
                 switch (d.type) {
                     case 'nativeEvent':
@@ -202,7 +210,23 @@ function EventAccordion(props) {
 
                 }
 
-                return < ExpansionPanel >
+                // //compute data for task specific counts; 
+                // let conditions = [... new Set(d.instances.map(d => d.condition))];
+                // let tasks = [... new Set(d.instances.map(d => d.taskID.taskID))];
+
+                // let greenData = tasks.map(t => {
+                //     return { x: t, y: d.instances.filter(i => i.taskID.visType == 'nodeLink' && i.taskID.taskID == t).length }
+                // })
+
+                // let blueData = tasks.map(t => {
+                //     return { x: t, y: d.instances.filter(i => i.taskID.visType == 'adjMatrix' && i.taskID.taskID == t).length }
+                // })
+
+                // let barData = { blueData, greenData };
+
+                let seq = props.patterns; //.filter(p => p.seq.filter(e => e.event == d.event).length > 0)
+                console.log('d.key is ', d.key)
+                return < ExpansionPanel key={i}>
                     <div className={d.hidden ? classes.hide : ''}>
                         <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
                             <div className={classes.column}>
@@ -229,7 +253,7 @@ function EventAccordion(props) {
                             </div> */}
 
                             <div className={classes.smallColumn}>
-                                <Typography className={classes.secondaryHeading}>{icons}</Typography>
+                                {/* <Typography className={classes.secondaryHeading}>{icons}</Typography> */}
                             </div>
                         </ExpansionPanelSummary>
                     </div>
@@ -244,13 +268,24 @@ function EventAccordion(props) {
                             <Tags groups={props.data.filter(f => f.type == 'customEvent').map(d => ({ title: d.label }))} />
                         </div> */}
 
-                        <div className={classes.column}>
-                            {/* <Typography className={classes.secondaryHeading}>Targets</Typography> */}
-                            {/* {targets(d, attr, 'label')} */}
-                        </div>
                         <div className={classNames(classes.column, classes.helper)}>
-                            {/* {heatMap(d)} */}
+                            {seq[d.key].nlPatterns.map((s, i) => <ProvenanceIsolatedNodes key={i} nodes={s.seq}></ProvenanceIsolatedNodes>)
+                            }
                         </div>
+
+                        <div className={classNames(classes.smallColumn, classes.helper)}>
+                            {seq[d.key].nlPatterns.map((s, i) => rectangle(s, 'count'))}
+                        </div>
+
+                        <div className={classNames(classes.column, classes.helper)}>
+                            {seq[d.key].amPatterns.map((s, i) => <ProvenanceIsolatedNodes key={i} nodes={s.seq}></ProvenanceIsolatedNodes>)
+                            }
+                        </div>
+
+                        <div className={classNames(classes.smallColumn, classes.helper)}>
+                            {seq[d.key].amPatterns.map((s, i) => rectangle(s, 'count'))}
+                        </div>
+
 
                     </ExpansionPanelDetails>
                     <Divider />
