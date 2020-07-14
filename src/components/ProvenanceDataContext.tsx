@@ -1,8 +1,12 @@
 import React, { useState, useEffect, useMemo } from "react";
 import PropTypes from "prop-types";
 import initProvData from "../common/data/provenance_summary.json";
+import prefixSpanSampleData from "../common/data/prefix_span_sample_data.json";
 import * as d3 from "d3";
 import _ from "lodash";
+import { performPrefixSpan } from "../fetchers/fetchMocks.js";
+import { useFetchAPIData } from "../hooks/hooks";
+
 const ProvenanceDataContext = React.createContext({});
 
 export const ProvenanceDataContextProvider = ({ children }) => {
@@ -48,6 +52,13 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     });
     return internalTaskData;
   }, [allProvenanceData, selectedTaskId]);
+
+  const [isLoading, isError, data] = useFetchAPIData(async () => {
+    const sampleData = prefixSpanSampleData.data;
+    console.log(sampleData);
+    return await performPrefixSpan(sampleData);
+  }, [currentTaskData]);
+  console.log("check out the prefix span data", isLoading, isError, data);
   // console.log("relative", allProvenanceData);
   return (
     <ProvenanceDataContext.Provider
