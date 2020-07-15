@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import TextField from "@material-ui/core/TextField";
 import { makeStyles } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
@@ -37,7 +37,7 @@ import {
     HeatmapSeries,
     LabelSeries,
 } from 'react-vis';
-import { VisibilityOffRounded, VisibilityRounded, HighlightOffRounded, QueuePlayNext, AddCircle } from '@material-ui/icons';
+import { VisibilityOffRounded, VisibilityRounded, HighlightOffRounded, Edit } from '@material-ui/icons';
 
 import Tags from "../components/GroupSelector"
 import { HomeIcon } from "../components/customIcons"
@@ -45,6 +45,8 @@ import Tooltip from '@material-ui/core/Tooltip';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import { SvgIcon } from "material-ui";
+import ProvenanceDataContext from "../components/ProvenanceDataContext";
+
 
 const styles = theme => ({
     root: {
@@ -91,11 +93,14 @@ const styles = theme => ({
 
 
 function EventAccordion(props) {
-    console.log('data', props.data, 'patterns', props.patterns)
+
+    const { currentTaskData, events, hideEvent, renameEvent } = useContext(ProvenanceDataContext);
+
+    console.log('events', events)
 
     let attr = 'count';
-    const scale = countScale(props.data, 60, attr)
-    console.log(scale.domain(), scale.range())
+    const scale = countScale(events, 60, attr)
+    // console.log(scale.domain(), scale.range())
 
 
 
@@ -127,13 +132,20 @@ function EventAccordion(props) {
     }
 
 
-    function hideEvent(event, d) {
+    function hideEventFcn(event, d) {
         event.stopPropagation()
-        let data = [...props.data];
-        //toggle hide status of the event
-        data.map(el => el == d ? el.hidden = !el.hidden : el.hidden);
+        console.log('hiding', d.name)
+        hideEvent(d.name)
         // props.onChange(data);
     }
+
+    function edit(event, d) {
+        event.stopPropagation()
+        console.log('renaming', d.name)
+        renameEvent(d.name, 'test')
+        // props.onChange(data);
+    }
+
 
     function moveEvent(event, d) {
         event.stopPropagation()
@@ -158,9 +170,10 @@ function EventAccordion(props) {
     const { classes } = props;
     return (
         <div className={classes.root}>
-            {props.data.map((d, i) => {
-                let hide = <span onClick={(event) => hideEvent(event, d)}>
-                    {d.hidden ? (
+            {events.map((d, i) => {
+                // console.log(d)
+                let hide = <span onClick={(event) => hideEventFcn(event, d)}>
+                    {!d.visible ? (
                         <Tooltip title="Show this Event">
                             <VisibilityOffRounded />
                         </Tooltip>
@@ -173,66 +186,34 @@ function EventAccordion(props) {
                     </Tooltip>
                 </span>
 
-                let move = <span onClick={(event) => moveEvent(event, d)}>
-                    <Tooltip title="Copy Event to Custom Group">
-                        <HomeIcon />
-                    </Tooltip>
-                </span>
+                // let move = <span onClick={(event) => moveEvent(event, d)}>
+                //     <Tooltip title="Copy Event to Custom Group">
+                //         <HomeIcon />
+                //     </Tooltip>
+                // </span>
                 let all = <>
-                    {hide} {move} {del}
+                    {hide} {del}
                 </>
                 let baseIcons = <>
-                    {hide} {move}
+                    {hide}
                 </>
 
-                let icons = d.type == 'nativeEvent' ? baseIcons : all;
+                let icons = d.type == 'native' ? baseIcons : all;
 
                 let icon;
 
-                // console.log(d.type)
-
-                switch (d.type) {
-                    case 'nativeEvent':
-
-                        icon = <Tooltip title="Copy Event to Custom Group">
-                            {/* <Action /> */}
-                        </Tooltip>
-                    case 'nativeEvent_filtered':
-                        icon = <Tooltip title="Copy Event to Custom Group">
-                            {/* <ActionFilter /> */}
-                        </Tooltip>
-
-                    case 'customEvent':
-                        icon = <Tooltip title="Copy Event to Custom Group">
-                            <HomeIcon />
-                        </Tooltip>
-                        break;
-
-                }
-
-                // //compute data for task specific counts; 
-                // let conditions = [... new Set(d.instances.map(d => d.condition))];
-                // let tasks = [... new Set(d.instances.map(d => d.taskID.taskID))];
-
-                // let greenData = tasks.map(t => {
-                //     return { x: t, y: d.instances.filter(i => i.taskID.visType == 'nodeLink' && i.taskID.taskID == t).length }
-                // })
-
-                // let blueData = tasks.map(t => {
-                //     return { x: t, y: d.instances.filter(i => i.taskID.visType == 'adjMatrix' && i.taskID.taskID == t).length }
-                // })
-
-                // let barData = { blueData, greenData };
-
-                let seq = props.patterns; //.filter(p => p.seq.filter(e => e.event == d.event).length > 0)
-                console.log('d.key is ', d.key)
                 return < ExpansionPanel key={i}>
-                    <div className={d.hidden ? classes.hide : ''}>
+                    <div className={!d.visible ? classes.hide : ''}>
                         <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
                             <div className={classes.column}>
 
                                 <Typography className={classes.heading}
-                                >{d.key}</Typography>
+                                >
+                                    {d.name} <span onClick={(event) => edit(event, d)}>
+                                        <Tooltip title="Edit Event Name">
+                                            <Edit />
+                                        </Tooltip>
+                                    </span> </Typography>
                             </div>
                             <div className={classes.smallColumn}>
                                 <Typography className={classes.secondaryHeading}>{
@@ -253,7 +234,7 @@ function EventAccordion(props) {
                             </div> */}
 
                             <div className={classes.smallColumn}>
-                                {/* <Typography className={classes.secondaryHeading}>{icons}</Typography> */}
+                                <Typography className={classes.secondaryHeading}>{icons}</Typography>
                             </div>
                         </ExpansionPanelSummary>
                     </div>
@@ -262,38 +243,7 @@ function EventAccordion(props) {
                             <Tags groups={props.data.filter(f => f.type == 'customEvent').map(d => ({ title: d.label }))} />
                         </div>
                     </ExpansionPanelDetails> */}
-                    <ExpansionPanelDetails className={classes.details}>
-                        {/* <div className={classes.column} /> */}
-                        {/* <div className={classNames(classes.helper)}>
-                            <Tags groups={props.data.filter(f => f.type == 'customEvent').map(d => ({ title: d.label }))} />
-                        </div> */}
 
-                        <div className={classNames(classes.column, classes.helper)}>
-                            {seq[d.key].nlPatterns.map((s, i) => <ProvenanceIsolatedNodes key={i} nodes={s.seq}></ProvenanceIsolatedNodes>)
-                            }
-                        </div>
-
-                        <div className={classNames(classes.smallColumn, classes.helper)}>
-                            {seq[d.key].nlPatterns.map((s, i) => rectangle(s, 'count'))}
-                        </div>
-
-                        <div className={classNames(classes.column, classes.helper)}>
-                            {seq[d.key].amPatterns.map((s, i) => <ProvenanceIsolatedNodes key={i} nodes={s.seq}></ProvenanceIsolatedNodes>)
-                            }
-                        </div>
-
-                        <div className={classNames(classes.smallColumn, classes.helper)}>
-                            {seq[d.key].amPatterns.map((s, i) => rectangle(s, 'count'))}
-                        </div>
-
-
-                    </ExpansionPanelDetails>
-                    <Divider />
-                    <ExpansionPanelDetails>
-                        <div>
-                            <Tags groups={props.data.filter(f => f.type == 'customEvent').map(d => ({ title: d.label }))} />
-                        </div>
-                    </ExpansionPanelDetails>
                 </ExpansionPanel >
 
             })}

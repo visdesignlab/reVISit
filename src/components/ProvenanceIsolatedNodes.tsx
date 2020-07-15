@@ -15,7 +15,8 @@ const ProvenanceIsolatedNodes = ({ nodes }) => {
 };
 
 const IsolatedNode = ({ node }) => {
-  const icon = eventMapping[node.event].icon;
+  console.log(node)
+  const icon = eventMapping[node.id].icon;
 
   // node.event !== "startedProvenance" &&
   //   node.event !== "Finished Task" ? 
@@ -42,7 +43,7 @@ const IsolatedNode = ({ node }) => {
           width={30}
           height={30}
           rx={5}
-          fill={eventMapping[node.event].color}></rect>
+          fill={eventMapping[node.id].color}></rect>
         <g transform={`translate(7,5)`}>{icon}</g>
       </svg>
     </Tooltip>

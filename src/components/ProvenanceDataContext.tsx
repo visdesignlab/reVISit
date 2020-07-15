@@ -10,15 +10,118 @@ import { useFetchAPIData } from "../hooks/hooks";
 const ProvenanceDataContext = React.createContext({});
 
 export const ProvenanceDataContextProvider = ({ children }) => {
-  const [allProvenanceData, setAllProvenanceData] = useState(
-    processRawProvenanceData(initProvData)
+
+  const [allProvenanceData, setAllProvenanceData] = useState(() => processRawProvenanceData(initProvData)
   );
+
+  // useState(
+  //   processRawProvenanceData(initProvData)
+  // );
 
   const [events, setEvents] = useState(
-    extractNativeEvents(allProvenanceData)
+    listNativeEvents(allProvenanceData)
   );
 
-  console.log('events are ', events)
+  //type of edits a user can make to events: 
+  //create - eventType: grouped (create a new group) 
+  //rename - eventType : nativeEvent
+  //move event into a group (A or B or C == newEvent) -> eventType : grouped 
+  //group sequences (A then B then C == newEvent) -> eventType: sequence
+  //group repetitions of the same event (A then A then A == A) -> eventType: repeated
+  //hide/remove
+
+  function hideEvent(eventName) {
+    let newEvents = [...events]
+    let event = newEvents.find(e => e.name == eventName);
+    if (!event) {
+      console.log(eventName, ' is not a valid event')
+    } else {
+      event.visible = !event.visible;
+    }
+    setEvents(newEvents)
+  }
+
+  function newEvent(newName) {
+    let newEvent = { name: newName, type: 'group', children: [], visible: true, id: events.length - 1 }
+    setEvents([...events, newEvent]);
+    return newEvent
+  }
+
+  function renameEvent(origName, newName) {
+    let newEvents = [...events]
+    //modify event dictionary
+    let event = newEvents.find(e => e.name == origName);
+    if (!event) {
+      return ('This is not a valid event')
+    } else {
+      event.name = newName;
+    }
+    setEvents(newEvents)
+
+    //modify event instances in dictionary
+    renameHelper(allProvenanceData, origName, newName);
+
+    setAllProvenanceData(allProvenanceData)
+
+  }
+
+  function renameHelper(data, origName, newName) {
+    //iterate through and rename events in allProvenance;
+    data.map(participant => {
+      let userData = participant.data
+      //tasks are objects that contain a provenance field.
+      let tasks = Object.keys(userData).filter(k => userData[k].provenance);
+      tasks.map(task => {
+        userData[task].provenance.map(e => {
+          e.event = e.event == origName ? newName : e.event
+        })
+      })
+    });
+  }
+
+
+  // group events into higher level event
+  function addToGroup(nativeEvent, groupEvent) {
+    let newEvents = [...events]
+
+    //modify event dictionary
+    let event = newEvents.find(e => e.name == groupEvent);
+    if (!event) {
+      return (groupEvent + ' is not a valid event')
+    } else {
+      event.children.push(nativeEvent);
+    }
+
+    setEvents(newEvents)
+
+    //modify provenance instances in data
+    renameHelper(allProvenanceData, nativeEvent, groupEvent);
+
+    setAllProvenanceData(allProvenanceData)
+
+  }
+
+  function groupSequence(sequence, name) {
+    let seqEvent = { name: name, type: 'sequence', children: sequence, visible: true, id: events.length - 1 }
+
+
+    setEvents([...events, seqEvent])
+
+    //modify provenance instances in data
+    allProvenanceData.map(participant => {
+      let userData = participant.data
+      //tasks are objects that contain a provenance field.
+      let tasks = Object.keys(userData).filter(k => userData[k].provenance);
+      tasks.map(task => {
+        let prov = userData[task].provenance //
+
+        //ADD CODE THAT REPLACES SESQUENCES MATCHING SEQUENCE WITH SEQEVENT
+      })
+    });
+    setAllProvenanceData(allProvenanceData)
+  }
+
+
   const [selectedTaskId, setSelectedTaskId] = React.useState("S-task01");
 
   const [patternsForTask, setPatternsForTask] = useState(null);
@@ -97,7 +200,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
 
   //create state that maps events (including user created ones) to their children and a numeric index (for sequence mapping) 
 
-  function extractNativeEvents(data) {
+  function listNativeEvents(data) {
     let events = [];
     data.map(participant => {
       let userData = participant.data
@@ -111,7 +214,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     });
 
     events = [... new Set(events)];
-    events = events.map((e, i) => ({ event: e, children: [], id: i }));
+    events = events.map((e, i) => ({ name: e, type: 'native', visible: true, id: i }));
     return events;
   }
 
@@ -139,8 +242,29 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     setSelectedTaskId(event.target.value);
   }
 
+  //count the number of events for this task
+  useEffect(() => {
+    let newEvents = [...events]
+    newEvents.map(e => {
+      e.count = 0;
+    })
+
+    allProvenanceData.forEach((participant) => {
+      if (participant.data[selectedTaskId]) {
+        participant.data[selectedTaskId].provenance
+          .map(e => {
+            let event = newEvents.find(ev => ev.name == e.event);
+            event.count = event.count + 1;
+          })
+      }
+    });
+
+    setEvents(newEvents);
+  }, [selectedTaskId]);
+
   let currentTaskData = React.useMemo(() => {
     let internalTaskData = [];
+
     allProvenanceData.forEach((participant) => {
       const newObj = Object.assign(
         { id: participant.id },
@@ -148,18 +272,31 @@ export const ProvenanceDataContextProvider = ({ children }) => {
       );
 
       if (participant.data[selectedTaskId]) {
+        //add type to provenance objects and remove hidden event types;
+        newObj.provenance = newObj.provenance
+          .map(e => {
+            let event = events.find(ev => ev.name == e.event);
+            e.type = event.type
+            return e;
+          })
+          .filter(e => {
+            let event = events.find(ev => ev.name == e.event);
+            return event.visible
+          })
         internalTaskData.push(newObj);
       }
     });
-    return internalTaskData;
-  }, [allProvenanceData, selectedTaskId]);
 
+    return internalTaskData;
+  }, [allProvenanceData, selectedTaskId, events]);
+
+  // console.log(currentTaskData)
   const [isLoading, isError, data] = useFetchAPIData(async () => {
     const sampleData = prefixSpanSampleData.data;
     console.log(sampleData);
     return await performPrefixSpan(sampleData);
-  }, [currentTaskData]);
-  console.log("check out the prefix span data", isLoading, isError, data);
+  }, [selectedTaskId]);
+  // console.log("check out the prefix span data", isLoading, isError, data);
   // console.log("relative", allProvenanceData);
   return (
     <ProvenanceDataContext.Provider
@@ -169,6 +306,10 @@ export const ProvenanceDataContextProvider = ({ children }) => {
         taskStructure,
         handleChangeSelectedTaskId,
         selectedTaskId,
+        events,
+        hideEvent,
+        newEvent,
+        renameEvent
       }}>
       {children}
     </ProvenanceDataContext.Provider>
@@ -201,6 +342,7 @@ function calculateRelativeProvGraph(taskPerformance, maxTime) {
   return taskPerformance;
 }
 function processRawProvenanceData(unrelativeProvenanceData) {
+  console.trace('calling process Raw prov data')
   const taskIds = [
     "S-task01",
     "S-task02",
@@ -242,15 +384,15 @@ function processRawProvenanceData(unrelativeProvenanceData) {
           participant.data[taskId],
           longestTimeForTask
         );
+        //create id field in each provenance event (that doesn't change with edits) 
+        participant.data[taskId].provenance.map(p => p.id = p.event);
+
       } else {
         delete relativeProvenanceData[index][taskId];
         // console.log("NO DATA", relativeProvenanceData[index], taskId);
       }
     });
   });
-
-  //add label and 'origEvent' fields to provenance; 
-
 
   return relativeProvenanceData;
 }
