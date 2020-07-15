@@ -15,7 +15,6 @@ const ProvenanceIsolatedNodes = ({ nodes }) => {
 };
 
 const IsolatedNode = ({ node }) => {
-  console.log(node)
   const icon = eventMapping[node.id].icon;
 
   // node.event !== "startedProvenance" &&
