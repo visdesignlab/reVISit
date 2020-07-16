@@ -9,6 +9,7 @@ import Clear from "@material-ui/icons/Clear";
 import Start from "@material-ui/icons/Star";
 import PlayArrowIcon from '@material-ui/icons/PlayArrow';
 import StopIcon from '@material-ui/icons/Stop';
+import CheckBoxOutlineBlankIcon from '@material-ui/icons/CheckBoxOutlineBlank';
 
 const colors = ["#c6e0d6", "#8fcab4", "#67aca9", "#5d83d2", "#6b56dd", "#9e93a1"];
 // generated from https://leonardocolor.io/?colorKeys=%235b89d2%2C%235dbb9c%2C%23723ce7%2C%238e18b9&base=ffffff&ratios=1.4%2C1.64%2C2.12%2C2.80%2C3.71%2C4.88%2C6.35%2C9.00&mode=CAM02
@@ -20,6 +21,18 @@ const searchColor = colors[4];
 const clearColor = colors[5];
 
 const eventMapping = {
+  custom: {
+    name: "CustomIcon",
+    color: "#d1d1d1",
+    icon: <CheckBoxOutlineBlankIcon width={
+      16
+    }
+      height={
+        16
+      }
+    />
+  },
+
   startedProvenance: {
     name: "PlayArrowIcon",
     color: "#d1d1d1",

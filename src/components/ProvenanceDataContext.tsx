@@ -11,8 +11,7 @@ const ProvenanceDataContext = React.createContext({});
 
 export const ProvenanceDataContextProvider = ({ children }) => {
 
-  const [allProvenanceData, setAllProvenanceData] = useState(() => processRawProvenanceData(initProvData)
-  );
+  const [allProvenanceData, setAllProvenanceData] = useState(() => processRawProvenanceData(initProvData));
 
   // useState(
   //   processRawProvenanceData(initProvData)
@@ -42,8 +41,8 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   }
 
   function newEvent(newName) {
-    let newEvent = { name: newName, type: 'group', children: [], visible: true, id: events.length - 1 }
-    setEvents([...events, newEvent]);
+    let newEvent = { name: newName, type: 'group', children: [], count: 0, visible: true, id: events.length }
+    setEvents([newEvent, ...events]);
     return newEvent
   }
 
@@ -65,6 +64,33 @@ export const ProvenanceDataContextProvider = ({ children }) => {
 
   }
 
+  function deleteEvent(name) {
+    let newEvents = [...events]
+    //modify event dictionary
+    let toDelete = newEvents.find(e => e.type == 'group' && e.name == name);
+    if (!toDelete) {
+      return ('cannot delete event')
+    } else {
+      newEvents = newEvents.filter(e => e !== toDelete)
+      setEvents(newEvents)
+    }
+
+    //revert event instances in dictionary
+    allProvenanceData.map(participant => {
+      let userData = participant.data
+      //tasks are objects that contain a provenance field.
+      let tasks = Object.keys(userData).filter(k => userData[k].provenance);
+      tasks.map(task => {
+        userData[task].provenance.map(e => {
+          e.event = toDelete.children.includes(e.event) ? e.id : e.event
+        })
+      })
+    });
+
+    setAllProvenanceData(allProvenanceData)
+
+  }
+
   function renameHelper(data, origName, newName) {
     //iterate through and rename events in allProvenance;
     data.map(participant => {
@@ -81,22 +107,89 @@ export const ProvenanceDataContextProvider = ({ children }) => {
 
 
   // group events into higher level event
-  function addToGroup(nativeEvent, groupEvent) {
+  //TO DO. CANNOT SIMPLY RENAME EVENTS WHEN GROUPING SINCE IT'S HARD TO LATER UNGROUP
+  function addRemoveChild(children, group) {
     let newEvents = [...events]
 
     //modify event dictionary
-    let event = newEvents.find(e => e.name == groupEvent);
-    if (!event) {
-      return (groupEvent + ' is not a valid event')
+    let groupEvent = newEvents.find(e => e.name == group);
+    let currentChildren = groupEvent.children;
+
+    console.log('incoming children', children);
+    console.log('currentChildren', currentChildren)
+    console.log('groupEvent', groupEvent)
+
+    let addChild = groupEvent.children.length < children.length
+
+    if (!groupEvent) {
+      return (group + ' is not a valid event')
     } else {
-      event.children.push(nativeEvent);
+      if (addChild) {
+        let child = children.find(value => !currentChildren.includes(value))
+        let nativeEvent = newEvents.find(e => e.id == child.id);
+        groupEvent.children.push(nativeEvent);
+        //set nativeEvent.hidden
+        nativeEvent.visible = false;
+        //add reference to parent event 
+        nativeEvent.groups.push(groupEvent);
+
+        //iterate through and create new group events in allProvenance;
+        allProvenanceData.map(participant => {
+          let userData = participant.data
+          //tasks are objects that contain a provenance field.
+          let tasks = Object.keys(userData).filter(k => userData[k].provenance);
+          tasks.map(task => {
+            Object.keys(userData[task].provenance).reverse().map((i) => {
+              let e = userData[task].provenance[i]
+              if (e.event == nativeEvent.name) {
+                //make a copy of the event and change it to a group type
+                let newEvent = JSON.parse(JSON.stringify(e));
+                newEvent.event = groupEvent.name;
+                newEvent.id = groupEvent.name;
+                newEvent.origName = nativeEvent.name
+
+                //insert new event right after current event
+                userData[task].provenance.splice(i, 0, newEvent)
+              }
+            })
+          })
+        });
+
+
+      } else {
+        //
+        console.log('should be removing children')
+        let child = currentChildren.find(value => !children.includes(value))
+        let nativeEvent = newEvents.find(e => e.id == child.id);
+        //set nativeEvent to visible
+        nativeEvent.visible = true;
+        nativeEvent.groups = nativeEvent.groups.filter(g => g.id !== groupEvent.id)
+        groupEvent.children = currentChildren.filter(value => children.includes(value))
+
+        console.log(nativeEvent, groupEvent)
+        //iterate through and remove group events in allProvenance;
+        allProvenanceData.map(participant => {
+          let userData = participant.data
+          //tasks are objects that contain a provenance field.
+          let tasks = Object.keys(userData).filter(k => userData[k].provenance);
+          tasks.map(task => {
+            Object.keys(userData[task].provenance).reverse().map((i) => {
+              let e = userData[task].provenance[i]
+              console.log(e, groupEvent, nativeEvent)
+              if (e.name == groupEvent.name && e.origName == nativeEvent.name) {
+                userData[task].provenance.splice(i, 1)
+              }
+            })
+          })
+        });
+
+      }
+
+      // renameHelper(allProvenanceData, child.name, groupEvent.name);
+
     }
 
     setEvents(newEvents)
-
-    //modify provenance instances in data
-    renameHelper(allProvenanceData, nativeEvent, groupEvent);
-
     setAllProvenanceData(allProvenanceData)
 
   }
@@ -214,7 +307,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     });
 
     events = [... new Set(events)];
-    events = events.map((e, i) => ({ name: e, type: 'native', visible: true, id: i }));
+    events = events.map((e, i) => ({ name: e, type: 'native', visible: true, groups: [], id: i }));
     return events;
   }
 
@@ -309,7 +402,9 @@ export const ProvenanceDataContextProvider = ({ children }) => {
         events,
         hideEvent,
         newEvent,
-        renameEvent
+        renameEvent,
+        deleteEvent,
+        addRemoveChild
       }}>
       {children}
     </ProvenanceDataContext.Provider>
