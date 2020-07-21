@@ -129,7 +129,7 @@ const ItemNameWrapper = ({ itemName, onItemNameChange }) => {
 
 function EventAccordion(props) {
 
-    const { currentTaskData, events, hideEvent, renameEvent, deleteEvent, addRemoveChild } = useContext(ProvenanceDataContext);
+    const { currentTaskData, events, patterns, hideEvent, renameEvent, deleteEvent, addRemoveChild } = useContext(ProvenanceDataContext);
 
     console.log('events', events)
 
@@ -199,8 +199,6 @@ function EventAccordion(props) {
 
                 function changeGroup(children, reason) {
                     console.log(children, reason);
-
-
                     addRemoveChild(children, d.name)
                 }
 
@@ -217,7 +215,7 @@ function EventAccordion(props) {
 
                 let icon;
 
-
+                console.log('patterns', d, patterns[d.name])
 
                 return < ExpansionPanel key={d.id}>
                     <div className={!d.visible ? classes.hide : ''}>
@@ -227,11 +225,6 @@ function EventAccordion(props) {
                                     itemName={d.name}
                                     onItemNameChange={renameEvent}
                                 />
-                                {/* <Typography className={classes.heading}>
-                                    <ItemNameWrapper
-                                        itemName={d.name}
-                                        onItemNameChange={renameEvent}
-                                    /> </Typography> */}
                             </div>
                             <div className={classes.smallColumn}>
                                 <Typography className={classes.secondaryHeading}>{
@@ -245,12 +238,6 @@ function EventAccordion(props) {
                                 </Tooltip>
                             </div>
 
-                            {/* <div className={classes.column}>
-                                <Tooltip title="Event Frequency During Tasks">
-                                    <Typography className={classes.secondaryHeading}>{timeHeatMap(d)}</Typography>
-                                </Tooltip>
-                            </div> */}
-
                             <div className={classes.smallColumn}>
                                 <Typography className={classes.secondaryHeading}>{icons}</Typography>
                             </div>
@@ -261,8 +248,35 @@ function EventAccordion(props) {
                             <Tags groups={props.data.filter(f => f.type == 'customEvent').map(d => ({ title: d.label }))} />
                         </div>
                     </ExpansionPanelDetails> */}
+
+                    {patterns && <ExpansionPanelDetails className={classes.details}>
+
+                        <div className={classNames(classes.column, classes.helper)}>
+                            {patterns[d.name].nodeLink.map((s, i) => <ProvenanceIsolatedNodes key={i} nodes={s.seq}></ProvenanceIsolatedNodes>)
+                            }
+                        </div>
+
+                        <div className={classNames(classes.smallColumn, classes.helper)}>
+                            {patterns[d.name].nodeLink.map((s, i) => rectangle(s, 'count'))}
+                        </div>
+
+                        <div className={classNames(classes.column, classes.helper)}>
+                            {patterns[d.name].adjMatrix.map((s, i) => <ProvenanceIsolatedNodes key={i} nodes={s.seq}></ProvenanceIsolatedNodes>)
+                            }
+                        </div>
+
+                        <div className={classNames(classes.smallColumn, classes.helper)}>
+                            {patterns[d.name].adjMatrix.map((s, i) => rectangle(s, 'count'))}
+                        </div>
+
+
+                    </ExpansionPanelDetails>}
+
+
                     {groups}
                 </ExpansionPanel >
+
+
 
             })}
         </div >

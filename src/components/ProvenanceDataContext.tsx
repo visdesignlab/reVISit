@@ -6,6 +6,7 @@ import * as d3 from "d3";
 import _ from "lodash";
 import { performPrefixSpan } from "../fetchers/fetchMocks.js";
 import { useFetchAPIData } from "../hooks/hooks";
+import { ConsoleSqlOutlined } from "@ant-design/icons";
 
 const ProvenanceDataContext = React.createContext({});
 
@@ -13,10 +14,8 @@ export const ProvenanceDataContextProvider = ({ children }) => {
 
   const [allProvenanceData, setAllProvenanceData] = useState(() => processRawProvenanceData(initProvData));
 
-  // useState(
-  //   processRawProvenanceData(initProvData)
-  // );
-
+  //get all visConditions; 
+  const conditions = [... new Set(allProvenanceData.map(p => p.data['S-task01'].visType))]
   const [events, setEvents] = useState(
     listNativeEvents(allProvenanceData)
   );
@@ -40,7 +39,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     setEvents(newEvents)
   }
 
-  function newEvent(newName) {
+  let newEvent = function (newName) {
     let newEvent = { name: newName, type: 'group', children: [], count: 0, visible: true, id: events.length }
     setEvents([newEvent, ...events]);
     return newEvent
@@ -128,7 +127,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
         let child = children.find(value => !currentChildren.includes(value))
         let nativeEvent = newEvents.find(e => e.id == child.id);
         groupEvent.children.push(nativeEvent);
-        //set nativeEvent.hidden
+        //set nativeEvent visible
         nativeEvent.visible = false;
         //add reference to parent event 
         nativeEvent.groups.push(groupEvent);
@@ -217,60 +216,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
 
   const [selectedTaskId, setSelectedTaskId] = React.useState("S-task01");
 
-  const [patternsForTask, setPatternsForTask] = useState(null);
-
-  // useEffect(() => {
-  //   async function fetchData() {
-
-  //     let patternObj = {};
-
-  //     Object.keys(allEvents).map(k => {
-  //       patternObj[k] = { nlPatterns: [], amPatterns: [] }
-  //     });
-
-
-
-  //     Promise.all(allEvents.map(async (ev) => {
-  //       let nodeLink = ev.sequences.filter(s => s.visType == 'nodeLink');
-  //       let adjMatrix = ev.sequences.filter(s => s.visType == 'adjMatrix');
-
-  //       // You can await here
-  //       const nlPatterns = await getPatterns(nodeLink,events);
-  //       const amPatterns = await getPatterns(adjMatrix,events);
-
-  //       patternObj[ev.event] = { nlPatterns, amPatterns }
-
-  //     }))
-
-  //       .then(() => {
-  //         // patternObj['all'] = sequences;
-  //         setPatterns(patternObj);
-  //         console.log('patternObj', patternObj)
-
-  //       })
-  //     // ...
-  //   }
-  //   fetchData();
-
-  //   // put code in here to re-run on any update to selectedTaskId
-  //   //promise
-  //   //.then
-  //   // setPatternsForTask
-  // }, [selectedTaskId])
-
-  /*const [loadingPatterns, errorLoadingPatterns,patternsFromServer] = useFetchAPIResponse(
-    async ()=>{
-      return await getPatternsFromServer()
-    },
-    [selectedTaskId]
-  )
-
-  useEffect(()=>{
-    setPatternsForTask(patternsFromServer)
-  },[patternsFromServer])*/
-
-
-
+  const [patterns, setPatterns] = useState(null);
 
   const taskStructure = [
     { name: "Task 1", key: "S-task01", prompt: "" },
@@ -311,48 +257,50 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     return events;
   }
 
-  //async function to grab data from server; 
-  async function getPatterns(seq, eventNames) {
-
-    let array = await d3.json('http://127.0.0.1:5000/prefix', {
-      // d3.json('http://18.222.101.54/prefix', {
-      method: "POST",
-      body: JSON.stringify(seq.map(s => s['seq'])),
-      headers: {
-        "Content-type": "application/json; charset=UTF-8"
-      }
-    });
-
-    let results = array.sort((a, b) => a[0] > b[0] ? 1 : -1).map(arr => {
-      return ({
-        count: arr[0], seq: arr[1].map(e => ({ event: eventNames.find(ev => ev.id == e).event }))
-      })
-    })
-    return results
-  }
 
   function handleChangeSelectedTaskId(event) {
     setSelectedTaskId(event.target.value);
   }
 
-  //count the number of events for this task
+  //count the number of events and update sequences for this task
   useEffect(() => {
     let newEvents = [...events]
     newEvents.map(e => {
       e.count = 0;
+      e.sequences = {}
+      conditions.map((c) => {
+        e.sequences[c] = []
+      }
+      )
     })
 
     allProvenanceData.forEach((participant) => {
       if (participant.data[selectedTaskId]) {
-        participant.data[selectedTaskId].provenance
+        let participantData = participant.data[selectedTaskId];
+        participantData.provenance
           .map(e => {
             let event = newEvents.find(ev => ev.name == e.event);
             event.count = event.count + 1;
           })
+
+        //add sequence to each unique event type
+        let allEvents = participantData.provenance.map(d => d.event)
+        let uniqueEvents = [... new Set(allEvents)];
+
+        uniqueEvents
+          .map(e => {
+            let event = newEvents.find(ev => ev.name == e);
+            event.sequences[participantData.visType].push(allEvents.map(e => {
+              let event = newEvents.find(ev => ev.name == e);
+              return event.id
+            }));
+          })
       }
     });
 
+    console.log('newEvents', newEvents)
     setEvents(newEvents);
+
   }, [selectedTaskId]);
 
   let currentTaskData = React.useMemo(() => {
@@ -383,13 +331,42 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     return internalTaskData;
   }, [allProvenanceData, selectedTaskId, events]);
 
+
+  //get pattern data from server;
   // console.log(currentTaskData)
-  const [isLoading, isError, data] = useFetchAPIData(async () => {
-    const sampleData = prefixSpanSampleData.data;
-    console.log(sampleData);
-    return await performPrefixSpan(sampleData);
-  }, [selectedTaskId]);
-  // console.log("check out the prefix span data", isLoading, isError, data);
+  const [isLoading, isError, dataFromServer] = useFetchAPIData(async () => {
+    let sequences = {};
+    events.map(e => { sequences[e.name] = { sequences: e.sequences } });
+    return await performPrefixSpan(sequences);
+  }, [events]);
+  // console.log("check out the prefix span data", isLoading, isError, dataFromServer);
+
+  useEffect(() => {
+    console.log('setting patterns', dataFromServer)
+    //convert sequences back to names; 
+
+    if (dataFromServer) {
+      Object.keys(dataFromServer).map(event => {
+        let eventObj = dataFromServer[event]
+        let conditions = ['nodeLink', 'adjMatrix'] //Object.keys(eventObj);
+        conditions.map(c => {
+          eventObj[c] = eventObj[c].map(arr => {
+            let [count, seq] = arr;
+            seq = seq.map(s => {
+              let event = events.find(e => e.id == s);
+              return { id: event.name, event: event.name }
+            })
+            return { count: arr[0], seq }
+          })
+        })
+      })
+
+      setPatterns(dataFromServer)
+
+
+    }
+
+  }, [dataFromServer])
   // console.log("relative", allProvenanceData);
   return (
     <ProvenanceDataContext.Provider
@@ -400,6 +377,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
         handleChangeSelectedTaskId,
         selectedTaskId,
         events,
+        patterns,
         hideEvent,
         newEvent,
         renameEvent,
@@ -411,7 +389,13 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   );
 };
 
-
+function removeDuplicates(arr) {
+  return arr.filter(function (item, pos, arr) {
+    // Always keep the 0th element as there is nothing before it
+    // Then check if each element is different than the one before it
+    return pos === 0 || item !== arr[pos - 1];
+  });
+}
 function calculateRelativeProvGraph(taskPerformance, maxTime) {
   let totalTime =
     new Date(taskPerformance.endTime) - new Date(taskPerformance.startTime);
@@ -437,7 +421,26 @@ function calculateRelativeProvGraph(taskPerformance, maxTime) {
   return taskPerformance;
 }
 function processRawProvenanceData(unrelativeProvenanceData) {
-  console.trace('calling process Raw prov data')
+
+  //remove element with no data 
+  unrelativeProvenanceData = unrelativeProvenanceData.filter(d => Object.keys(d.data).length > 0);
+
+  //remove elements with no, or messed up provenance (more than one started prov event)
+  unrelativeProvenanceData = unrelativeProvenanceData.filter(d => {
+    let tasks = Object.keys(d.data).filter(t => t.includes('task'));
+
+    return tasks.reduce((acc, task) => {
+      if (!d.data[task].provenance) {
+        //participant has no provenance for a certain task. 
+        return false
+      } else {
+        //element has more than on 'startedProvenance' event in the same task. 
+        return acc && (d.data[task].provenance.filter(p => p.event == 'startedProvenance').length == 1)
+      }
+    }, true)
+  });
+
+  // console.trace('calling process Raw prov data')
   const taskIds = [
     "S-task01",
     "S-task02",
@@ -457,7 +460,8 @@ function processRawProvenanceData(unrelativeProvenanceData) {
     "S-task16",
   ];
 
-  const relativeProvenanceData = _.cloneDeep(unrelativeProvenanceData);
+  const relativeProvenanceData = _.cloneDeep(unrelativeProvenanceData)
+
   taskIds.forEach((taskId) => {
     let longestTimeForTask = d3.max(unrelativeProvenanceData, (participant) => {
       if (
@@ -488,6 +492,8 @@ function processRawProvenanceData(unrelativeProvenanceData) {
       }
     });
   });
+
+
 
   return relativeProvenanceData;
 }
