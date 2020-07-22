@@ -31,9 +31,6 @@ export const CategoricalFilter = ({
     a > b ? a : b
   );
   const yScale = d3.scaleLinear().domain([0, maxOccurance]).range([0, height]);
-  useEffect(() => {
-    onFilterChanged(columnDef.tableData.id, currentFilter);
-  }, [currentFilter]);
 
   return (
     <svg width={width} height={fullHeight}>
@@ -201,15 +198,15 @@ const BrushableHistogram = ({ data, xScale, setMinimum, setMaximum }) => {
   );
 };
 
-export const TimeFilter = ({ data, xScale, columnDef, onFilterChanged }) => {
+export const TimeFilter = ({ data, xScale, columnDef }) => {
   console.log("new Time Filter");
   const [minimum, setMinimum] = useState(d3.min(data));
   const [maximum, setMaximum] = useState(d3.max(data));
   const debouncedMin = useDebounce(minimum, 100);
   const debouncedMax = useDebounce(maximum, 100);
-  useEffect(() => {
-    onFilterChanged(columnDef.tableData.id, [debouncedMin, debouncedMax]);
-  }, [debouncedMin, debouncedMax]);
+  /*useEffect(() => {
+    onFilterChanged([debouncedMin, debouncedMax]);
+  }, [debouncedMin, debouncedMax]);*/
   return (
     <BrushableHistogram
       xScale={xScale}
