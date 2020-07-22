@@ -4,7 +4,7 @@ import Tooltip from "@material-ui/core/Tooltip";
 import Fade from "@material-ui/core/Fade";
 import styles from "./ProvenanceIsolatedNodes.module.css";
 const ProvenanceIsolatedNodes = ({ nodes }) => {
-  console.log("isolated", nodes);
+  // console.log("isolated", nodes);
   return (
     <div className={styles.wrapper}>
       {nodes.map((node, index) => (
@@ -15,10 +15,14 @@ const ProvenanceIsolatedNodes = ({ nodes }) => {
 };
 
 const IsolatedNode = ({ node }) => {
-  const icon = eventMapping[node.event].icon;
 
-  return node.event !== "startedProvenance" &&
-    node.event !== "Finished Task" ? (
+  let eventMap = eventMapping[node.id] ? eventMapping[node.id] : eventMapping['custom']
+  //add check for custom icons for newly created events;
+  const icon = eventMap.icon
+
+  // node.event !== "startedProvenance" &&
+  //   node.event !== "Finished Task" ? 
+  return (
     <Tooltip
       TransitionComponent={Fade}
       TransitionProps={{ timeout: 600 }}
@@ -41,13 +45,14 @@ const IsolatedNode = ({ node }) => {
           width={30}
           height={30}
           rx={5}
-          fill={eventMapping[node.event].color}></rect>
+          fill={eventMap.color}></rect>
         <g transform={`translate(7,5)`}>{icon}</g>
       </svg>
     </Tooltip>
-  ) : (
-    <div></div>
-  );
+  )
+  // : (
+  //   <div></div>
+  // );
 };
 
 export default ProvenanceIsolatedNodes;

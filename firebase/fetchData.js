@@ -41,8 +41,10 @@ let db = firestore.connect();
   // fetchSkinnyProvenance();
   let NL_example = '545d6768fdf99b7f9fca24e3_S-task01';
   let AM_example = '546e3c21fdf99b2b8df983fd_S-task01';
-  // getSampleProvenance(NL_example);
-  // getSampleProvenance(AM_example);
+  // getRawProvenance(NL_example);
+  // getRawProvenance(AM_example);
+  getRawProvenance()
+  // fetchProvenance();
   console.log('done')
 })();
 
@@ -69,24 +71,58 @@ async function fetchSkinnyProvenance() {
   console.log("exported provenance_summary.json");
 }
 
-async function getSampleProvenance(key) {
-  let NL_example = '545d6768fdf99b7f9fca24e3_S-task01';
-  let AM_example = '546e3c21fdf99b2b8df983fd_S-task01';
+async function getRawProvenance(key) {
+
   const provenanceCollection = db.collection('provenance');
 
-  let provenanceRef = db.collection('provenance').doc(key);
-  let doc = await provenanceRef.get();
-  if (!doc.exists) {
-    console.log('No such document!');
-  } else {
-    let data = doc.data();
+  if (key) {
+    console.log('getting ', key)
+    let provenanceRef = db.collection('provenance').doc(key);
+    let doc = await provenanceRef.get();
+    if (!doc.exists) {
+      console.log('No such document!');
+    } else {
+      let data = doc.data();
 
-    fs.writeFileSync(
-      "./" + key + ".json",
-      JSON.stringify(data), { flag: 'w' }
-    );
+      fs.writeFileSync(
+        "./" + key + ".json",
+        JSON.stringify(data), { flag: 'w' }
+      );
+
+    }
+
+  } else {
+
+    console.log('getting all docs in provenance collection')
+    const snapshot = await db.collection('provenance').where('id', '==', '546e3c21fdf99b2b8df983fd').get();
+
+
+    // .where('mode', '==', 'study').get();
+
+    if (snapshot.empty) {
+      console.log('No matching documents.');
+      return;
+    }
+
+    snapshot.forEach(doc => {
+      let data = doc.data();
+      if (doc.id.includes('S-')) {
+        console.log('writing', doc.id)
+
+        fs.writeFileSync(
+          "./" + doc.id + ".json",
+          JSON.stringify(data), { flag: 'w' }
+        );
+      } else {
+        console.log('skipping', doc.id)
+      }
+
+
+    });
 
   }
+
+
 }
 async function writeSkinnyProvenance(participant) {
   let participantID = participant.id;
@@ -395,7 +431,8 @@ async function paginate(i, lastDoc) {
         };
       })
     );
-    fs.writeFileSync("provenance_" + i + ".json", data);
+    console.log('writing', d.id + ".json")
+    fs.writeFileSync(d.id + ".json", data);
 
     // Get the last document
     let last = snapshot.docs[snapshot.docs.length - 1];

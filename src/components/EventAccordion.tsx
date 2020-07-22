@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import TextField from "@material-ui/core/TextField";
 import { makeStyles } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
@@ -14,6 +14,13 @@ import Chip from '@material-ui/core/Chip';
 import Button from '@material-ui/core/Button';
 import Divider from '@material-ui/core/Divider';
 import * as d3 from "d3";
+import ProvenanceIsolatedNodes from "./ProvenanceIsolatedNodes";
+import Box from '@material-ui/core/Box';
+
+
+import BarChart from "../components/BarChart"
+import TimeChart from "../components/timeChart"
+
 
 import { ReactComponent as ActionGroup } from "../icons/action_group.svg";
 // import { ReactComponent as Action } from "../icons/action.svg";
@@ -30,7 +37,7 @@ import {
     HeatmapSeries,
     LabelSeries,
 } from 'react-vis';
-import { VisibilityOffRounded, VisibilityRounded, HighlightOffRounded, QueuePlayNext, AddCircle } from '@material-ui/icons';
+import { VisibilityOffRounded, VisibilityRounded, HighlightOffRounded, Edit } from '@material-ui/icons';
 
 import Tags from "../components/GroupSelector"
 import { HomeIcon } from "../components/customIcons"
@@ -38,6 +45,8 @@ import Tooltip from '@material-ui/core/Tooltip';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import { SvgIcon } from "material-ui";
+import ProvenanceDataContext from "../components/ProvenanceDataContext";
+
 
 const styles = theme => ({
     root: {
@@ -69,7 +78,8 @@ const styles = theme => ({
     },
     helper: {
         borderLeft: `2px solid ${theme.palette.divider}`,
-        padding: `${theme.spacing.unit}px ${theme.spacing.unit * 2}px`,
+        padding: `${theme.spacing(1)}px ${theme.spacing(2)}px`,
+
     },
     link: {
         color: theme.palette.primary.main,
@@ -80,20 +90,58 @@ const styles = theme => ({
     },
 });
 
+const ItemNameWrapper = ({ itemName, onItemNameChange }) => {
+    const [doubleClicked, setDoubleClicked] = React.useState(false);
+    const [currentName, setCurrentName] = React.useState(itemName);
+    return (
+        <div onClick={(event) => event.stopPropagation()} onDoubleClick={(event) => {
+            event.stopPropagation();
+            setDoubleClicked(true)
+        }}>
+            {doubleClicked ? (
+                <div>
+                    <TextField
+                        id={itemName}
+                        label={itemName}
+                        onChange={(ev) => {
+                            const newName = ev.target.value;
+                            // do checks here to verify name is unique?
+                            setCurrentName(newName);
+                        }}
+                        onKeyPress={(ev) => {
+                            // console.log(`Pressed keyCode ${ev.key}`);
+                            if (ev.key === "Enter") {
+                                onItemNameChange(itemName, currentName);
+                                setDoubleClicked(false);
+                            }
+                        }}
+                    />
+                </div>
+            ) : (
+                    // <div>{itemIcon} {currentName}  <EyeTwoTone /> <MoreOutlined /> </div>
+                    <div> {currentName} </div>
+
+                )}
+        </div>
+    );
+};
 
 
 function EventAccordion(props) {
-    console.log(props.data)
+
+    const { currentTaskData, events, hideEvent, renameEvent, deleteEvent, addRemoveChild } = useContext(ProvenanceDataContext);
+
+    console.log('events', events)
 
     let attr = 'count';
-    const scale = countScale(props.data, 60, attr)
-    console.log(scale.domain(), scale.range())
+    const scale = countScale(events, 60, attr)
+    // console.log(scale.domain(), scale.range())
 
 
 
     function rectangle(d, attr) {
         return (
-            <svg width={150} height={20} >
+            <svg width={150} height={20} key={d.key} >
 
                 <rect className='count' style={{ fill: "#348385" }}
                     x={0}
@@ -112,47 +160,24 @@ function EventAccordion(props) {
 
     function deleteCustomEvent(event, d) {
         event.stopPropagation()
-        let data = [...props.data];
-        //remove the event
-        data = data.filter(el => el !== d);
-        props.onChange(data);
+        deleteEvent(d.name)
     }
 
 
-    function hideEvent(event, d) {
+    function hideEventFcn(event, d) {
         event.stopPropagation()
-        let data = [...props.data];
-        //toggle hide status of the event
-        data.map(el => el == d ? el.hidden = !el.hidden : el.hidden);
-        props.onChange(data);
+        console.log('hiding', d.name)
+        hideEvent(d.name)
+        // props.onChange(data);
     }
 
-    function moveEvent(event, d) {
-        event.stopPropagation()
-        let data = [...props.data]
-        console.log(data)
-        let p = data.filter(d => d.type == "customEvent")[0];
-        console.log(p)
-        p.children.push(d)
-        props.onChange(data);
-    }
-
-    function newEvent(d, insertAfter) {
-        {
-            console.log(d)
-            let data = [...props.data]
-            let i = data.indexOf(insertAfter);
-            data.splice(i + 1, 0, d)
-            props.onChange(data);
-        }
-    }
 
     const { classes } = props;
     return (
         <div className={classes.root}>
-            {props.data.map(d => {
-                let hide = <span onClick={(event) => hideEvent(event, d)}>
-                    {d.hidden ? (
+            {events.map((d, i) => {
+                let hide = <span onClick={(event) => hideEventFcn(event, d)}>
+                    {!d.visible ? (
                         <Tooltip title="Show this Event">
                             <VisibilityOffRounded />
                         </Tooltip>
@@ -165,50 +190,48 @@ function EventAccordion(props) {
                     </Tooltip>
                 </span>
 
-                let move = <span onClick={(event) => moveEvent(event, d)}>
-                    <Tooltip title="Copy Event to Custom Group">
-                        <HomeIcon />
-                    </Tooltip>
-                </span>
                 let all = <>
-                    {hide} {move} {del}
+                    {hide} {del}
                 </>
                 let baseIcons = <>
-                    {hide} {move}
+                    {hide}
                 </>
 
-                let icons = d.type == 'nativeEvent' ? baseIcons : all;
+                function changeGroup(children, reason) {
+                    console.log(children, reason);
+
+
+                    addRemoveChild(children, d.name)
+                }
+
+                let groups = d.type == 'group' ? <>
+                    <Divider />
+                    <ExpansionPanelDetails>
+                        <div>
+                            <Tags onChange={changeGroup} value={d.children} groups={events.filter(f => f.type == 'native')} />
+                        </div>
+                    </ExpansionPanelDetails>
+                </> : ''
+
+                let icons = d.type == 'native' ? baseIcons : all;
 
                 let icon;
 
-                console.log(d.type)
 
-                switch (d.type) {
-                    case 'nativeEvent':
 
-                        icon = <Tooltip title="Copy Event to Custom Group">
-                            {/* <Action /> */}
-                        </Tooltip>
-                    case 'nativeEvent_filtered':
-                        icon = <Tooltip title="Copy Event to Custom Group">
-                            {/* <ActionFilter /> */}
-                        </Tooltip>
-
-                    case 'customEvent':
-                        icon = <Tooltip title="Copy Event to Custom Group">
-                            <HomeIcon />
-                        </Tooltip>
-                        break;
-
-                }
-
-                return < ExpansionPanel >
-                    <div className={d.hidden ? classes.hide : ''}>
+                return < ExpansionPanel key={d.id}>
+                    <div className={!d.visible ? classes.hide : ''}>
                         <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
                             <div className={classes.column}>
-
-                                <Typography className={classes.heading}
-                                >{d.key}</Typography>
+                                <ItemNameWrapper
+                                    itemName={d.name}
+                                    onItemNameChange={renameEvent}
+                                />
+                                {/* <Typography className={classes.heading}>
+                                    <ItemNameWrapper
+                                        itemName={d.name}
+                                        onItemNameChange={renameEvent}
+                                    /> </Typography> */}
                             </div>
                             <div className={classes.smallColumn}>
                                 <Typography className={classes.secondaryHeading}>{
@@ -238,27 +261,7 @@ function EventAccordion(props) {
                             <Tags groups={props.data.filter(f => f.type == 'customEvent').map(d => ({ title: d.label }))} />
                         </div>
                     </ExpansionPanelDetails> */}
-                    <ExpansionPanelDetails className={classes.details}>
-                        {/* <div className={classes.column} /> */}
-                        {/* <div className={classNames(classes.helper)}>
-                            <Tags groups={props.data.filter(f => f.type == 'customEvent').map(d => ({ title: d.label }))} />
-                        </div> */}
-
-                        <div className={classes.column}>
-                            {/* <Typography className={classes.secondaryHeading}>Targets</Typography> */}
-                            {/* {targets(d, attr, 'label')} */}
-                        </div>
-                        <div className={classNames(classes.column, classes.helper)}>
-                            {/* {heatMap(d)} */}
-                        </div>
-
-                    </ExpansionPanelDetails>
-                    <Divider />
-                    <ExpansionPanelDetails>
-                        <div>
-                            <Tags groups={props.data.filter(f => f.type == 'customEvent').map(d => ({ title: d.label }))} />
-                        </div>
-                    </ExpansionPanelDetails>
+                    {groups}
                 </ExpansionPanel >
 
             })}

@@ -4,6 +4,7 @@ import Chip from '@material-ui/core/Chip';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import { makeStyles } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
+import { OmitProps } from 'antd/lib/transfer/ListBody';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -23,16 +24,21 @@ export default function Tags(props) {
                 multiple
                 id="tags-standard"
                 options={props.groups}
-                getOptionLabel={(option) => option.title}
+                getOptionLabel={(option) => option.name}
                 // defaultValue={[top100Films[13]]}
-                renderInput={(params) => (
-                    <TextField
+                value={props.value}
+                // renderTags={function (value) { console.log('value', value); return value }}
+                onChange={function (event, value, reason) {
+                    props.onChange(value, reason)
+                }}
+                renderInput={(params) => {
+                    return <TextField
                         {...params}
                         variant="standard"
-                        label="Groups"
-                        placeholder="Add to Group"
+                        label="Events"
+                        placeholder="Add Event to Group"
                     />
-                )}
+                }}
             />
         </div>
     );

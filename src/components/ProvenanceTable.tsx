@@ -36,7 +36,7 @@ import TagStyles from "./tagstyles.module.css";
 import TagWrapper from "./reactTagWrapper";
 import { TimeFilter, CategoricalFilter } from "./TableFilters";
 import { fireFetch } from "../firebase/fetchData";
-
+import { CustomGroupRow } from "./GroupedRow";
 import data from "../common/data/provenance_summary.json";
 import { StylesProvider } from "@material-ui/core";
 import tableStyles from "./ProvenanceTable.module.css";
@@ -201,7 +201,13 @@ const MaterialTableWrapper = ({ provenanceData }) => {
               background: "white",
             },
           };
+          console.log("FILTER PROPS", props);
           return <MTableFilterRow styles={styles} {...props}></MTableFilterRow>;
+        },
+        GroupRow: (props) => {
+          //const groupedData;
+          //<MTableFilterRow styles={styles} {...props}></MTableFilterRow>
+          return <div></div>;
         },
       }}
       columns={[
@@ -418,7 +424,7 @@ function renderAccuracyCell(rowData, accuracyScale) {
   return (
     <svg width={100} height={20}>
       <rect
-        x={accuracyScale(rowData.answer.accuracy)}
+        x={accuracyScale(rowData?.answer.accuracy)}
         width={20}
         height={20}></rect>
     </svg>
