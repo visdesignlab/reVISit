@@ -34,13 +34,9 @@ import TagsInput from "react-tagsinput";
 import eventMapping from "./eventMapping";
 import TagStyles from "./tagstyles.module.css";
 import TagWrapper from "./reactTagWrapper";
-import { TimeFilter, CategoricalFilter } from "./TableFilters";
-import { fireFetch } from "../firebase/fetchData";
-import { CustomGroupRow } from "./GroupedRow";
-import data from "../common/data/provenance_summary.json";
-import { StylesProvider } from "@material-ui/core";
+import { QuantitativeFilter, CategoricalFilter } from "./TableFilters";
+
 import tableStyles from "./ProvenanceTable.module.css";
-console.log("DATA HERE", data);
 //const trimmedPromise = fireFetch("provenance");
 /*trimmedPromise.then((promise) => {
   console.log(promise);
@@ -201,13 +197,7 @@ const MaterialTableWrapper = ({ provenanceData }) => {
               background: "white",
             },
           };
-          console.log("FILTER PROPS", props);
           return <MTableFilterRow styles={styles} {...props}></MTableFilterRow>;
-        },
-        GroupRow: (props) => {
-          //const groupedData;
-          //<MTableFilterRow styles={styles} {...props}></MTableFilterRow>
-          return <div></div>;
         },
       }}
       columns={[
@@ -424,7 +414,7 @@ function renderAccuracyCell(rowData, accuracyScale) {
   return (
     <svg width={100} height={20}>
       <rect
-        x={accuracyScale(rowData?.answer.accuracy)}
+        x={accuracyScale(rowData.answer.accuracy)}
         width={20}
         height={20}></rect>
     </svg>
@@ -507,12 +497,12 @@ function renderTimeColumn(currentProvenanceData, columnWidth) {
     },
 
     filterComponent: (props) => (
-      <TimeFilter
+      <QuantitativeFilter
         {...props}
         xScale={timeScale}
         data={currentProvenanceData.map(
           (graph) => graph.totalTime
-        )}></TimeFilter>
+        )}></QuantitativeFilter>
     ),
   };
 }

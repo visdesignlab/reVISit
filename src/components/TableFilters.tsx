@@ -199,15 +199,15 @@ const BrushableHistogram = ({ data, xScale, setMinimum, setMaximum }) => {
   );
 };
 
-export const TimeFilter = ({ data, xScale, columnDef }) => {
+export const QuantitativeFilter = ({ data, xScale, onFilter }) => {
   console.log("new Time Filter");
   const [minimum, setMinimum] = useState(d3.min(data));
   const [maximum, setMaximum] = useState(d3.max(data));
   const debouncedMin = useDebounce(minimum, 100);
   const debouncedMax = useDebounce(maximum, 100);
-  /*useEffect(() => {
-    onFilterChanged([debouncedMin, debouncedMax]);
-  }, [debouncedMin, debouncedMax]);*/
+  useEffect(() => {
+    onFilter({ filterMin: debouncedMin, filterMax: debouncedMax });
+  }, [debouncedMin, debouncedMax]);
   return (
     <BrushableHistogram
       xScale={xScale}

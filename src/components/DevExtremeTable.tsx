@@ -29,7 +29,7 @@ import TagsInput from "react-tagsinput";
 import eventMapping from "./eventMapping";
 import TagStyles from "./tagstyles.module.css";
 import TagWrapper from "./reactTagWrapper";
-import { TimeFilter, CategoricalFilter } from "./TableFilters";
+import { QuantitativeFilter, CategoricalFilter } from "./TableFilters";
 import tableStyles from "./ProvenanceTable.module.css";
 import { ifError } from "assert";
 
@@ -306,6 +306,13 @@ function filterCategoricalValue(filter, value, accesssor) {
   }
   return false;
 }
+function filterQuantitativeValues(filter, value, row) {
+  if (value >= filter.filterMin && value <= filter.filterMax) {
+    return true;
+  }
+  console.log(filter, value, row);
+  return false;
+}
 
 function renderProvenanceNodeColumn(currentProvenanceData, eventColumnWidth) {
   const eventWidth = 500;
@@ -421,7 +428,7 @@ function renderTimeColumn(currentProvenanceData, columnWidth) {
 
   return {
     title: "Time To Complete",
-    name: "time",
+    name: "totalTime",
     width: columnWidth,
     cellStyle: {
       maxWidth: columnWidth,
@@ -429,9 +436,11 @@ function renderTimeColumn(currentProvenanceData, columnWidth) {
     },
     customSort: (a, b) => a.totalTime - b.totalTime,
     render: (rowData) => renderTimeCell(rowData, timeScale),
-    customFilterAndSearch: (filterResults, datum) => {
+    customFilterAndSearch: (filter, value, row) => {
+      console.log(filter, value, row);
+      return filterQuantitativeValues(filter, value, row);
       // https://github.com/mbrn/material-table/pull/1351
-      if (
+      /*if (
         datum.totalTime >= filterResults[0] &&
         datum.totalTime <= filterResults[1]
       ) {
@@ -439,16 +448,16 @@ function renderTimeColumn(currentProvenanceData, columnWidth) {
       }
       delete datum.tableData.checked;
 
-      return false;
+      return false;*/
     },
 
     filterComponent: (props) => (
-      <TimeFilter
+      <QuantitativeFilter
         {...props}
         xScale={timeScale}
         data={currentProvenanceData.map(
           (graph) => graph.totalTime
-        )}></TimeFilter>
+        )}></QuantitativeFilter>
     ),
   };
 }
