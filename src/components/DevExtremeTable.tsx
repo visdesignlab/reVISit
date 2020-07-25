@@ -31,6 +31,7 @@ import TagStyles from "./tagstyles.module.css";
 import TagWrapper from "./reactTagWrapper";
 import { TimeFilter, CategoricalFilter } from "./TableFilters";
 import tableStyles from "./ProvenanceTable.module.css";
+import { ifError } from "assert";
 
 const GroupCellContent = ({ row, ...restProps }) => (
   <TableGroupRow.Content {...restProps}>
@@ -49,15 +50,17 @@ const nameGroupCriteria = (value) => {
 };
 const FilterCells = ({ value, other, ...restProps }) => {
   console.log(value, other, restProps);
-  let Item = () => <div></div>;
-  let itemProps = {};
+  let Item; //= () => <div></div>;
+  let itemProps = Object.assign({}, restProps);
   if (restProps.column.filterComponent) {
-    itemProps["onFilter"] = restProps.column.customFilterAndSearch;
+    itemProps["onFilter"] = restProps.onFilter;
     Item = restProps.column.filterComponent;
     //Item = (props) => <NewItem {...props}></NewItem>;
+  } else {
+    Item = (props) => <TableFilterRow.Cell {...props}></TableFilterRow.Cell>;
   }
   return (
-    <VirtualTable.Cell>
+    <VirtualTable.Cell style={{ width: "100%" }}>
       <Item {...itemProps}></Item>
     </VirtualTable.Cell>
   );
@@ -85,11 +88,11 @@ const DevExtremeTable = ({ provenanceData }) => {
 
   // Column Defs
   const [userIdColumnDefinition, setUserIdColumnDefinition] = useState(
-    renderUserIdColumn(provenanceData, 100)
+    renderUserIdColumn(provenanceData, 150)
   );
 
   const [stimulusColumnDefinition, setStimulusColumnDefinition] = useState(
-    renderStimulusDefinition(provenanceData, 100)
+    renderStimulusDefinition(provenanceData, 150)
   );
 
   const [timeColumnDefinition, setTimeColumnDefinition] = useState(
@@ -157,10 +160,10 @@ const DevExtremeTable = ({ provenanceData }) => {
       return {
         columnName: column.name,
         predicate: (value, filter, row) => {
-          if (!filter.value.length) return true;
+          //if (!filter.value.length) return true;
           console.log(value, filter, row);
           if (column.customFilterAndSearch) {
-            return customFilterAndSearch(filter, value);
+            return column.customFilterAndSearch(filter, value, row);
           }
           return IntegratedFiltering.defaultPredicate(value, filter, row);
         },
@@ -199,7 +202,7 @@ const DevExtremeTable = ({ provenanceData }) => {
 
         <TableHeaderRow showGroupingControls />
         <TableSelection showSelectAll />
-        <TableFilterRow showFilterSelector cellComponent={FilterCells} />
+        <TableFilterRow cellComponent={FilterCells} />
         <TableGroupRow
           columnExtensions={tableGroupColumnExtension}
           contentComponent={GroupCellContent}
@@ -278,6 +281,31 @@ function renderProvenanceNodeCell(data) {
     <ProvenanceIsolatedNodes nodes={data.provenance}></ProvenanceIsolatedNodes>
   );
 }
+/**
+ *
+ * @param filter
+ * @param value
+ * @param accesssor
+ */
+function filterCategoricalValue(filter, value, accesssor) {
+  console.log(filter, value, accesssor);
+  if (!Array.isArray(value)) {
+    value = [value];
+  }
+  // for each value
+  let newValues = value;
+  console.log(newValues);
+  if (accesssor) {
+    newValues = newValues.map(accesssor);
+  }
+  console.log(newValues, Object.values(filter));
+  for (let i = 0; i < newValues.length; i++) {
+    if (Object.values(filter).includes(newValues[i])) {
+      return true;
+    }
+  }
+  return false;
+}
 
 function renderProvenanceNodeColumn(currentProvenanceData, eventColumnWidth) {
   const eventWidth = 500;
@@ -299,7 +327,7 @@ function renderProvenanceNodeColumn(currentProvenanceData, eventColumnWidth) {
 
   return {
     title: "Events Used",
-    name: "provGraph",
+    name: "provenance",
     width: eventWidth,
     cellStyle: {
       maxWidth: eventWidth,
@@ -307,16 +335,8 @@ function renderProvenanceNodeColumn(currentProvenanceData, eventColumnWidth) {
     },
     customSort: (a, b) => a.provenance.length - b.provenance.length,
     render: renderProvenanceNodeCell,
-    customFilterAndSearch: (filterResults, datum) => {
-      // https://github.com/mbrn/material-table/pull/1351
-      for (let i = 0; i < datum.provenance.length; i++) {
-        if (filterResults.includes(datum.provenance[i].event)) {
-          return true;
-        }
-      }
-      // unselect any filtered items
-      //delete datum.tableData.checked;
-      return false;
+    customFilterAndSearch: (filter, value, row) => {
+      return filterCategoricalValue(filter, value, (node) => node.event);
     },
     filterComponent: (props) => (
       <CategoricalFilter
@@ -343,7 +363,7 @@ function renderAccuracyCell(rowData, accuracyScale) {
 
 function renderAccuracyColumn(currentProvenanceData, columnWidth) {
   // TODO: Refactor to categorical or Numerical
-  let accuracyScale = generateCategoricalScale([1, 0], columnWidth);
+  let accuracyScale = generateCategoricalScale(["1", "0"], columnWidth);
 
   return {
     title: "Accuracy",
@@ -355,16 +375,22 @@ function renderAccuracyColumn(currentProvenanceData, columnWidth) {
     },
     customSort: (a, b) => a.answer.accuracy - b.answer.accuracy,
     render: (rowData) => renderAccuracyCell(rowData, accuracyScale),
-    customFilterAndSearch: (filterResults, datum) => {
+    customFilterAndSearch: (filter, value, row) => {
+      return filterCategoricalValue(
+        filter,
+        value,
+        (answer) => `${answer.accuracy}`
+      );
+      /*console.log(filter, value, row);
       // https://github.com/mbrn/material-table/pull/1351
       // TODO: Refactor to categorical or Numerical
-      if (filterResults.includes(`${datum.answer.accuracy}`)) {
+      if (value.includes(`${row.answer.accuracy}`)) {
         return true;
       }
       // if outside of filter, remove from item
       //delete datum.tableData.checked;
 
-      return false;
+      return false;*/
     },
 
     filterComponent: (props) => (
@@ -372,7 +398,7 @@ function renderAccuracyColumn(currentProvenanceData, columnWidth) {
         {...props}
         width={columnWidth}
         scale={accuracyScale}
-        labels={{ true: 1, false: 0 }}
+        labels={{ "1": "true", "0": "false" }}
         data={currentProvenanceData.map(
           // TODO: fix from hard coded
           (graph) => graph.answer.correct

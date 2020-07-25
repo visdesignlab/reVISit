@@ -14,24 +14,25 @@ function obtainItemCounts(arr) {
   }
   return occurrences;
 }
-export const CategoricalFilter = ({
-  data,
-  width,
-  scale,
-  labels,
-  columnDef,
-  onFilterChanged,
-}) => {
+export const CategoricalFilter = (props) => {
+  const { data, width, scale, labels, columnDef, onFilter } = props;
+  console.log(props);
   const occurrences = useMemo(() => obtainItemCounts(data), [data]);
   // search through data for all states
-  const [currentFilter, setCurrentFilter] = useState(Object.keys(occurrences));
+  const [currentFilter, setCurrentFilterInternal] = useState(
+    Object.keys(occurrences)
+  );
   const height = 20;
   const fullHeight = 20 + 15;
   const maxOccurance = Object.values(occurrences).reduce((a, b) =>
     a > b ? a : b
   );
   const yScale = d3.scaleLinear().domain([0, maxOccurance]).range([0, height]);
-
+  function setCurrentFilter(currentValues) {
+    console.log(currentValues);
+    onFilter(currentValues);
+    setCurrentFilterInternal(currentValues);
+  }
   return (
     <svg width={width} height={fullHeight}>
       {Object.entries(occurrences).map(([key, value], index) => {
