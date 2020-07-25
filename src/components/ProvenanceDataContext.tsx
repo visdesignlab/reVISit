@@ -12,8 +12,40 @@ const ProvenanceDataContext = React.createContext({});
 
 export const ProvenanceDataContextProvider = ({ children }) => {
 
+  const taskStructure = [
+    { name: "Task 1", key: "S-task01", prompt: "" },
+    { name: "Task 2", key: "S-task02" },
+    { name: "Task 3", key: "S-task03" },
+    { name: "Task 4", key: "S-task04" },
+    { name: "Task 5", key: "S-task05" },
+    { name: "Task 6", key: "S-task06" },
+    { name: "Task 7", key: "S-task07" },
+    { name: "Task 8", key: "S-task08" },
+    { name: "Task 9", key: "S-task09" },
+    { name: "Task 10", key: "S-task10" },
+    { name: "Task 11", key: "S-task11" },
+    { name: "Task 12", key: "S-task12" },
+    { name: "Task 13", key: "S-task13" },
+    { name: "Task 14", key: "S-task14" },
+    { name: "Task 15", key: "S-task15" },
+    { name: "Task 16", key: "S-task16" },
+  ];
+
   const [allProvenanceData, setAllProvenanceData] = useState(() => processRawProvenanceData(initProvData));
 
+
+  let singleParticipant = allProvenanceData[0].data;
+  let tasks = Object.keys(singleParticipant).filter(t => t.includes('task'));
+
+  tasks.map(task => {
+    let taskStructureObj = taskStructure.find(t => t.key == task);
+    taskStructureObj.prompt = singleParticipant[task].prompt;
+  })
+
+  console.log(taskStructure)
+
+  //fill out with prompts and answers
+  // console.log(allProvenanceData)
   //get all visConditions; 
   const conditions = [... new Set(allProvenanceData.map(p => p.data['S-task01'].visType))]
   const [events, setEvents] = useState(
@@ -174,7 +206,6 @@ export const ProvenanceDataContextProvider = ({ children }) => {
           tasks.map(task => {
             Object.keys(userData[task].provenance).reverse().map((i) => {
               let e = userData[task].provenance[i]
-              console.log(e, groupEvent, nativeEvent)
               if (e.name == groupEvent.name && e.origName == nativeEvent.name) {
                 userData[task].provenance.splice(i, 1)
               }
@@ -218,24 +249,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
 
   const [patterns, setPatterns] = useState(null);
 
-  const taskStructure = [
-    { name: "Task 1", key: "S-task01", prompt: "" },
-    { name: "Task 2", key: "S-task02" },
-    { name: "Task 3", key: "S-task03" },
-    { name: "Task 4", key: "S-task04" },
-    { name: "Task 5", key: "S-task05" },
-    { name: "Task 6", key: "S-task06" },
-    { name: "Task 7", key: "S-task07" },
-    { name: "Task 8", key: "S-task08" },
-    { name: "Task 9", key: "S-task09" },
-    { name: "Task 10", key: "S-task10" },
-    { name: "Task 11", key: "S-task11" },
-    { name: "Task 12", key: "S-task12" },
-    { name: "Task 13", key: "S-task13" },
-    { name: "Task 14", key: "S-task14" },
-    { name: "Task 15", key: "S-task15" },
-    { name: "Task 16", key: "S-task16" },
-  ];
+
 
   //create state that maps events (including user created ones) to their children and a numeric index (for sequence mapping) 
 

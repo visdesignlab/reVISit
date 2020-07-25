@@ -141,12 +141,12 @@ function EventAccordion(props) {
 
     function rectangle(d, attr) {
         return (
-            <svg width={150} height={20} key={d.key} >
+            <svg width={150} height={34} key={d.key} >
 
                 <rect className='count' style={{ fill: "#348385" }}
                     x={0}
                     width={scale(d[attr])}
-                    height={20}></rect>
+                    height={30}></rect>
                 <text x={scale(d[attr]) + 10} y={20}> {d[attr]}</text>
             </svg>)
     }
@@ -215,7 +215,7 @@ function EventAccordion(props) {
 
                 let icon;
 
-                console.log('patterns', d, patterns[d.name])
+                // console.log('patterns', d, patterns[d.name])
 
                 return < ExpansionPanel key={d.id}>
                     <div className={!d.visible ? classes.hide : ''}>
@@ -249,7 +249,9 @@ function EventAccordion(props) {
                         </div>
                     </ExpansionPanelDetails> */}
 
-                    {patterns && <ExpansionPanelDetails className={classes.details}>
+                    {patterns[d.name] && <ExpansionPanelDetails className={classes.details}>
+                        <Typography className={classes.secondaryHeading}>Node Link</Typography>
+
 
                         <div className={classNames(classes.column, classes.helper)}>
                             {patterns[d.name].nodeLink.map((s, i) => <ProvenanceIsolatedNodes key={i} nodes={s.seq}></ProvenanceIsolatedNodes>)
@@ -259,6 +261,8 @@ function EventAccordion(props) {
                         <div className={classNames(classes.smallColumn, classes.helper)}>
                             {patterns[d.name].nodeLink.map((s, i) => rectangle(s, 'count'))}
                         </div>
+
+                        <Typography className={classes.secondaryHeading}>Adjacency Matrix</Typography>
 
                         <div className={classNames(classes.column, classes.helper)}>
                             {patterns[d.name].adjMatrix.map((s, i) => <ProvenanceIsolatedNodes key={i} nodes={s.seq}></ProvenanceIsolatedNodes>)
