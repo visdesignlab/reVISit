@@ -49,7 +49,6 @@ const nameGroupCriteria = (value) => {
   };
 };
 const FilterCells = ({ value, other, ...restProps }) => {
-  console.log(value, other, restProps);
   let Item; //= () => <div></div>;
   let itemProps = Object.assign({}, restProps);
   if (restProps.column.filterComponent) {
@@ -66,7 +65,6 @@ const FilterCells = ({ value, other, ...restProps }) => {
   );
 };
 const ProvenanceCells = ({ value, style, ...restProps }) => {
-  console.log(value, style, restProps);
   let item;
   if (restProps.column.render) {
     item = restProps.column.render(restProps.row);
@@ -83,7 +81,96 @@ const ProvenanceCells = ({ value, style, ...restProps }) => {
   );
 };
 
+const extraColumns = [
+  {
+    title: "Confidence",
+    name: "answerConfidence",
+    type: "quantitative",
+    accessor: (participant) => {
+      return parseInt(participant.feedback.confidence);
+    },
+  },
+  {
+    title: "Difficulty",
+    name: "taskDifficulty",
+    type: "quantitative",
+    accessor: (participant) => {
+      return parseInt(participant.feedback.difficulty);
+    },
+  },
+  {
+    title: "Answer Text",
+    name: "answerText",
+    type: "string",
+    accessor: (participant) => {
+      return participant.answer.value !== ""
+        ? participant.answer.value
+        : participant.answer.nodes;
+    },
+  },
+];
+
 const DevExtremeTable = ({ provenanceData }) => {
+  console.log(provenanceData);
+  // map extra columns for now
+  provenanceData = useMemo(
+    () =>
+      provenanceData.map((participant) => {
+        extraColumns.forEach((extraColumn) => {
+          participant[extraColumn.name] = {
+            type: extraColumn.type,
+            value: extraColumn.accessor(participant),
+          };
+        });
+        return participant;
+      }),
+    [provenanceData]
+  );
+  console.log(provenanceData, extraColumns);
+  const extraColumnDefinitions = useMemo(() => {
+    let tempColumns = [];
+
+    for (let columnIndex in extraColumns) {
+      let column = extraColumns[columnIndex];
+      console.log(column);
+
+      if (column.type === "string") {
+        tempColumns.push({
+          title: column.title,
+          name: column.name,
+          render: (rowData) => <span>{rowData[column.name].value}</span>,
+          width: 100,
+        });
+      } else if (column.type === "quantitative") {
+        const quantWidth = 300;
+        const max = d3.max(provenanceData, (datum) => datum[column.name].value);
+        const timeScale = d3
+          .scaleLinear()
+          .domain([0, max])
+          .range([0, quantWidth]);
+
+        tempColumns.push({
+          title: column.title,
+          name: column.name,
+          width: quantWidth,
+          customSort: (a, b) => a[column.name].value - b[column.name].value,
+          render: (rowData) => <span>{rowData[column.name].value}</span>, //renderTimeCell(rowData, timeScale),
+          customFilterAndSearch: (filter, value, row) => {
+            return filterQuantitativeValues(filter, value.value, row);
+          },
+          filterComponent: (props) => (
+            <QuantitativeFilter
+              {...props}
+              xScale={timeScale}
+              data={provenanceData.map(
+                (datum) => datum[column.name].value
+              )}></QuantitativeFilter>
+          ),
+        });
+      }
+    }
+    return tempColumns;
+  });
   const [selection, setSelection] = useState([]);
 
   // Column Defs
@@ -123,6 +210,7 @@ const DevExtremeTable = ({ provenanceData }) => {
       timeColumnDefinition,
       accuracyColumnDefinition,
       eventsColumnDefinition,
+      ...extraColumnDefinitions,
     ]);
   }, [provenanceData]);
 
@@ -132,8 +220,10 @@ const DevExtremeTable = ({ provenanceData }) => {
     timeColumnDefinition,
     accuracyColumnDefinition,
     eventsColumnDefinition,
+    ...extraColumnDefinitions,
     //notesColumnDefinition,
   ]);
+  console.log(provenanceData, ...extraColumnDefinitions, columns);
   const [rows, setRows] = useState(provenanceData);
   const [grouping, setGrouping] = useState([]);
   const [integratedGroupingColumnExtensions] = useState([
@@ -153,7 +243,6 @@ const DevExtremeTable = ({ provenanceData }) => {
       };
     })
   );
-  console.log("column widthss", defaultColumnWidths);
 
   const [filteringColumnExtensions] = useState(
     columns.map((column) => {
@@ -161,7 +250,6 @@ const DevExtremeTable = ({ provenanceData }) => {
         columnName: column.name,
         predicate: (value, filter, row) => {
           //if (!filter.value.length) return true;
-          console.log(value, filter, row);
           if (column.customFilterAndSearch) {
             return column.customFilterAndSearch(filter, value, row);
           }
@@ -230,7 +318,6 @@ function renderStimulusDefinition(provenanceData, stimulusColumnWidth) {
 }
 
 function renderUserIdColumn(provenanceData, userIdColumnWidth) {
-  console.log(provenanceData);
   return {
     title: "User Id",
     name: "workerID",
@@ -288,17 +375,14 @@ function renderProvenanceNodeCell(data) {
  * @param accesssor
  */
 function filterCategoricalValue(filter, value, accesssor) {
-  console.log(filter, value, accesssor);
   if (!Array.isArray(value)) {
     value = [value];
   }
   // for each value
   let newValues = value;
-  console.log(newValues);
   if (accesssor) {
     newValues = newValues.map(accesssor);
   }
-  console.log(newValues, Object.values(filter));
   for (let i = 0; i < newValues.length; i++) {
     if (Object.values(filter).includes(newValues[i])) {
       return true;
@@ -307,10 +391,10 @@ function filterCategoricalValue(filter, value, accesssor) {
   return false;
 }
 function filterQuantitativeValues(filter, value, row) {
+  console.log(filter, value);
   if (value >= filter.filterMin && value <= filter.filterMax) {
     return true;
   }
-  console.log(filter, value, row);
   return false;
 }
 
@@ -388,16 +472,6 @@ function renderAccuracyColumn(currentProvenanceData, columnWidth) {
         value,
         (answer) => `${answer.accuracy}`
       );
-      /*console.log(filter, value, row);
-      // https://github.com/mbrn/material-table/pull/1351
-      // TODO: Refactor to categorical or Numerical
-      if (value.includes(`${row.answer.accuracy}`)) {
-        return true;
-      }
-      // if outside of filter, remove from item
-      //delete datum.tableData.checked;
-
-      return false;*/
     },
 
     filterComponent: (props) => (
@@ -437,18 +511,7 @@ function renderTimeColumn(currentProvenanceData, columnWidth) {
     customSort: (a, b) => a.totalTime - b.totalTime,
     render: (rowData) => renderTimeCell(rowData, timeScale),
     customFilterAndSearch: (filter, value, row) => {
-      console.log(filter, value, row);
       return filterQuantitativeValues(filter, value, row);
-      // https://github.com/mbrn/material-table/pull/1351
-      /*if (
-        datum.totalTime >= filterResults[0] &&
-        datum.totalTime <= filterResults[1]
-      ) {
-        return true;
-      }
-      delete datum.tableData.checked;
-
-      return false;*/
     },
 
     filterComponent: (props) => (
