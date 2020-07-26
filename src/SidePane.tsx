@@ -112,7 +112,7 @@ const SidePane = ({ }) => {
   const {
     taskStructure,
     handleChangeSelectedTaskId,
-    selectedTaskId,
+    selectedTaskIds,
   } = React.useContext(ProvenanceDataContext);
 
   const classes = useStyles();
@@ -150,7 +150,7 @@ const SidePane = ({ }) => {
   >((props, ref) => <Link innerRef={ref as any} to="/Export" {...props} />);
 
 
-  let taskInfo = taskStructure.find(t => t.key == selectedTaskId);
+  let taskInfo = taskStructure.find(t => t.key == selectedTaskIds[0]);
 
   return (<div className={classes.root}>
     <CssBaseline />
@@ -177,7 +177,7 @@ const SidePane = ({ }) => {
           <Select
             labelId="demo-simple-select-label"
             id="demo-simple-select"
-            value={selectedTaskId}
+            value={selectedTaskIds[0]}
             onChange={handleChangeSelectedTaskId}
             label="name">
             {taskStructure.map((value) => {
@@ -245,16 +245,7 @@ const SidePane = ({ }) => {
 
       <Divider />
     </Drawer>
-    <main
-      className={clsx(classes.content, {
-        [classes.contentShift]: open,
-      })}
-    >
-      <div className={classes.drawerHeader} />
-      <Typography paragraph>
-        Main Content Goes here
-        </Typography>
-    </main>
+
   </div>)
   // return (
   //   <Drawer variant="permanent" anchor="left">

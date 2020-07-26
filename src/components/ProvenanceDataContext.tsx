@@ -34,6 +34,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   const [allProvenanceData, setAllProvenanceData] = useState(() => processRawProvenanceData(initProvData));
 
 
+  //populate task prompt from data from first participant (hacky)
   let singleParticipant = allProvenanceData[0].data;
   let tasks = Object.keys(singleParticipant).filter(t => t.includes('task'));
 
@@ -42,10 +43,8 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     taskStructureObj.prompt = singleParticipant[task].prompt;
   })
 
-  console.log(taskStructure)
+  // console.log(taskStructure)
 
-  //fill out with prompts and answers
-  // console.log(allProvenanceData)
   //get all visConditions; 
   const conditions = [... new Set(allProvenanceData.map(p => p.data['S-task01'].visType))]
   const [events, setEvents] = useState(
@@ -245,7 +244,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   }
 
 
-  const [selectedTaskId, setSelectedTaskId] = React.useState("S-task01");
+  const [selectedTaskIds, setSelectedTaskIds] = React.useState(["S-task01"]);
 
   const [patterns, setPatterns] = useState(null);
 
@@ -273,7 +272,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
 
 
   function handleChangeSelectedTaskId(event) {
-    setSelectedTaskId(event.target.value);
+    setSelectedTaskIds([event.target.value]);
   }
 
   //count the number of events and update sequences for this task
@@ -289,61 +288,72 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     })
 
     allProvenanceData.forEach((participant) => {
-      if (participant.data[selectedTaskId]) {
-        let participantData = participant.data[selectedTaskId];
-        participantData.provenance
-          .map(e => {
-            let event = newEvents.find(ev => ev.name == e.event);
-            event.count = event.count + 1;
-          })
 
-        //add sequence to each unique event type
-        let allEvents = participantData.provenance.map(d => d.event)
-        let uniqueEvents = [... new Set(allEvents)];
+      selectedTaskIds.map(selectedTaskId => {
+        if (participant.data[selectedTaskId]) {
+          let participantData = participant.data[selectedTaskId];
+          participantData.provenance
+            .map(e => {
+              let event = newEvents.find(ev => ev.name == e.event);
+              event.count = event.count + 1;
+            })
 
-        uniqueEvents
-          .map(e => {
-            let event = newEvents.find(ev => ev.name == e);
-            event.sequences[participantData.visType].push(allEvents.map(e => {
+          //add sequence to each unique event type
+          let allEvents = participantData.provenance.map(d => d.event)
+          let uniqueEvents = [... new Set(allEvents)];
+
+          uniqueEvents
+            .map(e => {
               let event = newEvents.find(ev => ev.name == e);
-              return event.id
-            }));
-          })
-      }
+              event.sequences[participantData.visType].push(allEvents.map(e => {
+                let event = newEvents.find(ev => ev.name == e);
+                return event.id
+              }));
+            })
+        }
+
+      })
+
+
     });
 
     console.log('newEvents', newEvents)
     setEvents(newEvents);
 
-  }, [selectedTaskId]);
+  }, [selectedTaskIds]);
 
   let currentTaskData = React.useMemo(() => {
     let internalTaskData = [];
 
-    allProvenanceData.forEach((participant) => {
-      const newObj = Object.assign(
-        { id: participant.id },
-        participant.data[selectedTaskId]
-      );
+    selectedTaskIds.map(selectedTaskId => {
+      allProvenanceData.forEach((participant) => {
+        const newObj = Object.assign(
+          { id: participant.id },
+          participant.data[selectedTaskId]
+        );
 
-      if (participant.data[selectedTaskId]) {
-        //add type to provenance objects and remove hidden event types;
-        newObj.provenance = newObj.provenance
-          .map(e => {
-            let event = events.find(ev => ev.name == e.event);
-            e.type = event.type
-            return e;
-          })
-          .filter(e => {
-            let event = events.find(ev => ev.name == e.event);
-            return event.visible
-          })
-        internalTaskData.push(newObj);
-      }
-    });
+        if (participant.data[selectedTaskId]) {
+          //add type to provenance objects and remove hidden event types;
+          newObj.provenance = newObj.provenance
+            .map(e => {
+              let event = events.find(ev => ev.name == e.event);
+              e.type = event.type
+              return e;
+            })
+            .filter(e => {
+              let event = events.find(ev => ev.name == e.event);
+              return event.visible
+            })
+          internalTaskData.push(newObj);
+        }
+      });
+
+    })
+
+
 
     return internalTaskData;
-  }, [allProvenanceData, selectedTaskId, events]);
+  }, [allProvenanceData, selectedTaskIds, events]);
 
 
   //get pattern data from server;
@@ -389,7 +399,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
         currentTaskData,
         taskStructure,
         handleChangeSelectedTaskId,
-        selectedTaskId,
+        selectedTaskIds,
         events,
         patterns,
         hideEvent,
