@@ -50,12 +50,12 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     .value(d => d.answer.accuracy)
 
   let timeScale = d3.scaleLinear()
-    .domain([0, 60]) //hard coded. need to change to dymamic
-    .range([0, 1])
+    .domain([0, 5]) //hard coded. need to change to dymamic
+    .range([0, 5])
 
   let timeHistogram = d3.histogram()
     .domain(timeScale.domain())
-    .thresholds(timeScale.ticks(20))    // Important: how many bins approx are going to be made? It is the 'resolution' of the violin plot
+    .thresholds(timeScale.ticks(10))    // Important: how many bins approx are going to be made? It is the 'resolution' of the violin plot
     .value(d => d.minutesOnTask)
 
 
@@ -72,12 +72,12 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     conditions.map(condition => {
       //get all data for that task, for that condition; 
       let taskConditionData = allProvenanceData.filter(d => d.data[task.key].visType == condition).map(d => d.data[task.key]);
-      // console.log(accHistogram(taskConditionData))
+      task.histogram = timeHistogram(taskConditionData)
       task.actions[condition] = {};
       task.stats[condition] = {};
       task.stats[condition].average = {}
       task.stats[condition].values = taskConditionData //accHistogram(taskConditionData);
-      task.stats[condition].average.accuracy = Math.round(d3.mean(taskConditionData.map(e => e.answer.accuracy)) * 100)
+      task.stats[condition].average.accuracy = Math.round(d3.mean(taskConditionData.map(e => e.answer.accuracy)) * 100) / 100
       task.stats[condition].average.time = Math.round(d3.mean(taskConditionData.map(e => e.minutesOnTask)) * 100) / 100
 
       taskConditionData.map(d => {
