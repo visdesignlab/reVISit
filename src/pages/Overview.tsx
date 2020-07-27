@@ -11,8 +11,6 @@ import CollapsibleTable from '../components/EventTable'
 import * as d3 from "d3";
 import ProvenanceDataContext from "../components/ProvenanceDataContext";
 
-
-
 const { Search } = Input;
 
 const Overview = ({ location }) => {

@@ -19,7 +19,7 @@ import CloudUpload from "@material-ui/icons/CloudUpload";
 import TableChart from "@material-ui/icons/TableChart";
 import GetApp from "@material-ui/icons/GetApp";
 import BarChart from "@material-ui/icons/BarChart";
-import { Link, LinkProps } from "react-router-dom";
+import { Link, LinkProps, useLocation } from "react-router-dom";
 import ProvenanceDataContext from "./components/ProvenanceDataContext";
 import InputLabel from "@material-ui/core/InputLabel";
 import MenuItem from "@material-ui/core/MenuItem";
@@ -30,8 +30,9 @@ import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
-import InboxIcon from '@material-ui/icons/MoveToInbox';
-import MailIcon from '@material-ui/icons/Mail';
+import HomeIcon from '@material-ui/icons/Home';
+
+import SortMenu from './components/sortMenu'
 
 
 const drawerWidth = 240;
@@ -112,7 +113,7 @@ const SidePane = ({ }) => {
   const {
     taskStructure,
     handleChangeSelectedTaskId,
-    selectedTaskIds,
+    selectedTaskIds
   } = React.useContext(ProvenanceDataContext);
 
   const classes = useStyles();
@@ -152,6 +153,43 @@ const SidePane = ({ }) => {
 
   let taskInfo = taskStructure.find(t => t.key == selectedTaskIds[0]);
 
+
+  let location = useLocation();
+  function appBarWidget() {
+    if (location.pathname.includes('Home')) {
+      return <SortMenu></SortMenu>
+    } else {
+      return <>
+        <FormControl className={styles.SelectedTaskInput}>
+          <Select
+            labelId="demo-simple-select-label"
+            id="demo-simple-select"
+            value={selectedTaskIds[0]}
+            onChange={handleChangeSelectedTaskId}
+            label="name">
+            {taskStructure.map((value) => {
+              return (
+                <MenuItem key={value.key} value={value.key}>
+                  {value.name}
+                </MenuItem>
+              );
+            })}
+          </Select>
+        </FormControl>
+        <Box ml={3} >
+          <Typography variant="button" noWrap dangerouslySetInnerHTML={{ __html: taskInfo.prompt }} >
+          </Typography>
+        </Box>
+      </>
+    }
+  }
+
+  function makeIcon(item) {
+    let isCurrent = location.pathname.includes(item.id);
+    const Icon = item.icon
+    return isCurrent ? <Icon style={{ color: 'rgb(93, 131, 210)' }}> </Icon> : <Icon></Icon>
+  }
+
   return (<div className={classes.root}>
     <CssBaseline />
     <AppBar
@@ -172,28 +210,10 @@ const SidePane = ({ }) => {
         >
           <MenuIcon />
         </IconButton>
-        <FormControl className={styles.SelectedTaskInput}>
-          {/* <InputLabel id="demo-simple-select-label">Task</InputLabel> */}
-          <Select
-            labelId="demo-simple-select-label"
-            id="demo-simple-select"
-            value={selectedTaskIds[0]}
-            onChange={handleChangeSelectedTaskId}
-            label="name">
-            {taskStructure.map((value) => {
-              return (
-                <MenuItem key={value.key} value={value.key}>
-                  {value.name}
-                </MenuItem>
-              );
-            })}
-          </Select>
-        </FormControl>
+
+        {appBarWidget()}
         {/* {taskInfo.prompt} */}
-        <Box ml={3} >
-          <Typography variant="button" noWrap dangerouslySetInnerHTML={{ __html: taskInfo.prompt }} >
-          </Typography>
-        </Box>
+
 
 
       </Toolbar>
@@ -215,6 +235,7 @@ const SidePane = ({ }) => {
         <IconButton onClick={handleDrawerClose}>
           {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
         </IconButton>
+
       </div>
       <Divider />
       <List>
@@ -222,20 +243,22 @@ const SidePane = ({ }) => {
           <img className={styles.logo} src={"./Experi.png"}></img>
         </ListItem> */}
         {[
-          { text: "Upload", link: Upload, icon: <CloudUpload></CloudUpload> },
-          { text: "Provenance Prep ", link: Overview, icon: <BarChart></BarChart> },
+          { text: "Home", id: "Home", link: HomeLink, icon: HomeIcon },
+          { text: "Upload", id: "Upload", link: Upload, icon: CloudUpload },
+          { text: "Provenance Prep ", id: "Overview", link: Overview, icon: BarChart },
           {
             text: "Provenance Analysis",
             link: Table,
-            icon: <TableChart></TableChart>,
+            id: "Table",
+            icon: TableChart,
           },
-          { text: "Export", link: Export, icon: <GetApp></GetApp> },
+          { text: "Export", link: Export, icon: GetApp },
         ].map((item, index) => {
           return (
             //added key={index} to get rid of unique key error
             <React.Fragment key={index}>
               <ListItem button component={item.link}>
-                <ListItemIcon>{item.icon}</ListItemIcon>
+                <ListItemIcon>{makeIcon(item)}</ListItemIcon>
                 <ListItemText primary={item.text} />
               </ListItem>
             </React.Fragment>
@@ -247,54 +270,7 @@ const SidePane = ({ }) => {
     </Drawer>
 
   </div>)
-  // return (
-  //   <Drawer variant="permanent" anchor="left">
-  //     <Divider />
-  //     <List>
-  //       <ListItem component={HomeLink}>
-  //         <img className={styles.logo} src={"./Experi.png"}></img>
-  //       </ListItem>
-  //       {[
-  //         { text: "Upload", link: Upload, icon: <CloudUpload></CloudUpload> },
-  //         { text: "Provenance Prep ", link: Overview, icon: <BarChart></BarChart> },
-  //         {
-  //           text: "Provenance Analysis",
-  //           link: Table,
-  //           icon: <TableChart></TableChart>,
-  //         },
-  //         { text: "Export", link: Export, icon: <GetApp></GetApp> },
-  //       ].map((item, index) => {
-  //         return (
-  //           //added key={index} to get rid of unique key error
-  //           <React.Fragment key={index}>
-  //             <ListItem button component={item.link}>
-  //               <ListItemIcon>{item.icon}</ListItemIcon>
-  //               <ListItemText primary={item.text} />
-  //             </ListItem>
-  //           </React.Fragment>
-  //         );
-  //       })}
-  //     </List>
-  //     <Divider />
-  //     <FormControl variant="outlined" className={styles.SelectedTaskInput}>
-  //       <InputLabel id="demo-simple-select-outlined-label">Task</InputLabel>
-  //       <Select
-  //         labelId="demo-simple-select-outlined-label"
-  //         id="demo-simple-select-outlined"
-  //         value={selectedTaskId}
-  //         onChange={handleChangeSelectedTaskId}
-  //         label="name">
-  //         {taskStructure.map((value) => {
-  //           return (
-  //             <MenuItem key={value.key} value={value.key}>
-  //               {value.name}
-  //             </MenuItem>
-  //           );
-  //         })}
-  //       </Select>
-  //     </FormControl>
-  //   </Drawer>
-  // );
+
 };
 
 export default SidePane;

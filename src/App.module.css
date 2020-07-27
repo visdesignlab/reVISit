@@ -28,6 +28,8 @@
 .main {
   /* grid-column: 2; */
   /* grid-row: 2; */
+  margin-top: 80px;
+  margin-left:15px;
   order:1;
   width:100%;
   background-color: whitesmoke;

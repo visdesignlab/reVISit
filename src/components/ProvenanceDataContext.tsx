@@ -8,12 +8,13 @@ import { performPrefixSpan } from "../fetchers/fetchMocks.js";
 import { useFetchAPIData } from "../hooks/hooks";
 import { ConsoleSqlOutlined } from "@ant-design/icons";
 
+
 const ProvenanceDataContext = React.createContext({});
 
 export const ProvenanceDataContextProvider = ({ children }) => {
 
   const taskStructure = [
-    { name: "Task 1", key: "S-task01", prompt: "" },
+    { name: "Task 1", key: "S-task01", prompt: "", actions: {}, stats: {} },
     { name: "Task 2", key: "S-task02" },
     { name: "Task 3", key: "S-task03" },
     { name: "Task 4", key: "S-task04" },
@@ -31,22 +32,107 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     { name: "Task 16", key: "S-task16" },
   ];
 
+  let [taskSort, setTaskSort] = useState('name');
+
   const [allProvenanceData, setAllProvenanceData] = useState(() => processRawProvenanceData(initProvData));
+
+  //get all visConditions; 
+  const conditions = [... new Set(allProvenanceData.map(p => p.data['S-task01'].visType))]
+
+
+  let accScale = d3.scaleLinear()
+    .domain([0, 1])
+    .range([0, 1])
+
+  let accHistogram = d3.histogram()
+    .domain(accScale.domain())
+    .thresholds(accScale.ticks(20))    // Important: how many bins approx are going to be made? It is the 'resolution' of the violin plot
+    .value(d => d.answer.accuracy)
+
+  let timeScale = d3.scaleLinear()
+    .domain([0, 60]) //hard coded. need to change to dymamic
+    .range([0, 1])
+
+  let timeHistogram = d3.histogram()
+    .domain(timeScale.domain())
+    .thresholds(timeScale.ticks(20))    // Important: how many bins approx are going to be made? It is the 'resolution' of the violin plot
+    .value(d => d.minutesOnTask)
+
 
 
   //populate task prompt from data from first participant (hacky)
   let singleParticipant = allProvenanceData[0].data;
-  let tasks = Object.keys(singleParticipant).filter(t => t.includes('task'));
 
-  tasks.map(task => {
-    let taskStructureObj = taskStructure.find(t => t.key == task);
-    taskStructureObj.prompt = singleParticipant[task].prompt;
+
+  taskStructure.map(task => {
+    task.prompt = singleParticipant[task.key].prompt.replace(/(<([^>]+)>)/ig, '');;
+    task.actions = {}; //singleParticipant[task.key].provenance;
+    task.stats = {};
+
+    conditions.map(condition => {
+      //get all data for that task, for that condition; 
+      let taskConditionData = allProvenanceData.filter(d => d.data[task.key].visType == condition).map(d => d.data[task.key]);
+      // console.log(accHistogram(taskConditionData))
+      task.actions[condition] = {};
+      task.stats[condition] = {};
+      task.stats[condition].average = {}
+      task.stats[condition].values = taskConditionData //accHistogram(taskConditionData);
+      task.stats[condition].average.accuracy = Math.round(d3.mean(taskConditionData.map(e => e.answer.accuracy)) * 100)
+      task.stats[condition].average.time = Math.round(d3.mean(taskConditionData.map(e => e.minutesOnTask)) * 100) / 100
+
+      taskConditionData.map(d => {
+        d.provenance.map(e => {
+          if (task.actions[condition][e.event]) {
+            task.actions[condition][e.event] = task.actions[condition][e.event] + 1;
+          } else {
+            task.actions[condition][e.event] = 1;
+          }
+        })
+      })
+
+      // task.stats[condition].accuracy = singleParticipant[task].answer.accuracy;
+      // task.stats[condition].time = singleParticipant[task].minutesOnTask;
+    })
+
+
+
   })
 
-  // console.log(taskStructure)
+  //sort taskStructure according to selected option
+  taskStructure.sort((a, b) => {
+    if (taskSort == 'name') {
+      return a.key > b.key ? 1 : -1
+    }
 
-  //get all visConditions; 
-  const conditions = [... new Set(allProvenanceData.map(p => p.data['S-task01'].visType))]
+    if (taskSort == 'accuracy') {
+      let conditions = Object.keys(a.stats);
+      let meanAcc_a = [];
+      let meanAcc_b = [];
+      conditions.map(c => meanAcc_a.push(a.stats[c].average.accuracy))
+      conditions.map(c => meanAcc_b.push(b.stats[c].average.accuracy))
+      return d3.mean(meanAcc_a) > d3.mean(meanAcc_b) ? -1 : 1
+    }
+
+    if (taskSort == 'time') {
+      let conditions = Object.keys(a.stats);
+      let meanA = [];
+      let meanB = [];
+      conditions.map(c => meanA.push(a.stats[c].average.time))
+      conditions.map(c => meanB.push(b.stats[c].average.time))
+      return d3.mean(meanA) > d3.mean(meanB) ? -1 : 1
+    }
+
+    if (taskSort == 'diff') {
+      let conditions = Object.keys(a.stats);
+      let diffA = Math.abs(a.stats[conditions[0]].average.accuracy - a.stats[conditions[1]].average.accuracy)
+      let diffB = Math.abs(b.stats[conditions[0]].average.accuracy - b.stats[conditions[1]].average.accuracy)
+
+      return diffA > diffB ? -1 : 1
+    }
+
+
+  })
+
   const [events, setEvents] = useState(
     listNativeEvents(allProvenanceData)
   );
@@ -400,6 +486,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
         taskStructure,
         handleChangeSelectedTaskId,
         selectedTaskIds,
+        setTaskSort,
         events,
         patterns,
         hideEvent,
