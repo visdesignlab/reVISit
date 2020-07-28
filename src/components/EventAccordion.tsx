@@ -21,6 +21,10 @@ import Box from '@material-ui/core/Box';
 import BarChart from "../components/BarChart"
 import TimeChart from "../components/timeChart"
 
+import Grid, { GridSpacing } from '@material-ui/core/Grid';
+import Paper from '@material-ui/core/Paper';
+
+
 
 import { ReactComponent as ActionGroup } from "../icons/action_group.svg";
 // import { ReactComponent as Action } from "../icons/action.svg";
@@ -50,7 +54,8 @@ import ProvenanceDataContext from "../components/ProvenanceDataContext";
 
 const styles = theme => ({
     root: {
-        width: '70%',
+        width: '50%',
+        flexGrow: 1,
     },
     hide: {
         opacity: .3,
@@ -89,6 +94,11 @@ const styles = theme => ({
         },
     },
 });
+
+let colors = {
+    'nodeLink': 'rgb(198, 224, 214)',
+    'adjMatrix': '#d1d1d1'
+}
 
 const ItemNameWrapper = ({ itemName, onItemNameChange }) => {
     const [doubleClicked, setDoubleClicked] = React.useState(false);
@@ -133,21 +143,33 @@ function EventAccordion(props) {
 
     console.log('events', events)
 
-    let attr = 'count';
-    const scale = countScale(events, 60, attr)
+    let attr = 'total';
+    const scale = countScale(events.map(e => e.count), 60, attr)
     // console.log(scale.domain(), scale.range())
 
 
 
     function rectangle(d, attr) {
         return (
-            <svg width={150} height={34} key={d.key} >
+            <svg width={scale(d[attr])} height={20} key={d.key} >
+                <Tooltip title={attr}>
+                    <>
+                        <rect className='count' style={{ fill: colors[attr] || '#d1d1d1' }}
+                            x={0}
+                            width={scale(d[attr])}
+                            height={20}></rect>
+                        {/* <text x={scale(d[attr]) + 10} y={10}> {d[attr]}</text> */}
+                    </>
+                </Tooltip>
+            </svg>)
+    }
 
-                <rect className='count' style={{ fill: "#348385" }}
-                    x={0}
-                    width={scale(d[attr])}
-                    height={30}></rect>
-                <text x={scale(d[attr]) + 10} y={20}> {d[attr]}</text>
+    function label(d, attr) {
+        return (
+            <svg width={50} height={20} key={d.key} >
+                <Tooltip title={attr}>
+                    <text x={10} y={15}> {d[attr]}</text>
+                </Tooltip>
             </svg>)
     }
 
@@ -215,54 +237,131 @@ function EventAccordion(props) {
 
                 let icon;
 
-                // console.log('patterns', d, patterns[d.name])
-
+                // console.log('patterns', d, p
+                // console.log(d)
+                let eventNode = [{ event: d.name, id: d.name }];
+                console.log(d)
                 return < ExpansionPanel key={d.id}>
                     <div className={!d.visible ? classes.hide : ''}>
                         <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
-                            <div className={classes.column}>
-                                <ItemNameWrapper
-                                    itemName={d.name}
-                                    onItemNameChange={renameEvent}
-                                />
-                            </div>
-                            <div className={classes.smallColumn}>
-                                <Typography className={classes.secondaryHeading}>{
-                                    d.type
-                                }</Typography>
-                            </div>
 
-                            <div className={classes.column}>
-                                <Tooltip title="Event Count">
-                                    <Typography className={classes.secondaryHeading}>{rectangle(d, attr)}</Typography>
-                                </Tooltip>
-                            </div>
+                            <Grid container className={classes.root} spacing={2}>
+                                <Grid item xs={12}>
+                                    <Grid container justify="flex-start" spacing={2}>
+                                        <Grid key={'name'} item xs={4}>
+                                            <Box style={{ display: "flex" }}>
+                                                <ProvenanceIsolatedNodes key={i} nodes={eventNode}></ProvenanceIsolatedNodes>
+                                                <ItemNameWrapper
+                                                    itemName={d.name}
+                                                    onItemNameChange={renameEvent}
+                                                />
+                                            </Box>
+                                        </Grid>
+                                        <Grid key={'value'} item xs={2}>
+                                            {d.type}
+                                        </Grid>
+                                        <Grid key={'test'} item xs={4}>
+                                            {/* {rectangle(d.count, 'total')} */}
+                                            <Box style={{ display: "flex" }}>
+                                                {Object.keys(d.count).filter(c => c !== 'total').map(cond => <>
+                                                    {rectangle(d.count, cond)}
+                                                </>
+                                                )}
+                                                {label(d.count, 'total')}
+                                                {/* <Typography variant='overline'>{d.count.total}</Typography> */}
 
-                            <div className={classes.smallColumn}>
-                                <Typography className={classes.secondaryHeading}>{icons}</Typography>
-                            </div>
+                                            </Box>
+                                            {/* {Object.keys(d.count).map(cond => <>
+                                                <Box style={{ display: "flex" }}>
+                                                    <Typography variant='overline' style={{ "textAnchor": "end" }}>
+                                                        {cond}
+                                                    </Typography>
+
+                                                    <Tooltip title="Event Count">
+                                                        <Typography className={classes.secondaryHeading}>{rectangle(d.count, cond)}</Typography>
+                                                    </Tooltip>
+                                                </Box>
+                                            </>
+                                            )} */}
+
+                                        </Grid>
+                                        <Grid key={'icons'} item xs={1}>
+                                            <Typography className={classes.secondaryHeading}>{icons}</Typography>
+                                        </Grid>
+                                    </Grid>
+                                </Grid>
+                            </Grid>
                         </ExpansionPanelSummary>
                     </div>
                     {/* <ExpansionPanelDetails className={classes.details}>
-                        <div style={{ 'margin-top': '-25px' }} className={classNames(classes.column, classes.helper)}>
-                            <Tags groups={props.data.filter(f => f.type == 'customEvent').map(d => ({ title: d.label }))} />
-                        </div>
-                    </ExpansionPanelDetails> */}
+                    <div style={{ 'margin-top': '-25px' }} className={classNames(classes.column, classes.helper)}>
+                        <Tags groups={props.data.filter(f => f.type == 'customEvent').map(d => ({ title: d.label }))} />
+                    </div>
+                </ExpansionPanelDetails> */}
 
-                    {patterns[d.name] && <ExpansionPanelDetails className={classes.details}>
-                        <Typography className={classes.secondaryHeading}>Node Link</Typography>
+                    {patterns[d.name] && <ExpansionPanelDetails>
+                        <Grid container spacing={2}>
+                            <Grid item xs={12}>
+                                {Object.keys(patterns[d.name].results).map(cond => {
+                                    let data = patterns[d.name].results[cond]
+
+                                    return <>
+                                        <Divider />
+                                        <Grid container justify="flex-start" spacing={2}>
+                                            <Divider />
+
+                                            <Grid key={'prov'} item xs={12}>
+                                                <Typography variant='overline'>
+                                                    {cond}
+                                                </Typography>
+                                            </Grid>
+                                            <Grid key={'prov'} item>
+                                                <>
+                                                    <Typography className={classes.pos} variant='overline' color="primary"  >
+                                                        {data.length > 0 ? '5 Most Frequent Action Sequences' : 'This action was not used in this task for this condition'}
+                                                    </Typography>
+                                                    <Box mt={'5px'} mb={'6px'}>
+                                                        {data.map((s, i) =>
+                                                            <Box style={{ display: 'flex' }}>
+                                                                <Grid key={'icons'} item xs={10}>
+                                                                    <ProvenanceIsolatedNodes key={i} nodes={s.seq}></ProvenanceIsolatedNodes>
+                                                                </Grid>
+                                                                <Grid key={'rect'} item>
+                                                                    {rectangle(s, 'count')}
+                                                                </Grid>
+                                                            </Box>
+                                                        )}
+                                                    </Box>
+
+                                                </>
+                                            </Grid>
 
 
+
+
+                                        </Grid>
+
+                                    </>
+
+                                })}
+                            </Grid>
+                        </Grid>
+
+
+
+                        {/* <Typography className={classes.secondaryHeading}>Node Link</Typography> */}
+
+                        {/* 
                         <div className={classNames(classes.column, classes.helper)}>
-                            {patterns[d.name].nodeLink.map((s, i) => <ProvenanceIsolatedNodes key={i} nodes={s.seq}></ProvenanceIsolatedNodes>)
+                            {data.map((s, i) => <ProvenanceIsolatedNodes key={i} nodes={s.seq}></ProvenanceIsolatedNodes>)
                             }
                         </div>
 
                         <div className={classNames(classes.smallColumn, classes.helper)}>
-                            {patterns[d.name].nodeLink.map((s, i) => rectangle(s, 'count'))}
-                        </div>
+                            {data.map((s, i) => rectangle(s, 'count'))}
+                        </div> */}
 
-                        <Typography className={classes.secondaryHeading}>Adjacency Matrix</Typography>
+                        {/* <Typography className={classes.secondaryHeading}>Adjacency Matrix</Typography>
 
                         <div className={classNames(classes.column, classes.helper)}>
                             {patterns[d.name].adjMatrix.map((s, i) => <ProvenanceIsolatedNodes key={i} nodes={s.seq}></ProvenanceIsolatedNodes>)
@@ -271,10 +370,11 @@ function EventAccordion(props) {
 
                         <div className={classNames(classes.smallColumn, classes.helper)}>
                             {patterns[d.name].adjMatrix.map((s, i) => rectangle(s, 'count'))}
-                        </div>
+                        </div> */}
 
 
-                    </ExpansionPanelDetails>}
+                    </ExpansionPanelDetails>
+                    }
 
 
                     {groups}
@@ -294,3 +394,5 @@ EventAccordion.propTypes = {
 export default withStyles(styles)(EventAccordion);
 
 // export default EventAccordion;
+
+

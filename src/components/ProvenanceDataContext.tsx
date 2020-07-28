@@ -372,9 +372,10 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   useEffect(() => {
     let newEvents = [...events]
     newEvents.map(e => {
-      e.count = 0;
+      e.count = { total: 0 };
       e.sequences = {}
       conditions.map((c) => {
+        e.count[c] = 0;
         e.sequences[c] = []
       }
       )
@@ -388,7 +389,9 @@ export const ProvenanceDataContextProvider = ({ children }) => {
           participantData.provenance
             .map(e => {
               let event = newEvents.find(ev => ev.name == e.event);
-              event.count = event.count + 1;
+              event.count[participantData.visType] = event.count[participantData.visType] + 1;
+
+              event.count.total = event.count.total + 1;
             })
 
           //add sequence to each unique event type
@@ -464,8 +467,8 @@ export const ProvenanceDataContextProvider = ({ children }) => {
 
     if (dataFromServer) {
       Object.keys(dataFromServer).map(event => {
-        let eventObj = dataFromServer[event]
-        let conditions = ['nodeLink', 'adjMatrix'] //Object.keys(eventObj);
+        let eventObj = dataFromServer[event]['results']
+        let conditions = Object.keys(eventObj);
         conditions.map(c => {
           eventObj[c] = eventObj[c].map(arr => {
             let [count, seq] = arr;
