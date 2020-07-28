@@ -86,9 +86,10 @@ function scatter(data, metric, scale, label) {
         </svg>)
 }
 
-function histogram(data, average, timeScale, label) {
+function histogram(data, average, scale, label) {
+    console.log('data', data, label)
 
-    let width = 100;
+    let width = 130;
     let height = 40;
 
     let barHeight = 20;
@@ -97,12 +98,11 @@ function histogram(data, average, timeScale, label) {
     let xDomain = d3.extent(data, d => d.x0);
     let yDomain = d3.extent(data, d => d.length);
 
-    // console.log(xDomain, yDomain)
-
-    let xScale = d3.scaleLinear().domain(xDomain).range([0, width])
+    let xScale = d3.scaleLinear().domain(xDomain).range([0, width - 40])
     let yScale = d3.scaleLinear().domain(yDomain).range([0, barHeight])
 
-
+    console.log(label, xScale.domain(), yScale.domain())
+    let textLabel = label == '%' ? (Math.round(average * 100) + ' ' + label) : Math.round(average * 10) / 10 + ' ' + label
 
     return (
         <svg width={width} height={height} >
@@ -114,10 +114,10 @@ function histogram(data, average, timeScale, label) {
                     height={yScale(d.length)}></rect>
             )}
             <rect className='count' style={{ fill: "#ff5e00", opacity: 1 }}
-                x={timeScale(average)}
+                x={xScale(average)}
                 width={3}
                 height={25}></rect>
-            <text style={{ fontSize: '1em', "text-anchor": 'start' }} x={timeScale(average)} y={40}> {Math.round(average * 10) / 10 + ' ' + label} </text>
+            <text style={{ fontSize: '1em', "text-anchor": 'start' }} x={xScale(average)} y={40}> {textLabel} </text>
 
         </svg>)
 }
@@ -137,7 +137,7 @@ export default function SimpleCard() {
                         {task.prompt}
                     </Typography>
                 return (<Box m={2} style={{ display: 'inline-block' }} >
-                    <Card className={classes.root} key={task.key} style={{ 'width': 500 }} >
+                    <Card className={classes.root} key={task.key} style={{ 'width': 530 }} >
                         <CardContent>
                             <Typography variant="h5" component="h2">
                                 {task.name}
@@ -151,6 +151,7 @@ export default function SimpleCard() {
 
                             {Object.keys(task.stats).map(cond => {
                                 let frequentActions = Object.entries(task.actions[cond]).filter(a => a[0] !== 'startedProvenance' && a[0] !== 'Finished Task').sort((a, b) => (a[1] > b[1] ? -1 : 1)).splice(0, 5).map(a => ({ event: a[0], id: a[0] }))
+                                console.log(task.name)
                                 return <>
                                     <Typography variant='overline'>
                                         {cond}
@@ -179,7 +180,8 @@ export default function SimpleCard() {
                                                 <Grid key={'acc'} item>
                                                     {/* <Typography className={classes.pos}  > */}
                                                     {/* {rectangle(task.stats[cond].average.accuracy, accScale, '%')} */}
-                                                    {scatter(task.stats[cond], 'accuracy', accScale, '%')}
+                                                    {/* {scatter(task.stats[cond], 'accuracy', accScale, '%')} */}
+                                                    {histogram(task.histogram[cond].accuracy, task.stats[cond].average.accuracy, accScale, '%')}
 
                                                     {/* </Typography> */}
                                                     <Typography style={{ display: 'block' }} color="primary" variant='overline'  >
@@ -188,7 +190,7 @@ export default function SimpleCard() {
                                                 </Grid>
 
                                                 <Grid key={'time'} item>
-                                                    {histogram(task.histogram, task.stats[cond].average.time, timeScale, 'min')}
+                                                    {histogram(task.histogram[cond].time, task.stats[cond].average.time, timeScale, 'min')}
                                                     {/* {rectangle(task.stats[cond].average.time, timeScale, 'min')} */}
                                                     <Typography style={{ display: 'block' }} color="primary" variant='overline' >
                                                         Time
