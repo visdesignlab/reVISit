@@ -3,8 +3,10 @@
 } from "./fetchingUtilities";*/
 
 export async function performPrefixSpan(data) {
+    console.log('postData is ', data)
     let res = await postData(
-        "http://18.222.101.54//prefix", data
+        // "http://18.222.101.54//prefix", data
+        "http://127.0.0.1:5000/prefix", data
     );
     console.log("dywootto", res);
     return res;

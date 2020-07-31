@@ -11,14 +11,6 @@ import CollapsibleTable from '../components/EventTable'
 import * as d3 from "d3";
 import ProvenanceDataContext from "../components/ProvenanceDataContext";
 
-function removeDuplicates(arr) {
-  return arr.filter(function (item, pos, arr) {
-    // Always keep the 0th element as there is nothing before it
-    // Then check if each element is different than the one before it
-    return pos === 0 || item !== arr[pos - 1];
-  });
-}
-
 const { Search } = Input;
 
 const Overview = ({ location }) => {

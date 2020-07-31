@@ -259,3 +259,81 @@ switch (d.type) {
             <Tags groups={props.data.filter(f => f.type == 'customEvent').map(d => ({ title: d.label }))} />
         </div>
     </ExpansionPanelDetails>
+
+
+// useEffect(() => {
+  //   async function fetchData() {
+
+  //     let patternObj = {};
+
+  //     Object.keys(allEvents).map(k => {
+  //       patternObj[k] = { nlPatterns: [], amPatterns: [] }
+  //     });
+
+
+
+  //     Promise.all(allEvents.map(async (ev) => {
+  //       let nodeLink = ev.sequences.filter(s => s.visType == 'nodeLink');
+  //       let adjMatrix = ev.sequences.filter(s => s.visType == 'adjMatrix');
+
+  //       // You can await here
+  //       const nlPatterns = await getPatterns(nodeLink,events);
+  //       const amPatterns = await getPatterns(adjMatrix,events);
+
+  //       patternObj[ev.event] = { nlPatterns, amPatterns }
+
+  //     }))
+
+  //       .then(() => {
+  //         // patternObj['all'] = sequences;
+  //         setPatterns(patternObj);
+  //         console.log('patternObj', patternObj)
+
+  //       })
+  //     // ...
+  //   }
+  //   fetchData();
+
+  //   // put code in here to re-run on any update to selectedTaskId
+  //   //promise
+  //   //.then
+  //   // setPatternsForTask
+  // }, [selectedTaskId])
+
+
+  // const [loadingPatterns, errorLoadingPatterns,patternsFromServer] = useFetchAPIResponse(
+  //   async ()=>{
+  //     return await getPatternsFromServer()
+  //   },
+  //   [selectedTaskId]
+  // )
+
+
+  // useEffect(()=>{
+  //   setPatternsForTask(patternsFromServer)
+  // },[patternsFromServer])
+
+  useEffect(() => {
+        //make api call with the current event dictionary, and an array of arrays (one for each event type)
+
+
+    }, [selectedTaskId])
+//async function to grab data from server; 
+async function getPatterns(seq, eventNames) {
+
+    let array = await d3.json('http://127.0.0.1:5000/prefix', {
+        // d3.json('http://18.222.101.54/prefix', {
+        method: "POST",
+        body: JSON.stringify(seq.map(s => s['seq'])),
+        headers: {
+            "Content-type": "application/json; charset=UTF-8"
+        }
+    });
+
+    let results = array.sort((a, b) => a[0] > b[0] ? 1 : -1).map(arr => {
+        return ({
+            count: arr[0], seq: arr[1].map(e => ({ event: eventNames.find(ev => ev.id == e).event }))
+        })
+    })
+    return results
+}
