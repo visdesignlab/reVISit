@@ -15,8 +15,7 @@ function obtainItemCounts(arr) {
   return occurrences;
 }
 export const CategoricalFilter = (props) => {
-  const { data, width, scale, labels, columnDef, onFilter } = props;
-  console.log(props);
+  const { data, width, scale, labels, onFilter = () => {} } = props;
   const occurrences = useMemo(() => obtainItemCounts(data), [data]);
   // search through data for all states
   const [currentFilter, setCurrentFilterInternal] = useState(
@@ -93,7 +92,7 @@ export const Histogram = ({ data, width, height }) => {
 
   // the scale
   let x = d3.scaleLinear().range([0, width - 10]);
-  let y = d3.scaleLinear().range([height - 2, 0]);
+  let y = d3.scaleLinear().range([height, 0]);
   let niceX = d3.scaleLinear().range([0, width]).domain([0, max]).nice();
   const binner = d3.histogram().domain(niceX.domain());
   const buckets = binner(data);
@@ -199,7 +198,11 @@ const BrushableHistogram = ({ data, xScale, setMinimum, setMaximum }) => {
   );
 };
 
-export const QuantitativeFilter = ({ data, xScale, onFilter }) => {
+export const QuantitativeFilter = ({
+  data,
+  xScale,
+  onFilter = (val) => {},
+}) => {
   console.log("new Time Filter");
   const [minimum, setMinimum] = useState(d3.min(data));
   const [maximum, setMaximum] = useState(d3.max(data));

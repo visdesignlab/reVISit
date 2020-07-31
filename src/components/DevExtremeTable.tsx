@@ -8,6 +8,8 @@ import {
   IntegratedGrouping,
   FilteringState,
   IntegratedFiltering,
+  IntegratedSummary,
+  SummaryState,
 } from "@devexpress/dx-react-grid";
 import {
   Grid,
@@ -20,6 +22,9 @@ import {
   DragDropProvider,
   TableFilterRow,
   TableColumnResizing,
+  ColumnChooser,
+  TableColumnVisibility,
+  TableSummaryRow,
 } from "@devexpress/dx-react-grid-material-ui";
 
 import ProvenanceGraph from "./ProvenanceGraph";
@@ -33,11 +38,25 @@ import { QuantitativeFilter, CategoricalFilter } from "./TableFilters";
 import tableStyles from "./ProvenanceTable.module.css";
 import { ifError } from "assert";
 
-const GroupCellContent = ({ row, ...restProps }) => (
-  <TableGroupRow.Content {...restProps}>
-    from {row.value.from} to {row.value.to}
-  </TableGroupRow.Content>
-);
+const GroupCellContent = (props) => {
+  console.log(props);
+
+  const { provenanceData, column, row } = props;
+  const collapsedRowAccessor = Object.getOwnPropertySymbols(row)[2];
+  const collapsedData = row[collapsedRowAccessor];
+
+  let Content = () => <div></div>;
+  if (column.groupedSummaryComponent) {
+    Content = column.groupedSummaryComponent;
+  }
+  console.log(Content);
+
+  return (
+    <TableGroupRow.GroupCell {...props}>
+      <Content partitionedData={collapsedData}></Content>
+    </TableGroupRow.GroupCell>
+  );
+};
 
 const nameGroupCriteria = (value) => {
   const firstLetter = String(value).substr(0, 1).toLowerCase();
@@ -144,10 +163,7 @@ const DevExtremeTable = ({ provenanceData }) => {
       } else if (column.type === "quantitative") {
         const quantWidth = 300;
         const max = d3.max(provenanceData, (datum) => datum[column.name].value);
-        const timeScale = d3
-          .scaleLinear()
-          .domain([0, max])
-          .range([0, quantWidth]);
+        const xScale = d3.scaleLinear().domain([0, max]).range([0, quantWidth]);
 
         tempColumns.push({
           title: column.title,
@@ -158,10 +174,19 @@ const DevExtremeTable = ({ provenanceData }) => {
           customFilterAndSearch: (filter, value, row) => {
             return filterQuantitativeValues(filter, value.value, row);
           },
+          groupedSummaryComponent: ({ partitionedData }) => {
+            return (
+              <QuantitativeFilter
+                xScale={xScale}
+                data={partitionedData.map(
+                  (graph) => datum[column.name].value
+                )}></QuantitativeFilter>
+            );
+          },
           filterComponent: (props) => (
             <QuantitativeFilter
               {...props}
-              xScale={timeScale}
+              xScale={xScale}
               data={provenanceData.map(
                 (datum) => datum[column.name].value
               )}></QuantitativeFilter>
@@ -225,14 +250,22 @@ const DevExtremeTable = ({ provenanceData }) => {
   ]);
   console.log(provenanceData, ...extraColumnDefinitions, columns);
   const [rows, setRows] = useState(provenanceData);
-  const [grouping, setGrouping] = useState([]);
+  const [grouping, setGroupingInternal] = useState([]);
+  const setGrouping = (grouping) => {
+    console.log(grouping);
+    setGroupingInternal(grouping);
+  };
   const [integratedGroupingColumnExtensions] = useState([
-    { columnName: "visType", criteria: nameGroupCriteria },
-    { columnName: "answer", criteria: (data) => data.accuracy > 0.5 },
+    // { columnName: "visType", criteria: nameGroupCriteria },
+    //{ columnName: "answer", criteria: (data) => data.accuracy > 0.5 },
   ]);
   const [tableGroupColumnExtension] = useState([
-    { columnName: "visType", showWhenGrouped: true },
-    { columnName: "answer", showWhenGrouped: true },
+    columns.map((column) => ({
+      columnName: column.name,
+      showWhenGrouped: true,
+    })),
+    //  { columnName: "visType", showWhenGrouped: true },
+    // { columnName: "answer", showWhenGrouped: true },
   ]);
 
   const [defaultColumnWidths] = useState(
@@ -259,6 +292,21 @@ const DevExtremeTable = ({ provenanceData }) => {
     })
   );
 
+  const [groupSummaryItems] = useState(
+    columns.map((column) => {
+      return {
+        columnName: column.name,
+        type: "count",
+        showInGroupFooter: false,
+        alignByColumn: true,
+      };
+    })
+  );
+
+  const [defaultHiddenColumnNames] = useState(
+    extraColumns.map((column) => column.name)
+  );
+
   return (
     <Paper>
       <Grid rows={rows} columns={columns}>
@@ -271,9 +319,12 @@ const DevExtremeTable = ({ provenanceData }) => {
           columnExtensions={tableGroupColumnExtension}
           //defaultExpandedGroups={["N-Z"]}
         />
+        <SummaryState groupItems={groupSummaryItems} />
+
         <IntegratedGrouping
           columnExtensions={integratedGroupingColumnExtensions}
         />
+        <IntegratedSummary />
 
         <FilteringState defaultFilters={[]} />
         <IntegratedFiltering
@@ -286,6 +337,9 @@ const DevExtremeTable = ({ provenanceData }) => {
         <IntegratedSelection />
 
         <VirtualTable cellComponent={ProvenanceCells} height={1000} />
+        <TableColumnVisibility
+          defaultHiddenColumnNames={defaultHiddenColumnNames}
+        />
         <TableColumnResizing columnWidths={defaultColumnWidths} />
 
         <TableHeaderRow showGroupingControls />
@@ -293,9 +347,16 @@ const DevExtremeTable = ({ provenanceData }) => {
         <TableFilterRow cellComponent={FilterCells} />
         <TableGroupRow
           columnExtensions={tableGroupColumnExtension}
-          contentComponent={GroupCellContent}
+          summaryCellComponent={(props) => (
+            <GroupCellContent
+              columns={columns}
+              provenanceData={provenanceData}
+              {...props}></GroupCellContent>
+          )}
         />
         <Toolbar />
+        <ColumnChooser />
+
         <GroupingPanel showGroupingControls></GroupingPanel>
       </Grid>
     </Paper>
@@ -323,6 +384,7 @@ function renderUserIdColumn(provenanceData, userIdColumnWidth) {
     name: "workerID",
     render: (rowData) => <span>{rowData.workerID}</span>,
     width: userIdColumnWidth,
+    groupedSummaryComponent: () => <div></div>,
   };
 }
 
@@ -429,6 +491,25 @@ function renderProvenanceNodeColumn(currentProvenanceData, eventColumnWidth) {
     customFilterAndSearch: (filter, value, row) => {
       return filterCategoricalValue(filter, value, (node) => node.event);
     },
+    groupedSummaryComponent: ({ partitionedData }) => {
+      console.log(partitionedData);
+      const partitionedNodes = partitionedData
+        .map((graph) => {
+          return graph.provenance.map((node) => node.event);
+        })
+        .flat()
+        .filter(
+          (item) => item !== "startedProvenance" && item !== "Finished Task"
+        );
+      return (
+        <CategoricalFilter
+          width={eventWidth}
+          scale={eventScale}
+          labels={allObj}
+          data={partitionedNodes}></CategoricalFilter>
+      );
+    },
+
     filterComponent: (props) => (
       <CategoricalFilter
         {...props}
@@ -473,6 +554,16 @@ function renderAccuracyColumn(currentProvenanceData, columnWidth) {
         (answer) => `${answer.accuracy}`
       );
     },
+    groupedSummaryComponent: ({ partitionedData }) => (
+      <CategoricalFilter
+        width={columnWidth}
+        scale={accuracyScale}
+        labels={{ "1": "true", "0": "false" }}
+        data={partitionedData.map(
+          // TODO: fix from hard coded
+          (graph) => graph.answer.correct
+        )}></CategoricalFilter>
+    ),
 
     filterComponent: (props) => (
       <CategoricalFilter
@@ -513,7 +604,15 @@ function renderTimeColumn(currentProvenanceData, columnWidth) {
     customFilterAndSearch: (filter, value, row) => {
       return filterQuantitativeValues(filter, value, row);
     },
-
+    groupedSummaryComponent: ({ partitionedData }) => {
+      return (
+        <QuantitativeFilter
+          xScale={timeScale}
+          data={partitionedData.map(
+            (graph) => graph.totalTime
+          )}></QuantitativeFilter>
+      );
+    },
     filterComponent: (props) => (
       <QuantitativeFilter
         {...props}
