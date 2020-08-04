@@ -52,9 +52,17 @@ const GroupCellContent = (props) => {
   console.log(Content);
 
   return (
-    <TableGroupRow.GroupCell {...props}>
+    <TableSummaryRow.GroupCell {...props}>
       <Content partitionedData={collapsedData}></Content>
-    </TableGroupRow.GroupCell>
+    </TableSummaryRow.GroupCell>
+  );
+};
+const GroupRowContent = (props) => {
+  return (
+    <div>
+      <p>Hello this is a test</p>
+      <TableGroupRow.Row {...props}></TableGroupRow.Row>
+    </div>
   );
 };
 
@@ -295,9 +303,10 @@ const DevExtremeTable = ({ provenanceData }) => {
   const [groupSummaryItems] = useState(
     columns.map((column) => {
       return {
+        name: column.name,
         columnName: column.name,
         type: "count",
-        showInGroupFooter: false,
+        //showInGroupFooter: false,
         alignByColumn: true,
       };
     })
@@ -311,37 +320,30 @@ const DevExtremeTable = ({ provenanceData }) => {
     <Paper>
       <Grid rows={rows} columns={columns}>
         <DragDropProvider />
-
         <GroupingState
           grouping={grouping}
           onGroupingChange={setGrouping}
           columnGroupingEnabled
           columnExtensions={tableGroupColumnExtension}
-          //defaultExpandedGroups={["N-Z"]}
         />
         <SummaryState groupItems={groupSummaryItems} />
-
         <IntegratedGrouping
           columnExtensions={integratedGroupingColumnExtensions}
         />
         <IntegratedSummary />
-
         <FilteringState defaultFilters={[]} />
         <IntegratedFiltering
           columnExtensions={filteringColumnExtensions}></IntegratedFiltering>
-
         <SelectionState
           selection={selection}
           onSelectionChange={setSelection}
         />
         <IntegratedSelection />
-
         <VirtualTable cellComponent={ProvenanceCells} height={1000} />
         <TableColumnVisibility
           defaultHiddenColumnNames={defaultHiddenColumnNames}
         />
         <TableColumnResizing columnWidths={defaultColumnWidths} />
-
         <TableHeaderRow showGroupingControls />
         <TableSelection showSelectAll />
         <TableFilterRow cellComponent={FilterCells} />
@@ -353,10 +355,16 @@ const DevExtremeTable = ({ provenanceData }) => {
               provenanceData={provenanceData}
               {...props}></GroupCellContent>
           )}
+          showColumnsWhenGrouped
+          stubCellComponent={() => {
+            return <td classname="FAKETD" style={{ display: "none" }}></td>;
+          }}
+          inlineSummaryComponent={() => {
+            return <div>temp div testing</div>;
+          }}
         />
         <Toolbar />
         <ColumnChooser />
-
         <GroupingPanel showGroupingControls></GroupingPanel>
       </Grid>
     </Paper>
@@ -492,6 +500,14 @@ function renderProvenanceNodeColumn(currentProvenanceData, eventColumnWidth) {
       return filterCategoricalValue(filter, value, (node) => node.event);
     },
     groupedSummaryComponent: ({ partitionedData }) => {
+      /*@ts-ignore
+      const [partitionedData, setPartitionedData] = useState([]);
+      //@ts-ignore
+      useEffect(() => {
+        if (partitionedData && partitionedData.length > 0) {
+          setPartitionedData(incomingData);
+        }
+      }, incomingData);*/
       console.log(partitionedData);
       const partitionedNodes = partitionedData
         .map((graph) => {
