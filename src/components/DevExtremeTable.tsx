@@ -10,6 +10,7 @@ import {
   IntegratedFiltering,
   IntegratedSummary,
   SummaryState,
+  CustomSummary,
 } from "@devexpress/dx-react-grid";
 import {
   Grid,
@@ -37,23 +38,22 @@ import TagWrapper from "./reactTagWrapper";
 import { QuantitativeFilter, CategoricalFilter } from "./TableFilters";
 import tableStyles from "./ProvenanceTable.module.css";
 import { ifError } from "assert";
+import _ from "lodash";
 
 const GroupCellContent = (props) => {
-  console.log(props);
+  console.log("props for group cell", props);
 
-  const { provenanceData, column, row } = props;
-  const collapsedRowAccessor = Object.getOwnPropertySymbols(row)[2];
-  const collapsedData = row[collapsedRowAccessor];
+  const { provenanceData, column, row, children } = props;
+  const groupData = children.props.columnSummaries[0].value;
 
   let Content = () => <div></div>;
   if (column.groupedSummaryComponent) {
     Content = column.groupedSummaryComponent;
   }
-  console.log(Content);
 
   return (
     <TableSummaryRow.GroupCell {...props}>
-      <Content partitionedData={collapsedData}></Content>
+      <Content incomingData={groupData} partitionedData={groupData}></Content>
     </TableSummaryRow.GroupCell>
   );
 };
@@ -136,6 +136,16 @@ const extraColumns = [
     },
   },
 ];
+function getGroupSummaryValues(props) {
+  console.log(props);
+  //const { selection, rows, totalSummaryItems } = this.state;
+  //const selectionSet = new Set(selection);
+  //const selectedRows = rows.filter((row, rowIndex) => selectionSet.has(rowIndex));
+  return rows; /*totalSummaryItems.map((summary) => {
+      const { columnName, type } = summary;
+      return IntegratedSummary.defaultCalculator(type, selectedRows, row => row[columnName]);
+    });*/
+}
 
 const DevExtremeTable = ({ provenanceData }) => {
   console.log(provenanceData);
@@ -182,13 +192,23 @@ const DevExtremeTable = ({ provenanceData }) => {
           customFilterAndSearch: (filter, value, row) => {
             return filterQuantitativeValues(filter, value.value, row);
           },
-          groupedSummaryComponent: ({ partitionedData }) => {
+          groupedSummaryComponent: ({ incomingData }) => {
+            console.log("dywootto", incomingData);
             return (
-              <QuantitativeFilter
-                xScale={xScale}
-                data={partitionedData.map(
-                  (graph) => datum[column.name].value
-                )}></QuantitativeFilter>
+              <GroupDataResolver incomingData={incomingData}>
+                {({ partitionedData }) => {
+                  if (partitionedData.length === 0) {
+                    return <div></div>;
+                  }
+                  return (
+                    <QuantitativeFilter
+                      xScale={xScale}
+                      data={partitionedData.map(
+                        (graph) => datum[column.name].value
+                      )}></QuantitativeFilter>
+                  );
+                }}
+              </GroupDataResolver>
             );
           },
           filterComponent: (props) => (
@@ -263,6 +283,7 @@ const DevExtremeTable = ({ provenanceData }) => {
     console.log(grouping);
     setGroupingInternal(grouping);
   };
+  console.log("dywootto group", grouping);
   const [integratedGroupingColumnExtensions] = useState([
     // { columnName: "visType", criteria: nameGroupCriteria },
     //{ columnName: "answer", criteria: (data) => data.accuracy > 0.5 },
@@ -305,8 +326,8 @@ const DevExtremeTable = ({ provenanceData }) => {
       return {
         name: column.name,
         columnName: column.name,
-        type: "count",
-        //showInGroupFooter: false,
+        type: "custom",
+        showInGroupFooter: false,
         alignByColumn: true,
       };
     })
@@ -315,6 +336,17 @@ const DevExtremeTable = ({ provenanceData }) => {
   const [defaultHiddenColumnNames] = useState(
     extraColumns.map((column) => column.name)
   );
+  const summaryCalculator = (type, rows, getValue) => {
+    console.log("dywootto rows for group", rows);
+
+    if (type === "custom") {
+      if (!rows.length) {
+        return null;
+      }
+      return rows;
+    }
+    return rows;
+  };
 
   return (
     <Paper>
@@ -330,7 +362,7 @@ const DevExtremeTable = ({ provenanceData }) => {
         <IntegratedGrouping
           columnExtensions={integratedGroupingColumnExtensions}
         />
-        <IntegratedSummary />
+        <IntegratedSummary calculator={summaryCalculator} />
         <FilteringState defaultFilters={[]} />
         <IntegratedFiltering
           columnExtensions={filteringColumnExtensions}></IntegratedFiltering>
@@ -357,7 +389,7 @@ const DevExtremeTable = ({ provenanceData }) => {
           )}
           showColumnsWhenGrouped
           stubCellComponent={() => {
-            return <td classname="FAKETD" style={{ display: "none" }}></td>;
+            return <td className="FAKETD" style={{ display: "none" }}></td>;
           }}
           inlineSummaryComponent={() => {
             return <div>temp div testing</div>;
@@ -461,7 +493,6 @@ function filterCategoricalValue(filter, value, accesssor) {
   return false;
 }
 function filterQuantitativeValues(filter, value, row) {
-  console.log(filter, value);
   if (value >= filter.filterMin && value <= filter.filterMax) {
     return true;
   }
@@ -486,6 +517,35 @@ function renderProvenanceNodeColumn(currentProvenanceData, eventColumnWidth) {
     allObj[eventKey] = eventMapping[eventKey].icon;
   });
 
+  const ProvenanceSummary = ({ incomingData }) => {
+    const [partitionedData, setPartitionedData] = useState([]);
+    useEffect(() => {
+      if (incomingData && incomingData.length > 0) {
+        setPartitionedData(incomingData);
+      }
+    }, incomingData);
+
+    console.log(partitionedData);
+    const partitionedNodes = partitionedData
+      .map((graph) => {
+        return graph.provenance.map((node) => node.event);
+      })
+      .flat()
+      .filter(
+        (item) => item !== "startedProvenance" && item !== "Finished Task"
+      );
+    if (partitionedNodes.length === 0) {
+      return <div></div>;
+    }
+    return (
+      <CategoricalFilter
+        width={eventWidth}
+        scale={eventScale}
+        labels={allObj}
+        data={partitionedNodes}></CategoricalFilter>
+    );
+  };
+
   return {
     title: "Events Used",
     name: "provenance",
@@ -499,33 +559,34 @@ function renderProvenanceNodeColumn(currentProvenanceData, eventColumnWidth) {
     customFilterAndSearch: (filter, value, row) => {
       return filterCategoricalValue(filter, value, (node) => node.event);
     },
-    groupedSummaryComponent: ({ partitionedData }) => {
-      /*@ts-ignore
-      const [partitionedData, setPartitionedData] = useState([]);
-      //@ts-ignore
-      useEffect(() => {
-        if (partitionedData && partitionedData.length > 0) {
-          setPartitionedData(incomingData);
-        }
-      }, incomingData);*/
-      console.log(partitionedData);
-      const partitionedNodes = partitionedData
-        .map((graph) => {
-          return graph.provenance.map((node) => node.event);
-        })
-        .flat()
-        .filter(
-          (item) => item !== "startedProvenance" && item !== "Finished Task"
-        );
+    groupedSummaryComponent: ({ incomingData }) => {
+      console.log("dywootto", incomingData);
       return (
-        <CategoricalFilter
-          width={eventWidth}
-          scale={eventScale}
-          labels={allObj}
-          data={partitionedNodes}></CategoricalFilter>
+        <GroupDataResolver incomingData={incomingData}>
+          {({ partitionedData }) => {
+            const partitionedNodes = partitionedData
+              .map((graph) => {
+                return graph.provenance.map((node) => node.event);
+              })
+              .flat()
+              .filter(
+                (item) =>
+                  item !== "startedProvenance" && item !== "Finished Task"
+              );
+            if (partitionedNodes.length === 0) {
+              return <div></div>;
+            }
+            return (
+              <CategoricalFilter
+                width={eventWidth}
+                scale={eventScale}
+                labels={allObj}
+                data={partitionedNodes}></CategoricalFilter>
+            );
+          }}
+        </GroupDataResolver>
       );
     },
-
     filterComponent: (props) => (
       <CategoricalFilter
         {...props}
@@ -536,6 +597,20 @@ function renderProvenanceNodeColumn(currentProvenanceData, eventColumnWidth) {
     ),
   };
 }
+
+const GroupDataResolver = (props) => {
+  const { incomingData, children } = props;
+  const [partitionedData, setPartitionedData] = useState([]);
+  useEffect(() => {
+    if (incomingData && incomingData.length > 0) {
+      setPartitionedData(incomingData);
+    }
+  }, incomingData);
+  if (_.isFunction(children)) {
+    return children({ partitionedData });
+  }
+  return <div></div>;
+};
 
 /* Accuracy */
 function renderAccuracyCell(rowData, accuracyScale) {
@@ -570,16 +645,29 @@ function renderAccuracyColumn(currentProvenanceData, columnWidth) {
         (answer) => `${answer.accuracy}`
       );
     },
-    groupedSummaryComponent: ({ partitionedData }) => (
-      <CategoricalFilter
-        width={columnWidth}
-        scale={accuracyScale}
-        labels={{ "1": "true", "0": "false" }}
-        data={partitionedData.map(
-          // TODO: fix from hard coded
-          (graph) => graph.answer.correct
-        )}></CategoricalFilter>
-    ),
+    groupedSummaryComponent: ({ incomingData }) => {
+      console.log("dywootto", incomingData);
+      return (
+        <GroupDataResolver incomingData={incomingData}>
+          {({ partitionedData }) => {
+            console.log(partitionedData);
+            if (partitionedData.length === 0) {
+              return <div></div>;
+            }
+            return (
+              <CategoricalFilter
+                width={columnWidth}
+                scale={accuracyScale}
+                labels={{ "1": "true", "0": "false" }}
+                data={partitionedData.map(
+                  // TODO: fix from hard coded
+                  (graph) => graph.answer.correct
+                )}></CategoricalFilter>
+            );
+          }}
+        </GroupDataResolver>
+      );
+    },
 
     filterComponent: (props) => (
       <CategoricalFilter
@@ -620,13 +708,23 @@ function renderTimeColumn(currentProvenanceData, columnWidth) {
     customFilterAndSearch: (filter, value, row) => {
       return filterQuantitativeValues(filter, value, row);
     },
-    groupedSummaryComponent: ({ partitionedData }) => {
+    groupedSummaryComponent: ({ incomingData }) => {
+      console.log("dywootto", incomingData);
       return (
-        <QuantitativeFilter
-          xScale={timeScale}
-          data={partitionedData.map(
-            (graph) => graph.totalTime
-          )}></QuantitativeFilter>
+        <GroupDataResolver incomingData={incomingData}>
+          {({ partitionedData }) => {
+            if (partitionedData.length === 0) {
+              return <div></div>;
+            }
+            return (
+              <QuantitativeFilter
+                xScale={timeScale}
+                data={partitionedData.map(
+                  (graph) => graph.totalTime
+                )}></QuantitativeFilter>
+            );
+          }}
+        </GroupDataResolver>
       );
     },
     filterComponent: (props) => (
