@@ -29,7 +29,6 @@ export function useFetchAPIData(fetchingFunc, dependencies) {
             .then(
                 (result) => {
                     const success = result && result.success;
-                    console.log("result", result);
                     if (success && result.data) {
                         //const fetchData = result && result.data;
                         onDataFetched(result.data);
