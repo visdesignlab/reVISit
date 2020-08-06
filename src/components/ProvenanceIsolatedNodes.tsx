@@ -26,7 +26,7 @@ const IsolatedNode = ({ node }) => {
     <Tooltip
       TransitionComponent={Fade}
       TransitionProps={{ timeout: 600 }}
-      title={node.event}
+      title={node.event + ' [' + node.count + ']'}
       PopperProps={{
         popperOptions: {
           modifiers: {
@@ -45,7 +45,11 @@ const IsolatedNode = ({ node }) => {
           width={30}
           height={30}
           rx={5}
-          fill={eventMap.color}></rect>
+          fill={eventMap.color}
+
+          opacity={node.scale || 1}>
+
+        </rect>
         <g transform={`translate(7,5)`}>{icon}</g>
       </svg>
     </Tooltip>

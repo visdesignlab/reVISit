@@ -10,7 +10,7 @@ function App() {
   return (
     <div className="App">
       <ProvenanceDataContextProvider>
-        <MemoryRouter initialEntries={["/"]} initialIndex={0}>
+        <MemoryRouter initialEntries={["/Home"]} initialIndex={0}>
           <div className={styles.container}>
             <div className={styles.sidePane}>
               <SidePane></SidePane>

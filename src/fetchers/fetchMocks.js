@@ -2,17 +2,28 @@
     postData
 } from "./fetchingUtilities";*/
 
+let local = true;
+let host = local ? 'http://127.0.0.1:5000' : 'http://18.222.101.54'
+
+
 export async function performPrefixSpan(data) {
     console.log('postData is ', data)
+    console.log('data is ', data)
     let res = await postData(
-        // "http://18.222.101.54//prefix", data
-        "http://127.0.0.1:5000/prefix", data
+        host + "/prefix", data
     );
-    console.log("dywootto", res);
+    return res;
+}
+
+export async function mysql_api(endpoint, body) {
+    let res = await postData(
+        host + endpoint, body
+    );
     return res;
 }
 
 export async function postData(uri, postBody, fetchOptions) {
+    // console.log('postBody is ', postBody)
     let defaultHeaders = {
         url: uri,
         method: "POST",
@@ -27,7 +38,7 @@ export async function completePromise(uri, requestOptions) {
     let response;
     try {
         response = await fetch(uri, requestOptions);
-        console.log("inpromise", response);
+        // console.log("inpromise", response);
         response.data = await response.json();
         response.success = response.ok;
     } catch (err) {
