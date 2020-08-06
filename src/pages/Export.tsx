@@ -4,9 +4,15 @@ import DevTable from "../components/DevExtremeTable";
 import ProvenanceDataContext from "../components/ProvenanceDataContext";
 
 const Export = () => {
-  const { currentTaskData } = useContext(ProvenanceDataContext);
+  const { currentTaskData, handleProvenanceNodeClick } = useContext(
+    ProvenanceDataContext
+  );
 
-  return <DevTable provenanceData={currentTaskData}></DevTable>;
+  return (
+    <DevTable
+      provenanceData={currentTaskData}
+      handleProvenanceNodeClick={handleProvenanceNodeClick}></DevTable>
+  );
 };
 
 export default Export;

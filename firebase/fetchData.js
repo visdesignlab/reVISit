@@ -39,13 +39,13 @@ let db = firestore.connect();
   //   // }
   // })
   // fetchSkinnyProvenance();
-  let NL_example = '545d6768fdf99b7f9fca24e3_S-task01';
-  let AM_example = '546e3c21fdf99b2b8df983fd_S-task01';
+  let NL_example = "545d6768fdf99b7f9fca24e3_S-task01";
+  let AM_example = "546e3c21fdf99b2b8df983fd_S-task01";
   // getRawProvenance(NL_example);
   // getRawProvenance(AM_example);
-  getRawProvenance()
+  getRawProvenance();
   // fetchProvenance();
-  console.log('done')
+  console.log("done");
 })();
 
 async function fetchSkinnyProvenance() {
@@ -72,57 +72,48 @@ async function fetchSkinnyProvenance() {
 }
 
 async function getRawProvenance(key) {
-
-  const provenanceCollection = db.collection('provenance');
+  const provenanceCollection = db.collection("provenance");
 
   if (key) {
-    console.log('getting ', key)
-    let provenanceRef = db.collection('provenance').doc(key);
+    console.log("getting ", key);
+    let provenanceRef = db.collection("provenance").doc(key);
     let doc = await provenanceRef.get();
     if (!doc.exists) {
-      console.log('No such document!');
+      console.log("No such document!");
     } else {
       let data = doc.data();
 
-      fs.writeFileSync(
-        "./" + key + ".json",
-        JSON.stringify(data), { flag: 'w' }
-      );
-
+      fs.writeFileSync("./" + key + ".json", JSON.stringify(data), {
+        flag: "w",
+      });
     }
-
   } else {
-
-    console.log('getting all docs in provenance collection')
-    const snapshot = await db.collection('provenance').where('id', '==', '546e3c21fdf99b2b8df983fd').get();
-
+    console.log("getting all docs in provenance collection");
+    const snapshot = await db
+      .collection("provenance")
+      .where("id", "==", "546e3c21fdf99b2b8df983fd")
+      .get();
 
     // .where('mode', '==', 'study').get();
 
     if (snapshot.empty) {
-      console.log('No matching documents.');
+      console.log("No matching documents.");
       return;
     }
 
-    snapshot.forEach(doc => {
+    snapshot.forEach((doc) => {
       let data = doc.data();
-      if (doc.id.includes('S-')) {
-        console.log('writing', doc.id)
+      if (doc.id.includes("S-")) {
+        console.log("writing", doc.id);
 
-        fs.writeFileSync(
-          "./" + doc.id + ".json",
-          JSON.stringify(data), { flag: 'w' }
-        );
+        fs.writeFileSync("./" + doc.id + ".json", JSON.stringify(data), {
+          flag: "w",
+        });
       } else {
-        console.log('skipping', doc.id)
+        console.log("skipping", doc.id);
       }
-
-
     });
-
   }
-
-
 }
 async function writeSkinnyProvenance(participant) {
   let participantID = participant.id;
@@ -349,8 +340,10 @@ function isValidParticipant(d) {
 }
 
 async function fetchProvenance() {
+  console.log("in fetch@");
   paginate(0);
 }
+fetchProvenance();
 
 async function fetchResults() {
   let querySnapshot = await db.collection("study_participants").get();
@@ -413,9 +406,9 @@ async function paginate(i, lastDoc) {
       .collection("provenance")
       .orderBy("initialSetup")
       .startAfter(lastDoc.data().initialSetup)
-      .limit(1000);
+      .limit(10);
   } else {
-    ref = db.collection("provenance").orderBy("initialSetup").limit(1000);
+    ref = db.collection("provenance").orderBy("initialSetup").limit(10);
   }
 
   ref.get().then((snapshot) => {
@@ -431,7 +424,7 @@ async function paginate(i, lastDoc) {
         };
       })
     );
-    console.log('writing', d.id + ".json")
+    console.log("writing", d.id + ".json");
     fs.writeFileSync(d.id + ".json", data);
 
     // Get the last document

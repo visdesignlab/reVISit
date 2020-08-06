@@ -146,7 +146,7 @@ function getGroupSummaryValues(props) {
     });*/
 }
 
-const DevExtremeTable = ({ provenanceData }) => {
+const DevExtremeTable = ({ provenanceData, handleProvenanceNodeClick }) => {
   console.log(provenanceData);
   // map extra columns for now
   provenanceData = useMemo(
@@ -203,7 +203,7 @@ const DevExtremeTable = ({ provenanceData }) => {
                     <QuantitativeFilter
                       xScale={xScale}
                       data={partitionedData.map(
-                        (graph) => datum[column.name].value
+                        (datum) => datum[column.name].value
                       )}></QuantitativeFilter>
                   );
                 }}
@@ -243,7 +243,7 @@ const DevExtremeTable = ({ provenanceData }) => {
   );
 
   const [eventsColumnDefinition, setEventsColumnDefinition] = useState(
-    renderProvenanceNodeColumn(provenanceData, 1000)
+    renderProvenanceNodeColumn(provenanceData, 1000, handleProvenanceNodeClick)
   );
 
   const [notesColumnDefinition, setNotesColumnDefinition] = useState(
@@ -464,9 +464,13 @@ function renderNotesColumn(notesColumnWidth) {
   };
 }
 
-function renderProvenanceNodeCell(data) {
+function renderProvenanceNodeCell(data, handleProvenanceNodeClick) {
   return (
-    <ProvenanceIsolatedNodes nodes={data.provenance}></ProvenanceIsolatedNodes>
+    <ProvenanceIsolatedNodes
+      nodes={data.provenance}
+      handleProvenanceNodeClick={
+        handleProvenanceNodeClick
+      }></ProvenanceIsolatedNodes>
   );
 }
 /**
@@ -498,7 +502,11 @@ function filterQuantitativeValues(filter, value, row) {
   return false;
 }
 
-function renderProvenanceNodeColumn(currentProvenanceData, eventColumnWidth) {
+function renderProvenanceNodeColumn(
+  currentProvenanceData,
+  eventColumnWidth,
+  handleProvenanceNodeClick
+) {
   const eventWidth = 500;
   const eventNodes = currentProvenanceData
     .map((graph) => {
@@ -554,7 +562,8 @@ function renderProvenanceNodeColumn(currentProvenanceData, eventColumnWidth) {
       padding: "4px 16px",
     },
     customSort: (a, b) => a.provenance.length - b.provenance.length,
-    render: renderProvenanceNodeCell,
+    render: (renderData) =>
+      renderProvenanceNodeCell(renderData, handleProvenanceNodeClick),
     customFilterAndSearch: (filter, value, row) => {
       return filterCategoricalValue(filter, value, (node) => node.event);
     },

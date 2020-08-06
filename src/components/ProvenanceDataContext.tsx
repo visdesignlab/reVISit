@@ -35,71 +35,103 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   ];
 
   //Data
-  let [tasks, setTasks] = useState()
-  let [conditions, setConditions] = useState()
-  let [actions, setActions] = useState()
-  let [actionSummary, setActionSummary] = useState()
-  let [metrics, setMetrics] = useState()
-  let [participants, setParticipants] = useState()
+  let [tasks, setTasks] = useState();
+  let [conditions, setConditions] = useState();
+  let [actions, setActions] = useState();
+  let [actionSummary, setActionSummary] = useState();
+  let [metrics, setMetrics] = useState();
+  let [participants, setParticipants] = useState();
 
-  let [patterns, setPatterns] = useState()
+  let [patterns, setPatterns] = useState();
+
+  function handleProvenanceNodeClick(id) {
+    console.log("dywootto handle provenance node click", id);
+
+    // hardcoded data for now. ideally, we'll have the event id to be able to select on.
+    const taskId = "S-task01";
+    const participantId = "545d6768fdf99b7f9fca24e3";
+    const taskNumber = 1;
+    // select all of that provenance graph.
+    const promise = mysql_api(`/actions/${participantId}/${taskId}`);
+    promise.then((resolved) => {
+      console.log("resolvedclick", resolved);
+
+      // rehydrate provenance graph
+      // render vis using that provenance graph
+    });
+  }
 
   useEffect(() => {
-
-
     //function that makes the initial calls to the MySQL database and sets up the basic state
     async function setUp() {
-
       let serverRequest;
 
-      let metrics = ['accuracy', 'time', 'confidence', 'difficulty'];
+      let metrics = ["accuracy", "time", "confidence", "difficulty"];
 
-      serverRequest = await mysql_api('/conditions', {});
+      serverRequest = await mysql_api("/conditions", {});
       setConditions(serverRequest.data);
 
-      serverRequest = await mysql_api('/table', { table: 'Tasks' });
+      serverRequest = await mysql_api("/table", { table: "Tasks" });
       setTasks(serverRequest.data);
 
       //query api for action counts per task and condition
-      serverRequest = await mysql_api('/actions', { 'groupBy': ['taskID', 'condition'] });
+      serverRequest = await mysql_api("/actions", {
+        groupBy: ["taskID", "condition"],
+      });
       // serverRequest = await mysql_api('/table/stats', { 'table': 'Actions', 'metrics': ['actionID'], 'groupBy': ['taskID', 'condition'] });
-      setActions(serverRequest.data)
+      setActions(serverRequest.data);
 
-      serverRequest = await mysql_api('/actions', { 'groupBy': ['condition'] });
+      serverRequest = await mysql_api("/actions", { groupBy: ["condition"] });
       let data = serverRequest.data;
-      let uniqueActions = [... new Set(data.map(d => d.actionID))];
-      let actionSummary = uniqueActions.map(actionID => {
-        let obj = { actionID: actionID, type: 'native', conditions: {}, visible: true };
-        let rows = data.filter(d => d.actionID == actionID);
+      let uniqueActions = [...new Set(data.map((d) => d.actionID))];
+      let actionSummary = uniqueActions.map((actionID) => {
+        let obj = {
+          actionID: actionID,
+          type: "native",
+          conditions: {},
+          visible: true,
+        };
+        let rows = data.filter((d) => d.actionID == actionID);
         let totalCount = 0;
-        rows.map(row => {
+        rows.map((row) => {
           totalCount = totalCount + row.count;
-          obj['label'] = row.label;
+          obj["label"] = row.label;
           obj.conditions[row.condition] = row.count;
-        })
-        obj['count'] = totalCount;
-        return obj
-      })
+        });
+        obj["count"] = totalCount;
+        return obj;
+      });
 
-      setActionSummary(actionSummary)
+      setActionSummary(actionSummary);
 
       //query api for average metrics (grouped by task and condition) and compute histogram distributions
-      serverRequest = await mysql_api('/table/stats', { 'table': 'Performance', 'metrics': metrics, 'groupBy': ['taskID', 'condition'] });
-      setMetrics(serverRequest.data)
+      serverRequest = await mysql_api("/table/stats", {
+        table: "Performance",
+        metrics: metrics,
+        groupBy: ["taskID", "condition"],
+      });
+      setMetrics(serverRequest.data);
 
       //get participantSchema
-      serverRequest = await mysql_api('/table/schema', { 'table': 'Participants' });
-      let cols = serverRequest.data
+      serverRequest = await mysql_api("/table/schema", {
+        table: "Participants",
+      });
+      let cols = serverRequest.data;
 
       //query api for average participant metrics and compute histogram distributions
-      serverRequest = await mysql_api('/table/stats', { 'table': 'Participants', 'metrics': cols.filter(c => c.COLUMN_NAME !== 'id' && c.COLUMN_NAME !== 'participantID').map(c => c.COLUMN_NAME) });
-      setParticipants(serverRequest.data)
+      serverRequest = await mysql_api("/table/stats", {
+        table: "Participants",
+        metrics: cols
+          .filter(
+            (c) => c.COLUMN_NAME !== "id" && c.COLUMN_NAME !== "participantID"
+          )
+          .map((c) => c.COLUMN_NAME),
+      });
+      setParticipants(serverRequest.data);
     }
 
     setUp();
-
-
-  }, [])
+  }, []);
 
   // // get pattern data from server;
   // let [isLoading, isError, dataFromServer] = useFetchAPIData(async () => {
@@ -107,55 +139,53 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   //   if (actionSummary){
   //     actionSummary.map(e => { sequences[e.actionID] = { sequences: e.sequences } });
   //   return await performPrefixSpan(sequences);
-  //   } 
+  //   }
   // }, [actionSummary]);
 
   const [isLoading, isError, dataFromServer] = useFetchAPIData(async () => {
     let sequences = {};
     // TODO NEED TO GATHER SEQUENCES IN ONE PLACE
-    actionSummary.map(e => { sequences[e.actionID] = { sequences: e.sequences } });
+    actionSummary.map((e) => {
+      sequences[e.actionID] = { sequences: e.sequences };
+    });
     return await performPrefixSpan(sequences);
-
   }, [actionSummary]);
 
   useEffect(() => {
-
-    //convert sequences back to names; 
+    //convert sequences back to names;
     if (dataFromServer) {
-      Object.keys(dataFromServer).map(event => {
-        let eventObj = dataFromServer[event]['results']
+      Object.keys(dataFromServer).map((event) => {
+        let eventObj = dataFromServer[event]["results"];
         let conditions = Object.keys(eventObj);
-        conditions.map(c => {
-          eventObj[c] = eventObj[c].map(arr => {
+        conditions.map((c) => {
+          eventObj[c] = eventObj[c].map((arr) => {
             let [count, seq] = arr;
-            seq = seq.map(s => {
-              let event = events.find(e => e.id == s);
-              return { id: event.name, event: event.name }
-            })
-            return { count: arr[0], seq }
-          })
-        })
-      })
-      console.log('setting pattens', dataFromServer)
-      setPatterns(dataFromServer)
+            seq = seq.map((s) => {
+              let event = events.find((e) => e.id == s);
+              return { id: event.name, event: event.name };
+            });
+            return { count: arr[0], seq };
+          });
+        });
+      });
+      console.log("setting pattens", dataFromServer);
+      setPatterns(dataFromServer);
     }
+  }, [dataFromServer]);
 
-  }, [dataFromServer])
+  //State
+  let [taskSort, setTaskSort] = useState("name");
 
-
-  //State 
-  let [taskSort, setTaskSort] = useState('name');
-
-
-  const [allProvenanceData, setAllProvenanceData] = useState(() => processRawProvenanceData(initProvData));
-
+  const [allProvenanceData, setAllProvenanceData] = useState(() =>
+    processRawProvenanceData(initProvData)
+  );
 
   const [selectedTaskIds, setSelectedTaskIds] = React.useState(["S-task01"]);
 
   let currentTaskData = React.useMemo(() => {
     let internalTaskData = [];
 
-    selectedTaskIds.map(selectedTaskId => {
+    selectedTaskIds.map((selectedTaskId) => {
       allProvenanceData.forEach((participant) => {
         const newObj = Object.assign(
           { id: participant.id },
@@ -177,10 +207,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
           internalTaskData.push(newObj);
         }
       });
-
-    })
-
-
+    });
 
     return internalTaskData;
   }, [allProvenanceData, selectedTaskIds]);
@@ -188,7 +215,6 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   function handleChangeSelectedTaskId(event) {
     setSelectedTaskIds([event.target.value]);
   }
-
 
   return (
     <ProvenanceDataContext.Provider
@@ -203,13 +229,13 @@ export const ProvenanceDataContextProvider = ({ children }) => {
         actionSummary,
         metrics,
         conditions,
-        participants
+        participants,
+        handleProvenanceNodeClick,
       }}>
       {children}
     </ProvenanceDataContext.Provider>
   );
 };
-
 
 function calculateRelativeProvGraph(taskPerformance, maxTime) {
   let totalTime =
@@ -236,23 +262,28 @@ function calculateRelativeProvGraph(taskPerformance, maxTime) {
   return taskPerformance;
 }
 function processRawProvenanceData(unrelativeProvenanceData) {
-
-  //remove element with no data 
-  unrelativeProvenanceData = unrelativeProvenanceData.filter(d => Object.keys(d.data).length > 0);
+  //remove element with no data
+  unrelativeProvenanceData = unrelativeProvenanceData.filter(
+    (d) => Object.keys(d.data).length > 0
+  );
 
   //remove elements with no, or messed up provenance (more than one started prov event)
-  unrelativeProvenanceData = unrelativeProvenanceData.filter(d => {
-    let tasks = Object.keys(d.data).filter(t => t.includes('task'));
+  unrelativeProvenanceData = unrelativeProvenanceData.filter((d) => {
+    let tasks = Object.keys(d.data).filter((t) => t.includes("task"));
 
     return tasks.reduce((acc, task) => {
       if (!d.data[task].provenance) {
-        //participant has no provenance for a certain task. 
-        return false
+        //participant has no provenance for a certain task.
+        return false;
       } else {
-        //element has more than on 'startedProvenance' event in the same task. 
-        return acc && (d.data[task].provenance.filter(p => p.event == 'startedProvenance').length == 1)
+        //element has more than on 'startedProvenance' event in the same task.
+        return (
+          acc &&
+          d.data[task].provenance.filter((p) => p.event == "startedProvenance")
+            .length == 1
+        );
       }
-    }, true)
+    }, true);
   });
 
   // console.trace('calling process Raw prov data')
@@ -275,7 +306,7 @@ function processRawProvenanceData(unrelativeProvenanceData) {
     "S-task16",
   ];
 
-  const relativeProvenanceData = _.cloneDeep(unrelativeProvenanceData)
+  const relativeProvenanceData = _.cloneDeep(unrelativeProvenanceData);
 
   taskIds.forEach((taskId) => {
     let longestTimeForTask = d3.max(unrelativeProvenanceData, (participant) => {
@@ -298,17 +329,14 @@ function processRawProvenanceData(unrelativeProvenanceData) {
           participant.data[taskId],
           longestTimeForTask
         );
-        //create id field in each provenance event (that doesn't change with edits) 
-        participant.data[taskId].provenance.map(p => p.id = p.event);
-
+        //create id field in each provenance event (that doesn't change with edits)
+        participant.data[taskId].provenance.map((p) => (p.id = p.event));
       } else {
         delete relativeProvenanceData[index][taskId];
         // console.log("NO DATA", relativeProvenanceData[index], taskId);
       }
     });
   });
-
-
 
   return relativeProvenanceData;
 }
