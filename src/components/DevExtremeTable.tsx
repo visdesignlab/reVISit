@@ -10,7 +10,6 @@ import {
   IntegratedFiltering,
   IntegratedSummary,
   SummaryState,
-  CustomSummary,
 } from "@devexpress/dx-react-grid";
 import {
   Grid,
