@@ -123,13 +123,9 @@ export const Histogram = ({ data, width, height }) => {
 };
 
 const Brush = (props) => {
-  const width = props.width;
-  const scale = props.scale;
-  const height = props.height;
+  const { width, scale, height, onBrushFunction } = props;
   const brushRef = useRef(null);
-  const onBrushFunction = props.onChange;
-  //const width = props.width;
-  //const scale = scaleLinear().domain([0, 30]).range([0, width]);
+
   useEffect(() => {
     const node = brushRef.current;
 

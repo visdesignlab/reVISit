@@ -4,7 +4,12 @@ import initProvData from "../common/data/provenance_summary.json";
 import prefixSpanSampleData from "../common/data/prefix_span_sample_data.json";
 import * as d3 from "d3";
 import _ from "lodash";
-import { performPrefixSpan, getDataFromServer, mysql_api } from "../fetchers/fetchMocks.js";
+import {
+  performPrefixSpan,
+  getDataFromServer,
+  getTaskDataFromServer,
+  mysql_api,
+} from "../fetchers/fetchMocks.js";
 import { useFetchAPIData } from "../hooks/hooks";
 import { ConsoleSqlOutlined } from "@ant-design/icons";
 
@@ -46,9 +51,9 @@ export const ProvenanceDataContextProvider = ({ children }) => {
 
   // let [patterns, setPatterns] = useState()
 
-   let [data,setData] = useState();
+  let [data, setData] = useState();
 
-   function handleProvenanceNodeClick(id) {
+  function handleProvenanceNodeClick(id) {
     console.log("dywootto handle provenance node click", id);
 
     // hardcoded data for now. ideally, we'll have the event id to be able to select on.
@@ -57,6 +62,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     const taskNumber = 1;
     // select all of that provenance graph.
     const promise = mysql_api(`/actions/${participantId}/${taskId}`);
+
     promise.then((resolved) => {
       console.log("resolvedclick", resolved);
 
@@ -66,7 +72,6 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   }
 
   // useEffect(() => {
-
 
   //   //function that makes the initial calls to the MySQL database and sets up the basic state
   //   async function setUp() {
@@ -106,7 +111,6 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   //     // })
 
   //     // setActionSummary(actionSummary)
-    
 
   //     //query api for average metrics (grouped by task and condition) and compute histogram distributions
   //     serverRequest = await mysql_api('/table/stats', { 'table': 'Performance', 'metrics': metrics, 'groupBy': ['taskID', 'condition'] });
@@ -128,18 +132,17 @@ export const ProvenanceDataContextProvider = ({ children }) => {
 
   //   setUp();
 
-
   // }, [])
 
-    // get initial data from server;
-    let [isLoading, isError, dataFromServer] = useFetchAPIData(async () => {
-      return await getDataFromServer();
-    }, []);
+  // get initial data from server;
+  let [isLoading, isError, dataFromServer] = useFetchAPIData(async () => {
+    return await getDataFromServer();
+  }, []);
 
   useEffect(() => {
-    console.log('data from server', dataFromServer)
-    setData(dataFromServer)
-    },[dataFromServer])
+    console.log("data from server", dataFromServer);
+    setData(dataFromServer);
+  }, [dataFromServer]);
 
   // // get initial data from server;
   // let [isLoading, isError, dataFromServer] = useFetchAPIData(async () => {
@@ -161,7 +164,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
 
   // useEffect(() => {
 
-  //   //convert sequences back to names; 
+  //   //convert sequences back to names;
   //   if (dataFromServer) {
   //     Object.keys(dataFromServer).map(event => {
   //       let eventObj = dataFromServer[event]['results']
@@ -183,18 +186,43 @@ export const ProvenanceDataContextProvider = ({ children }) => {
 
   // }, [dataFromServer])
 
-
-  //State 
-  let [taskSort, setTaskSort] = useState('name');
+  //State
+  let [taskSort, setTaskSort] = useState("name");
 
   const [allProvenanceData, setAllProvenanceData] = useState(() =>
     processRawProvenanceData(initProvData)
   );
 
+  const [currentTaskData, setCurrentTaskData] = React.useState([]);
   const [selectedTaskIds, setSelectedTaskIds] = React.useState(["S-task01"]);
+  let [
+    isTaskLoading,
+    isTaskError,
+    taskDataFromServer,
+  ] = useFetchAPIData(async () => {
+    const response = await getTaskDataFromServer(selectedTaskIds[0]);
+    response.data = response.data.map((datum) => {
+      console.log(datum.sequence);
+      try {
+        datum.sequence = JSON.parse(`[${datum.sequence}]`);
+      } catch (err) {
+        console.error(
+          `[Provenance Data Context] Error Parsing ${datum.participantID}'s event sequence. This is likely caused by the sequence being > 16k characters.`
+        );
+        datum.sequence = [];
+      }
+      return datum;
+    });
+    return response;
+  }, []);
 
+  useEffect(() => {
+    setCurrentTaskData(taskDataFromServer);
+  }, [taskDataFromServer]);
 
-  let currentTaskData = React.useMemo(() => {
+  console.log(isTaskLoading, isTaskError, taskDataFromServer);
+
+  /*let currentTaskData = React.useMemo(() => {
     let internalTaskData = [];
 
     selectedTaskIds.map((selectedTaskId) => {
@@ -222,7 +250,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     });
 
     return internalTaskData;
-  }, [allProvenanceData, selectedTaskIds]);
+  }, [allProvenanceData, selectedTaskIds]);*/
 
   function handleChangeSelectedTaskId(event) {
     setSelectedTaskIds([event.target.value]);
@@ -236,7 +264,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
         taskStructure,
         handleChangeSelectedTaskId,
         selectedTaskIds,
-        data
+        data,
       }}>
       {children}
     </ProvenanceDataContext.Provider>

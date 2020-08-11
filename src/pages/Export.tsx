@@ -4,10 +4,10 @@ import DevTable from "../components/DevExtremeTable";
 import ProvenanceDataContext from "../components/ProvenanceDataContext";
 
 const Export = () => {
-  const { currentTaskData, handleProvenanceNodeClick } = useContext(
+  const { currentTaskData, handleProvenanceNodeClick, data } = useContext(
     ProvenanceDataContext
   );
-
+  console.log("dywootto", currentTaskData);
   return (
     <DevTable
       provenanceData={currentTaskData}
