@@ -22,6 +22,7 @@ import ProvenanceIsolatedNodes from "../components/ProvenanceIsolatedNodes";
 
 import Grid, { GridSpacing } from '@material-ui/core/Grid';
 import { pathToFileURL } from "url";
+import { keys } from "mobx";
 
 const useStyles = makeStyles({
     root: {
@@ -40,6 +41,14 @@ const useStyles = makeStyles({
         marginBottom: 12,
     }
 });
+
+var groupBy = function (xs, key) {
+    return xs.reduce(function (rv, x) {
+        (rv[x[key]] = rv[x[key]] || []).push(x);
+        return rv;
+    }, {});
+};
+
 
 function scale(width, maxValue) {
     return d3
@@ -147,6 +156,44 @@ function histogram(data, ci, size = { width: 130, height: 40 }) {
         </svg>)
 }
 
+let xDomain, yDomain;
+function eventMap(data, size = { width: 130, height: 30 }) {
+    // console.log('data', data, label)
+    let width = size.width;
+    let height = size.height;
+
+    // let barHeight = 20;
+    let barPadding = 2;
+    //compute scale for data; 
+    let xDomain = d3.extent(data, d => d.elapsedTime);
+    // let yDomain = d3.extent(data, d => d.level);
+
+    let barHeight = (height / (yDomain[1] + 1)) - 2
+
+    let xScale = d3.scaleLinear().domain(xDomain).range([0, width - 40])
+    let yScale = d3.scaleLinear().domain(yDomain).range([height, 0])
+    // console.log(xScale.domain(), xScale.range())
+
+    return (
+        <svg width={width} height={100} >
+            {/* add axis */}
+            {/* <line x1={0} y1={yScale.range()[0]} x2={xScale.range()[1]} y2={yScale.range()[0]} style={{ "stroke": "rgb(0,0,0,0.25)", "strokeWidth": 1 }}></line> */}
+            {data.map((d, i) => {
+                let rectWidth = xScale(d.duration) > 5 ? xScale(d.duration) - barPadding : xScale(d.duration)
+                // console.log(d)
+                return <Tooltip title={d.eventID + " [" + + "]"}>
+                    <rect className='count' key={'d_' + d.eventID + '_' + d.elapsedTime} style={{ fill: "rgb(93, 131, 210)", opacity: .2 }}
+                        x={xScale(d.elapsedTime) + barPadding}
+                        y={yScale(d.level)}
+                        width={rectWidth}
+                        height={barHeight}></rect>
+                </Tooltip>
+            }
+            )}
+
+        </svg>)
+}
+
 function barChart(data, size = { width: 130, height: 40 }) {
 
     let barHeight = 20;
@@ -154,29 +201,29 @@ function barChart(data, size = { width: 130, height: 40 }) {
     let height = size.height;
 
     //compute scale for data; 
-    let xDomain = Object.keys(data.count);
-    let yDomain = d3.extent(Object.values(data.count));
+    let yDomain = Object.keys(data.count);
+    let xDomain = d3.extent(Object.values(data.count));
 
-    let xScale = d3.scaleBand().domain(xDomain).range([0, width - 40]).padding(0.4)
-    let yScale = d3.scaleLinear().domain(yDomain).range([0, barHeight])
+    let xScale = d3.scaleLinear().domain(xDomain).range([0, barHeight])
+    let yScale = d3.scaleBand().domain(yDomain).range([0, width - 40]).padding(0.4)
 
-    let barWidth = xScale.bandwidth()
+    let barWidth = yScale.bandwidth()
     return (
         <svg width={width} height={height} >
             {/* add axis */}
-            <line x1={0} y1={yScale.range()[1]} x2={xScale.range()[1]} y2={yScale.range()[1]} style={{ "stroke": "rgb(0,0,0,0.25)", "strokeWidth": 1 }}></line>
+            {/* <line x1={0} y1={yScale.range()[1]} x2={xScale.range()[1]} y2={yScale.range()[1]} style={{ "stroke": "rgb(0,0,0,0.25)", "strokeWidth": 1 }}></line> */}
             {Object.keys(data.count).map((key, i) => {
                 let tooltipText = key + " : " + data.count[key]
                 return <>
                     <Tooltip title={tooltipText}>
                         <rect className='count' key={'d_' + key} style={{ fill: "rgb(93, 131, 210)" }}
-                            x={xScale(key)}
-                            y={barHeight - yScale(data.count[key])}
-                            width={barWidth}
-                            height={yScale(data.count[key])}></rect>
+                            x={barHeight - xScale(data.count[key])}
+                            y={yScale(key)}
+                            width={xScale(data.count[key])}
+                            height={barWidth}></rect>
                     </Tooltip>
                     <Tooltip title={tooltipText}>
-                        <text style={{ transform: "translate(" + xScale(key) + "px, " + (barHeight + 5) + "px) rotate(90deg)", fontSize: '1em', "textAnchor": 'start' }} x={0} y={0}> {key} </text>
+                        <text style={{ transform: "translate(" + (barHeight + 5) + "px, " + yScale(key) + "px) rotate(0deg)", fontSize: '1em', "textAnchor": 'start' }} x={0} y={0}> {key} </text>
                     </Tooltip>
                 </>
             }
@@ -189,65 +236,19 @@ export default function TaskCard() {
     const classes = useStyles();
     const bull = <span className={classes.bullet}>•</span>;
 
-    const { tasks, conditions, actions, metrics, participants } = useContext(ProvenanceDataContext);
+    const { data } = useContext(ProvenanceDataContext);
 
     // })
     let colorScale = d3.scaleLinear()
-        // .domain(d3.extent(allCounts))
         .domain([0, 800])
         .range([0.3, 1])
 
+        // console.log(data)
     //Only render when all API calls have returned 
-    let ready = tasks && conditions && actions && metrics && participants;
-    // console.log('actions', actions)
+    let ready = data;
     return (ready == undefined ? <></> : <>
-        <Box m={2} style={{ display: 'inline-block' }} >
-            <Card className={classes.root} key={'participantOverview'}  >
-                <CardContent>
-                    <Typography variant="h5" component="h2">
-                        Participant Overview
-                </Typography>
-                    <Tooltip title={'Participant Overview'}>
-                        <Typography className={classes.pos} color="textSecondary"  >
-                            Average Demographics
-                    </Typography>
-                    </Tooltip>
-                    <Divider />
-                    <Box mt={2} >
-                        <Grid container className={classes.root} spacing={2}>
-                            <Grid item xs={12}>
-                                <Grid container justify="flex-start" spacing={2}>
-                                    {participants.map(value => {
-                                        if (value.type == 'int' || value.type == 'float') {
-                                            return <Grid key={value.metric} item>
-                                                <Typography style={{ display: 'block' }} color="primary" variant='overline'  >
-                                                    {value.metric}
-                                                </Typography>
-                                                {histogram(value, value.ci, { width: 200, height: 100 })}
-
-                                            </Grid>
-                                        }
-                                        if (value.type == 'text') {
-                                            return <Grid key={value.metric} item>
-                                                <Typography style={{ display: 'block' }} color="primary" variant='overline'  >
-                                                    {value.metric}
-                                                </Typography>
-                                                {barChart(value, { width: 200, height: 100 })}
-
-                                            </Grid>
-                                        }
-                                        return <></>
-
-                                    })}
-                                </Grid>
-                            </Grid>
-                        </Grid>
-                    </Box>
-                </CardContent>
-            </Card>
-        </Box>
         {
-            tasks.map(task => {
+            data.tasks.map(task => {
                 let taskTooltip =
                     <Typography>
                         {task.prompt}
@@ -266,17 +267,18 @@ export default function TaskCard() {
                             </Tooltip>
                             <Divider />
 
-                            {conditions.map(condition => {
+                            {Object.keys(task.conditions).map(key => {
+                                let condition = task.conditions[key];
                                 //old way with /actions endpoint. 
-                                let frequentActions = actions.filter(a => a.taskID == task.taskID && a.condition == condition).splice(0, 5).map(a => ({ event: a.label, id: a.actionID, count: a.count, scale: colorScale(a.count) }))
+                                let frequentActions = condition.actions.map(a => ({ event: a.label, id: a.actionID, count: a.count, scale: colorScale(a.count) })) //actions.filter(a => a.taskID == task.taskID && a.condition == condition).splice(0, 5).map(a => ({ event: a.label, id: a.actionID, count: a.count, scale: colorScale(a.count) }))
                                 // let obj = actions.find(a => a.group.taskID == task.taskID && a.group.condition == condition).count
                                 // let frequentActions = Object.entries(obj).sort((a, b) => a[1] > b[1] ? -1 : 1).splice(0, 5).map(a => ({ event: a[0], id: a[0], count: a[1], scale: colorScale(a[1]) }))
-                                let filteredMetrics = metrics.filter(m => m.group.taskID == task.taskID && m.group.condition == condition);
+                                let filteredMetrics = condition.stats //metrics.filter(m => m.group.taskID == task.taskID && m.group.condition == condition);
                                 let metricValues = [... new Set(filteredMetrics.map(m => m.metric))];// console.log(frequentActions)
 
                                 return <>
                                     <Typography variant='overline'>
-                                        {condition}
+                                        {key}
                                     </Typography>
 
                                     <Grid container className={classes.root} spacing={2}>
@@ -347,3 +349,50 @@ export default function TaskCard() {
 
     );
 }
+
+
+{/* <Box m={2} style={{ display: 'inline-block' }} >
+<Card className={classes.root} key={'participantOverview'}  >
+    <CardContent>
+        <Typography variant="h5" component="h2">
+            Participant Overview
+    </Typography>
+        <Tooltip title={'Participant Overview'}>
+            <Typography className={classes.pos} color="textSecondary"  >
+                Average Demographics
+        </Typography>
+        </Tooltip>
+        <Divider />
+        <Box mt={2} >
+            <Grid container className={classes.root} spacing={2}>
+                <Grid item xs={12}>
+                    <Grid container justify="flex-start" spacing={2}>
+                        {participants.map(value => {
+                            if (value.type == 'int' || value.type == 'float') {
+                                return <Grid key={value.metric} item>
+                                    <Typography style={{ display: 'block' }} color="primary" variant='overline'  >
+                                        {value.metric}
+                                    </Typography>
+                                    {histogram(value, value.ci, { width: 200, height: 100 })}
+
+                                </Grid>
+                            }
+                            if (value.type == 'text') {
+                                return <Grid key={value.metric} item>
+                                    <Typography style={{ display: 'block' }} color="primary" variant='overline'  >
+                                        {value.metric}
+                                    </Typography>
+                                    {barChart(value, { width: 200, height: 100 })}
+
+                                </Grid>
+                            }
+                            return <></>
+
+                        })}
+                    </Grid>
+                </Grid>
+            </Grid>
+        </Box>
+    </CardContent>
+</Card>
+</Box> */}
