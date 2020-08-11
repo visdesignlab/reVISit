@@ -34,6 +34,15 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     { name: "Task 16", key: "S-task16" },
   ];
 
+  {
+    //participantId
+    // data: {unique to each partipant}
+    // taskId-1 : {
+    // taskInfo (ie answer, etc)
+    // provenance : [node, node,node]
+    //}
+  }
+
   //Data
   let [tasks, setTasks] = useState();
   let [conditions, setConditions] = useState();
@@ -127,6 +136,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
           )
           .map((c) => c.COLUMN_NAME),
       });
+      console.log("participants", serverRequest.data);
       setParticipants(serverRequest.data);
     }
 
