@@ -14,12 +14,12 @@ import Overview from "./pages/Overview";
 import Export from "./pages/Export";
 import Table from "./pages/Table";
 import {setupProvenance} from "./provenance/Provenance";
-import ProvenanceDataContext, { ProvenanceDataContextProvider } from "./components/ProvenanceDataContext";
+import ProvenanceTrrackContext, { ProvenanceTrrackContextProvider } from "./components/ProvenanceTrrackContext";
 
 let provenanceCreated = false;
 
 const Main = ({ location }) => {
-  const {setSelectedTaskIds} = useContext(ProvenanceDataContext);
+  const {setSelectedTaskIds} = useContext(ProvenanceTrrackContext);
 
   // Have to check so that we aren't creating a bunch of provenances.
   // This is not the cleanest way of doing this obviously, so if there's a better location where we can access the ProvenanceDataContext, this should be moved.

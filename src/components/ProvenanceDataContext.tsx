@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useContext } from "react";
 import PropTypes from "prop-types";
 import initProvData from "../common/data/provenance_summary.json";
 import prefixSpanSampleData from "../common/data/prefix_span_sample_data.json";
@@ -7,6 +7,7 @@ import _ from "lodash";
 import { performPrefixSpan, getDataFromServer, mysql_api } from "../fetchers/fetchMocks.js";
 import { useFetchAPIData } from "../hooks/hooks";
 import { ConsoleSqlOutlined } from "@ant-design/icons";
+import ProvenanceTrrackContext from "./ProvenanceTrrackContext"
 
 import { Provenance } from "@visdesignlab/trrack";
 import { reState } from "../provenance/reVisitState";
@@ -111,7 +112,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   //     // })
 
   //     // setActionSummary(actionSummary)
-    
+
 
   //     //query api for average metrics (grouped by task and condition) and compute histogram distributions
   //     serverRequest = await mysql_api('/table/stats', { 'table': 'Performance', 'metrics': metrics, 'groupBy': ['taskID', 'condition'] });
@@ -166,7 +167,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
 
   // useEffect(() => {
 
-  //   //convert sequences back to names; 
+  //   //convert sequences back to names;
   //   if (dataFromServer) {
   //     Object.keys(dataFromServer).map(event => {
   //       let eventObj = dataFromServer[event]['results']
@@ -189,15 +190,13 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   // }, [dataFromServer])
 
 
-  //State 
-  let [taskSort, setTaskSort] = useState('name');
+  //State
+
+  const{selectedTaskIds} = useContext(ProvenanceTrrackContext)
 
   const [allProvenanceData, setAllProvenanceData] = useState(() =>
     processRawProvenanceData(initProvData)
   );
-
-  const [selectedTaskIds, setSelectedTaskIds] = React.useState(["S-task01"]);
-
 
   let currentTaskData = React.useMemo(() => {
     let internalTaskData = [];
@@ -229,27 +228,12 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     return internalTaskData;
   }, [allProvenanceData, selectedTaskIds]);
 
-  function handleChangeSelectedTaskId(event) {
-
-    console.log("handle happening");
-
-    let action = provenance.addAction("Changing selected task", (state: reState) => {
-      state.selectedTask = event.target.value;
-      return state;
-    })
-
-    action.applyAction();
-  }
-
   return (
     <ProvenanceDataContext.Provider
       value={{
         allProvenanceData,
         currentTaskData,
         taskStructure,
-        handleChangeSelectedTaskId,
-        setSelectedTaskIds,
-        selectedTaskIds,
         data
       }}>
       {children}

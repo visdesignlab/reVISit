@@ -3,7 +3,6 @@ import { createStyles, makeStyles, useTheme, Theme } from '@material-ui/core/sty
 import clsx from 'clsx';
 
 import Box from '@material-ui/core/Box';
-
 import styles from "./SidePane.module.css";
 import Drawer from "@material-ui/core/Drawer";
 import CssBaseline from "@material-ui/core/CssBaseline";
@@ -21,6 +20,7 @@ import GetApp from "@material-ui/icons/GetApp";
 import BarChart from "@material-ui/icons/BarChart";
 import { Link, LinkProps, useLocation } from "react-router-dom";
 import ProvenanceDataContext from "./components/ProvenanceDataContext";
+import ProvenanceTrrackContext from "./components/ProvenanceTrrackContext";
 import InputLabel from "@material-ui/core/InputLabel";
 import MenuItem from "@material-ui/core/MenuItem";
 import FormControl from "@material-ui/core/FormControl";
@@ -111,10 +111,13 @@ const useStyles = makeStyles((theme: Theme) =>
 
 const SidePane = ({ }) => {
   const {
-    taskStructure,
+    taskStructure
+  } = React.useContext(ProvenanceDataContext);
+
+  const {
     handleChangeSelectedTaskId,
     selectedTaskIds
-  } = React.useContext(ProvenanceDataContext);
+  } = React.useContext(ProvenanceTrrackContext);
 
   const classes = useStyles();
   const theme = useTheme();
