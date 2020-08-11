@@ -15,6 +15,13 @@ export async function performPrefixSpan(data) {
     return res;
 }
 
+export async function getDataFromServer() {
+    let res = await postData(
+        host + "/data"
+    );
+    return res;
+}
+
 export async function mysql_api(endpoint, body) {
     let res = await postData(
         host + endpoint, body

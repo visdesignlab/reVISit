@@ -15,7 +15,7 @@ const { Search } = Input;
 
 const Overview = ({ location }) => {
 
-  const { newEvent } = useContext(ProvenanceDataContext);
+  const { data } = useContext(ProvenanceDataContext);
 
   const [search, setSearch] = React.useState("");
 
@@ -32,14 +32,14 @@ const Overview = ({ location }) => {
       placeholder="Create Event Type"
       enterButton={<PlusSquareOutlined />}
       size="large"
-      onSearch={newEvent}
+      // onSearch={newEvent}
       // onChange={event => setSearch(event.target.value)}
       style={{ width: 672 }}
     // value={search}
     />
     <div style={{ 'paddingTop': "15px" }}>
       {/* {patternComponent} */}
-      <EventAccordion />
+      {/* <EventAccordion /> */}
       {/* <CollapsibleTable data={data} onChange={setData} /> */}
       {/* <EventAccordion data={data} onChange={setData} /> */}
     </div>

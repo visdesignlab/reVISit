@@ -25,7 +25,7 @@ import InputLabel from "@material-ui/core/InputLabel";
 import MenuItem from "@material-ui/core/MenuItem";
 import FormControl from "@material-ui/core/FormControl";
 import Select from "@material-ui/core/Select";
-
+import ComputerIcon from '@material-ui/icons/Computer';
 import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
@@ -133,6 +133,10 @@ const SidePane = ({ }) => {
     HTMLAnchorElement,
     Omit<LinkProps, "innerRef" | "to">
   >((props, ref) => <Link innerRef={ref as any} to="/Home" {...props} />);
+  const StudyLink = React.forwardRef<
+  HTMLAnchorElement,
+  Omit<LinkProps, "innerRef" | "to">
+>((props, ref) => <Link innerRef={ref as any} to="/Study" {...props} />);
   const Upload = React.forwardRef<
     HTMLAnchorElement,
     Omit<LinkProps, "innerRef" | "to">
@@ -244,6 +248,7 @@ const SidePane = ({ }) => {
         </ListItem> */}
         {[
           { text: "Home", id: "Home", link: HomeLink, icon: HomeIcon },
+          { text: "Study", id: "Study", link: StudyLink, icon: ComputerIcon },
           { text: "Upload", id: "Upload", link: Upload, icon: CloudUpload },
           { text: "Provenance Prep ", id: "Overview", link: Overview, icon: BarChart },
           {

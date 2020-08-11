@@ -8,6 +8,7 @@ import { relativeProvenanceData } from "./common/data/provenanceMocks.js";
 import MaterialTableWrapper from "./components/ProvenanceTable";
 import { TransitionGroup, CSSTransition } from "react-transition-group";
 import Home from "./pages/Home";
+import Study from "./pages/Study";
 import Upload from "./pages/Upload";
 import Overview from "./pages/Overview";
 import Export from "./pages/Export";
@@ -38,6 +39,7 @@ const Main = ({ location }) => {
           <section className="route-section">
             <Switch location={location}>
               <Route path="/Home" component={Home}></Route>
+              <Route path="/Study" component={Study}></Route>
               <Route path="/Upload" component={Upload}></Route>
               <Route path="/Overview" component={Overview}></Route>
               <Route path="/Table" component={Table}></Route>
