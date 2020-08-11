@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import styled from "styled-components";
 
 import { Route, Switch, withRouter } from "react-router-dom";
@@ -12,8 +12,25 @@ import Upload from "./pages/Upload";
 import Overview from "./pages/Overview";
 import Export from "./pages/Export";
 import Table from "./pages/Table";
+import {setupProvenance} from "./provenance/Provenance";
+import ProvenanceDataContext, { ProvenanceDataContextProvider } from "./components/ProvenanceDataContext";
+
+let provenanceCreated = false;
 
 const Main = ({ location }) => {
+  const {setSelectedTaskIds} = useContext(ProvenanceDataContext);
+
+  // Have to check so that we aren't creating a bunch of provenances.
+  // This is not the cleanest way of doing this obviously, so if there's a better location where we can access the ProvenanceDataContext, this should be moved.
+  if(!provenanceCreated)
+  {
+    setupProvenance({
+      selectedTaskFunction: setSelectedTaskIds
+    });
+
+    provenanceCreated = true;
+  }
+
   return (
     <Wrapper>
       <TransitionGroup className="transition-group">

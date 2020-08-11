@@ -8,7 +8,12 @@ import { performPrefixSpan, mysql_api } from "../fetchers/fetchMocks.js";
 import { useFetchAPIData } from "../hooks/hooks";
 import { ConsoleSqlOutlined } from "@ant-design/icons";
 
+import { Provenance } from "@visdesignlab/trrack";
+import { reState } from "../provenance/reVisitState";
+
+
 import eventData from "../common/data/provenance_events.json";
+import { provenance } from "../provenance/Provenance";
 
 const ProvenanceDataContext = React.createContext({});
 
@@ -213,7 +218,15 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   }, [allProvenanceData, selectedTaskIds]);
 
   function handleChangeSelectedTaskId(event) {
-    setSelectedTaskIds([event.target.value]);
+
+    console.log("handle happening");
+
+    let action = provenance.addAction("Changing selected task", (state: reState) => {
+      state.selectedTask = event.target.value;
+      return state;
+    })
+
+    action.applyAction();
   }
 
   return (
@@ -223,6 +236,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
         currentTaskData,
         taskStructure,
         handleChangeSelectedTaskId,
+        setSelectedTaskIds,
         selectedTaskIds,
         tasks,
         actions,
