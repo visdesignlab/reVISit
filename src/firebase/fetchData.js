@@ -190,9 +190,9 @@ function isValidParticipant(d) {
   );
 }
 
-async function fetchProvenance() {
-  return fetchDataForTaskId("task01");
-}
+//async function fetchProvenance() {
+//  return fetchDataForTaskId("task01");
+//}
 
 async function fetchResults() {
   let querySnapshot = await db.collection("study_participants").get();
@@ -250,7 +250,7 @@ async function fetchResults() {
 async function fetchDataForTaskId(taskId = "task01") {
   let ref;
 
-  ref = db.collection("provenance").orderBy("initialSetup").limit(300);
+  ref = db.collection("provenance").orderBy("initialSetup").limit(3);
   console.log(ref);
 
   ref.get().then((snapshot) => {
@@ -272,5 +272,60 @@ async function fetchDataForTaskId(taskId = "task01") {
     console.log("trimmed", trimmedData);
     console.log(data);
     return trimmedData;
+  });
+}
+
+export async function fetchProvenance() {
+  console.log("in fetch@");
+  paginate(0);
+}
+//fetchProvenance();
+
+async function paginate(i, lastDoc) {
+  let ref;
+
+  if (lastDoc) {
+    ref = db
+      .collection("provenance")
+      .orderBy("initialSetup")
+      .startAfter(lastDoc.data().initialSetup)
+      .limit(10);
+  } else {
+    ref = db.collection("provenance").orderBy("id").limit(30);
+  }
+
+  ref.get().then((snapshot) => {
+    // ...
+    let numDocs = snapshot.docs.length;
+    console.log("numDocs", numDocs);
+
+    let data = JSON.stringify(
+      snapshot.docs.map((d) => {
+        console.log("data", d);
+        return {
+          id: d.id,
+          data: d.data(),
+        };
+      })
+    );
+    //console.log("writing", d.id + ".json");
+    //fs.writeFileSync("val.json", data);
+    var writeData =
+      "text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
+
+    var a = document.createElement("a");
+    a.href = "data:" + writeData;
+    a.download = "data.json";
+    a.innerHTML = "download JSON";
+
+    var container = document.getElementById("container");
+    container.appendChild(a);
+
+    // Get the last document
+    let last = snapshot.docs[snapshot.docs.length - 1];
+
+    if (numDocs === 1000) {
+      paginate(i + 1, last);
+    }
   });
 }

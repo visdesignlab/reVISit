@@ -1,8 +1,9 @@
 //@ts-nocheck
 
-import React, { useState, forwardRef, useMemo } from "react";
+import React, { useState, useEffect, forwardRef, useMemo } from "react";
 import MaterialTable, {
-  MTableToolbar,
+  MTableGroupRow,
+  MTableBodyRow,
   MTableAction,
   MTableActions,
   MTableFilterRow,
@@ -33,11 +34,9 @@ import TagsInput from "react-tagsinput";
 import eventMapping from "./eventMapping";
 import TagStyles from "./tagstyles.module.css";
 import TagWrapper from "./reactTagWrapper";
-import { TimeFilter, CategoricalFilter } from "./TableFilters";
-import { fireFetch } from "../firebase/fetchData";
-import { CustomGroupRow } from "./GroupedRow";
-import data from "../common/data/provenance_summary.json";
-console.log("DATA HERE", data);
+import { QuantitativeFilter, CategoricalFilter } from "./TableFilters";
+
+import tableStyles from "./ProvenanceTable.module.css";
 //const trimmedPromise = fireFetch("provenance");
 /*trimmedPromise.then((promise) => {
   console.log(promise);
@@ -67,13 +66,41 @@ const tableIcons: Icons = {
   ViewColumn: forwardRef((props, ref) => <ViewColumn {...props} ref={ref} />),
 };
 
+const RowRenderWrapper = (props) => {
+  useEffect(() => {
+    console.log("Loaded!@");
+    props.setIsLoading(false);
+  });
+
+  return <MTableBodyRow {...props} />;
+};
+const GroupRowWrapper = (props) => {
+  let newerProps = Object.assign({}, props);
+  const handleRowExpansion = (_props) => {
+    console.log("clicked group roew!", _props, "new", _props.setIsLoading);
+    //props.setIsLoading(true);
+    props.onGroupExpandChanged(_props);
+    // expand group row
+  };
+  newerProps.onGroupExpandChanged = (tempProps) => {
+    handleRowExpansion(tempProps); //handleRowExpansion;
+  };
+  return <MTableGroupRow {...newerProps}></MTableGroupRow>;
+};
+
 // import data
 const width = 200;
 const MaterialTableWrapper = ({ provenanceData }) => {
+  const handleColumnDrag = (index, dest) => {
+    console.log("column drag", index, dest);
+  };
+  const handleOrderChange = (columnId, colDirection) => {
+    console.log("order changed", columnId, colDirection);
+  };
   console.log("in Table", provenanceData);
   const [checkedTags, setCheckedTags] = React.useState([]);
   const [rerender, setRerender] = React.useState(false);
-
+  const [isLoading, setIsLoading] = React.useState(true);
   const [userIdColumnDefinition, setUserIdColumnDefinition] = useState(
     renderUserIdColumn(provenanceData, 100)
   );
@@ -109,7 +136,39 @@ const MaterialTableWrapper = ({ provenanceData }) => {
   return (
     <MaterialTable
       title={"Provenance Table"}
+      isLoading={isLoading}
+      onColumnDragged={handleColumnDrag}
+      onOrderChange={(val1, val2) => handleOrderChange(val1, val2)}
       components={{
+        OverlayLoading: (propss) => {
+          return (
+            <div
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                height: "100%",
+                width: "100%",
+                zIndex: 11,
+              }}>
+              <div className={tableStyles["spin"]}></div>
+            </div>
+          );
+        },
+        GroupRow: (props) => {
+          return (
+            <GroupRowWrapper
+              setIsLoading={setIsLoading}
+              {...props}></GroupRowWrapper>
+          );
+        },
+        Row: (props) => {
+          return (
+            <RowRenderWrapper
+              setIsLoading={setIsLoading}
+              {...props}></RowRenderWrapper>
+          );
+        },
         Actions: (props) => {
           return (
             <div
@@ -138,13 +197,7 @@ const MaterialTableWrapper = ({ provenanceData }) => {
               background: "white",
             },
           };
-          console.log("FILTER PROPS", props);
           return <MTableFilterRow styles={styles} {...props}></MTableFilterRow>;
-        },
-        GroupRow: (props) => {
-          //const groupedData;
-          //<MTableFilterRow styles={styles} {...props}></MTableFilterRow>
-          return <div></div>;
         },
       }}
       columns={[
@@ -361,7 +414,7 @@ function renderAccuracyCell(rowData, accuracyScale) {
   return (
     <svg width={100} height={20}>
       <rect
-        x={accuracyScale(rowData?.answer.accuracy)}
+        x={accuracyScale(rowData.answer.accuracy)}
         width={20}
         height={20}></rect>
     </svg>
@@ -444,12 +497,12 @@ function renderTimeColumn(currentProvenanceData, columnWidth) {
     },
 
     filterComponent: (props) => (
-      <TimeFilter
+      <QuantitativeFilter
         {...props}
         xScale={timeScale}
         data={currentProvenanceData.map(
           (graph) => graph.totalTime
-        )}></TimeFilter>
+        )}></QuantitativeFilter>
     ),
   };
 }

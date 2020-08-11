@@ -48,6 +48,23 @@ export const ProvenanceDataContextProvider = ({ children }) => {
 
    let [data,setData] = useState();
 
+   function handleProvenanceNodeClick(id) {
+    console.log("dywootto handle provenance node click", id);
+
+    // hardcoded data for now. ideally, we'll have the event id to be able to select on.
+    const taskId = "S-task01";
+    const participantId = "545d6768fdf99b7f9fca24e3";
+    const taskNumber = 1;
+    // select all of that provenance graph.
+    const promise = mysql_api(`/actions/${participantId}/${taskId}`);
+    promise.then((resolved) => {
+      console.log("resolvedclick", resolved);
+
+      // rehydrate provenance graph
+      // render vis using that provenance graph
+    });
+  }
+
   // useEffect(() => {
 
 
@@ -130,7 +147,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   //   if (actionSummary){
   //     actionSummary.map(e => { sequences[e.actionID] = { sequences: e.sequences } });
   //   return await performPrefixSpan(sequences);
-  //   } 
+  //   }
   // }, [actionSummary]);
 
   // const [isLoading, isError, dataFromServer] = useFetchAPIData(async () => {
@@ -170,9 +187,9 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   //State 
   let [taskSort, setTaskSort] = useState('name');
 
-
-  const [allProvenanceData, setAllProvenanceData] = useState(() => processRawProvenanceData(initProvData));
-
+  const [allProvenanceData, setAllProvenanceData] = useState(() =>
+    processRawProvenanceData(initProvData)
+  );
 
   const [selectedTaskIds, setSelectedTaskIds] = React.useState(["S-task01"]);
 
@@ -180,7 +197,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   let currentTaskData = React.useMemo(() => {
     let internalTaskData = [];
 
-    selectedTaskIds.map(selectedTaskId => {
+    selectedTaskIds.map((selectedTaskId) => {
       allProvenanceData.forEach((participant) => {
         const newObj = Object.assign(
           { id: participant.id },
@@ -202,10 +219,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
           internalTaskData.push(newObj);
         }
       });
-
-    })
-
-
+    });
 
     return internalTaskData;
   }, [allProvenanceData, selectedTaskIds]);
@@ -213,7 +227,6 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   function handleChangeSelectedTaskId(event) {
     setSelectedTaskIds([event.target.value]);
   }
-
 
   return (
     <ProvenanceDataContext.Provider
@@ -229,7 +242,6 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     </ProvenanceDataContext.Provider>
   );
 };
-
 
 function calculateRelativeProvGraph(taskPerformance, maxTime) {
   let totalTime =
@@ -256,23 +268,28 @@ function calculateRelativeProvGraph(taskPerformance, maxTime) {
   return taskPerformance;
 }
 function processRawProvenanceData(unrelativeProvenanceData) {
-
-  //remove element with no data 
-  unrelativeProvenanceData = unrelativeProvenanceData.filter(d => Object.keys(d.data).length > 0);
+  //remove element with no data
+  unrelativeProvenanceData = unrelativeProvenanceData.filter(
+    (d) => Object.keys(d.data).length > 0
+  );
 
   //remove elements with no, or messed up provenance (more than one started prov event)
-  unrelativeProvenanceData = unrelativeProvenanceData.filter(d => {
-    let tasks = Object.keys(d.data).filter(t => t.includes('task'));
+  unrelativeProvenanceData = unrelativeProvenanceData.filter((d) => {
+    let tasks = Object.keys(d.data).filter((t) => t.includes("task"));
 
     return tasks.reduce((acc, task) => {
       if (!d.data[task].provenance) {
-        //participant has no provenance for a certain task. 
-        return false
+        //participant has no provenance for a certain task.
+        return false;
       } else {
-        //element has more than on 'startedProvenance' event in the same task. 
-        return acc && (d.data[task].provenance.filter(p => p.event == 'startedProvenance').length == 1)
+        //element has more than on 'startedProvenance' event in the same task.
+        return (
+          acc &&
+          d.data[task].provenance.filter((p) => p.event == "startedProvenance")
+            .length == 1
+        );
       }
-    }, true)
+    }, true);
   });
 
   // console.trace('calling process Raw prov data')
@@ -295,7 +312,7 @@ function processRawProvenanceData(unrelativeProvenanceData) {
     "S-task16",
   ];
 
-  const relativeProvenanceData = _.cloneDeep(unrelativeProvenanceData)
+  const relativeProvenanceData = _.cloneDeep(unrelativeProvenanceData);
 
   taskIds.forEach((taskId) => {
     let longestTimeForTask = d3.max(unrelativeProvenanceData, (participant) => {
@@ -318,17 +335,14 @@ function processRawProvenanceData(unrelativeProvenanceData) {
           participant.data[taskId],
           longestTimeForTask
         );
-        //create id field in each provenance event (that doesn't change with edits) 
-        participant.data[taskId].provenance.map(p => p.id = p.event);
-
+        //create id field in each provenance event (that doesn't change with edits)
+        participant.data[taskId].provenance.map((p) => (p.id = p.event));
       } else {
         delete relativeProvenanceData[index][taskId];
         // console.log("NO DATA", relativeProvenanceData[index], taskId);
       }
     });
   });
-
-
 
   return relativeProvenanceData;
 }

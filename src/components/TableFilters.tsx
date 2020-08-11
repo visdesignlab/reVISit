@@ -14,27 +14,24 @@ function obtainItemCounts(arr) {
   }
   return occurrences;
 }
-export const CategoricalFilter = ({
-  data,
-  width,
-  scale,
-  labels,
-  columnDef,
-  onFilterChanged,
-}) => {
+export const CategoricalFilter = (props) => {
+  const { data, width, scale, labels, onFilter = () => {} } = props;
   const occurrences = useMemo(() => obtainItemCounts(data), [data]);
   // search through data for all states
-  const [currentFilter, setCurrentFilter] = useState(Object.keys(occurrences));
+  const [currentFilter, setCurrentFilterInternal] = useState(
+    Object.keys(occurrences)
+  );
   const height = 20;
   const fullHeight = 20 + 15;
   const maxOccurance = Object.values(occurrences).reduce((a, b) =>
     a > b ? a : b
   );
   const yScale = d3.scaleLinear().domain([0, maxOccurance]).range([0, height]);
-  useEffect(() => {
-    onFilterChanged(columnDef.tableData.id, currentFilter);
-  }, [currentFilter]);
-
+  function setCurrentFilter(currentValues) {
+    console.log(currentValues);
+    onFilter(currentValues);
+    setCurrentFilterInternal(currentValues);
+  }
   return (
     <svg width={width} height={fullHeight}>
       {Object.entries(occurrences).map(([key, value], index) => {
@@ -95,7 +92,7 @@ export const Histogram = ({ data, width, height }) => {
 
   // the scale
   let x = d3.scaleLinear().range([0, width - 10]);
-  let y = d3.scaleLinear().range([height - 2, 0]);
+  let y = d3.scaleLinear().range([height, 0]);
   let niceX = d3.scaleLinear().range([0, width]).domain([0, max]).nice();
   const binner = d3.histogram().domain(niceX.domain());
   const buckets = binner(data);
@@ -201,14 +198,18 @@ const BrushableHistogram = ({ data, xScale, setMinimum, setMaximum }) => {
   );
 };
 
-export const TimeFilter = ({ data, xScale, columnDef, onFilterChanged }) => {
+export const QuantitativeFilter = ({
+  data,
+  xScale,
+  onFilter = (val) => {},
+}) => {
   console.log("new Time Filter");
   const [minimum, setMinimum] = useState(d3.min(data));
   const [maximum, setMaximum] = useState(d3.max(data));
   const debouncedMin = useDebounce(minimum, 100);
   const debouncedMax = useDebounce(maximum, 100);
   useEffect(() => {
-    onFilterChanged(columnDef.tableData.id, [debouncedMin, debouncedMax]);
+    onFilter({ filterMin: debouncedMin, filterMax: debouncedMax });
   }, [debouncedMin, debouncedMax]);
   return (
     <BrushableHistogram
