@@ -12,17 +12,32 @@ const TableDataLoader = (props) => {
   const { currentTaskData, handleProvenanceNodeClick } = useContext(
     ProvenanceDataContext
   );
+  const [tableSchema, setTableSchema] = useState(null);
 
   let [isLoading, isError, schemaFromServer] = useFetchAPIData(async () => {
     return await getSchema("Performance");
   }, []);
-  console.log(isLoading, isError, schemaFromServer);
+  useEffect(() => {
+    let tableSchema = schemaFromServer;
+    if (tableSchema) {
+      // append the provenance sequence nodes onto the end of performance schema
+      tableSchema = tableSchema.concat({
+        COLUMN_NAME: "sequence",
+        DATA_TYPE: "provenance",
+        ORDINAL_POSITION: schemaFromServer.length,
+      });
+    }
+
+    setTableSchema(tableSchema);
+  }, [schemaFromServer]);
+  console.log(isLoading, isError, "table schema", tableSchema);
 
   const metricsSchema = false;
-  const dependenciesLoaded = !!(currentTaskData.length > 0 && metricsSchema);
+  const dependenciesLoaded = !!(currentTaskData.length > 0 && tableSchema);
   return dependenciesLoaded ? (
     <DevTable
       provenanceData={currentTaskData}
+      tableSchema={tableSchema}
       handleProvenanceNodeClick={handleProvenanceNodeClick}></DevTable>
   ) : (
     <div>
