@@ -34,17 +34,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     { name: "Task 16", key: "S-task16" },
   ];
 
-  //Data
-  // let [tasks, setTasks] = useState()
-  // let [conditions, setConditions] = useState()
-  // let [actions, setActions] = useState()
-  // let [events, setEvents] = useState()
-  // let [study, setStudy] = useState()
-  // let [actionSummary, setActionSummary] = useState()
-  // let [metrics, setMetrics] = useState()
-  // let [participants, setParticipants] = useState()
 
-  // let [patterns, setPatterns] = useState()
 
    let [data,setData] = useState();
 
@@ -64,73 +54,6 @@ export const ProvenanceDataContextProvider = ({ children }) => {
       // render vis using that provenance graph
     });
   }
-
-  // useEffect(() => {
-
-
-  //   //function that makes the initial calls to the MySQL database and sets up the basic state
-  //   async function setUp() {
-
-  //     let serverRequest;
-
-  //     let metrics = ['accuracy', 'time', 'confidence', 'difficulty'];
-
-  //     serverRequest = await mysql_api('/conditions', {});
-  //     setConditions(serverRequest.data);
-
-  //     serverRequest = await mysql_api('/table', { table: 'Tasks' });
-  //     setTasks(serverRequest.data);
-
-  //     serverRequest = await mysql_api('/table', { table: 'Study' });
-  //     setEvents(serverRequest.data);
-
-  //     //query api for action counts per task and condition
-  //     serverRequest = await mysql_api('/actions', { 'groupBy': ['taskID', 'condition'] });
-  //     // serverRequest = await mysql_api('/table/stats', { 'table': 'Actions', 'metrics': ['actionID'], 'groupBy': ['taskID', 'condition'] });
-  //     setActions(serverRequest.data)
-
-  //     // serverRequest = await mysql_api('/actions', { 'groupBy': ['condition'] });
-  //     // let data = serverRequest.data;
-  //     // let uniqueActions = [... new Set(data.map(d => d.actionID))];
-  //     // let actionSummary = uniqueActions.map(actionID => {
-  //     //   let obj = { actionID: actionID, type: 'native', conditions: {}, visible: true };
-  //     //   let rows = data.filter(d => d.actionID == actionID);
-  //     //   let totalCount = 0;
-  //     //   rows.map(row => {
-  //     //     totalCount = totalCount + row.count;
-  //     //     obj['label'] = row.label;
-  //     //     obj.conditions[row.condition] = row.count;
-  //     //   })
-  //     //   obj['count'] = totalCount;
-  //     //   return obj
-  //     // })
-
-  //     // setActionSummary(actionSummary)
-    
-
-  //     //query api for average metrics (grouped by task and condition) and compute histogram distributions
-  //     serverRequest = await mysql_api('/table/stats', { 'table': 'Performance', 'metrics': metrics, 'groupBy': ['taskID', 'condition'] });
-  //     setMetrics(serverRequest.data)
-
-  //     //query api for average metrics (grouped by task and condition) and compute histogram distributions
-  //     serverRequest = await mysql_api('/table/stats', { 'table': 'Study', 'metrics': ['duration'], 'groupBy': ['eventID', 'condition'], 'commonScale': false });
-  //     setStudy(serverRequest.data)
-
-  //     //get participantSchema
-  //     serverRequest = await mysql_api('/table/schema', { 'table': 'Participants' });
-  //     let cols = serverRequest.data
-
-  //     // console.log('cols are ', cols)
-  //     //query api for average participant metrics and compute histogram distributions
-  //     serverRequest = await mysql_api('/table/stats', { 'table': 'Participants', 'metrics': cols.filter(c => c.COLUMN_NAME !== 'id' && c.COLUMN_NAME !== 'participantID').map(c => c.COLUMN_NAME) });
-  //     setParticipants(serverRequest.data)
-  //   }
-
-  //   setUp();
-
-
-  // }, [])
-
     // get initial data from server;
     let [isLoading, isError, dataFromServer] = useFetchAPIData(async () => {
       return await getDataFromServer();

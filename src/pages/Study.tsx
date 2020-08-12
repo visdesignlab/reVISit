@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useState, useEffect, useContext} from "react";
 import { makeStyles, createStyles, Theme } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
 import CardActions from '@material-ui/core/CardActions';
@@ -62,145 +62,7 @@ function scale(width, maxValue) {
 }
 
 let xDomain, yDomain, categories;
-function eventMap(data, size = { width: 130, height: 30 }) {
-    // console.log('data', data, label)
-    let width = size.width;
-    let height = size.height;
 
-    // let barHeight = 20;
-    let barPadding = 2;
-    //compute scale for data; 
-    // let xDomain = d3.extent(data, d => d.elapsedTime);
-    // let yDomain = d3.extent(data, d => d.level);
-    // let colors = ["rgb(96, 201, 110)", "rgb(0, 191, 128)", "rgb(0, 180, 147)", "rgb(0, 167, 165)", "rgb(0, 153, 179)", "rgb(0, 138, 188)", "rgb(0, 122, 189)", "rgb(0, 104, 182)", "rgb(42, 85, 168)", "rgb(77, 65, 147)"]
-    let colors = ["rgb(0, 153, 179)", "rgb(0, 138, 188)", "rgb(0, 122, 189)", "rgb(0, 104, 182)", "rgb(42, 85, 168)", "rgb(77, 65, 147)"]
-    // let colors = [ "#e6f598", "#abdda4", "#66c2a5", "#3288bd", "#5e4fa2", "#9e0142", "#d53e4f", "#f46d43", "#fdae61","#fee08b", "#ffffbf", ]
-    let barHeight = 15
-
-    let xScale = d3.scaleLinear().domain([0, xDomain[1]]).range([0, width - 40])
-    let yScale = d3.scaleLinear().domain(yDomain).range([height, 0])
-    let accuracyScale = d3.scaleLinear().domain([0, 1]).range(["#f46d43", "#66c2a5"]) // "#3288bd"
-    // let colorScale = d3.scaleOrdinal(d3.schemeTableau10).domain(categories);
-    let colorScale = d3.scaleOrdinal(colors).domain(categories);
-
-
-    // idealPos: The most preferred position for each label
-    // width:    The width of each label
-
-
-    // d3.interpolatePRGn
-    // console.log(xScale.domain(), xScale.range())
-    let maxTime = Math.max(...data.map(d => d.elapsedTime + d.duration))
-    let studyStart = data.find(d => d.eventID == 'study').elapsedTime
-    let axisHeight = yScale.range()[0] + barHeight + 3
-
-    let phases = data.filter(d => d.level == 0)
-
-    var renderer = new labella.Renderer({
-        layerGap: 15,
-        nodeHeight: 8,
-        direction: 'up'
-    });
-
-
-    var nodes = data.filter(d => d.eventID == 'task' && d.category == 'Study').map(d =>
-        new labella.Node(xScale(d.elapsedTime + d.duration/2), 70, d)
-    )
-
-    let options = {
-        minPos: 0, maxPos: Math.max(xScale(maxTime)+80,800), lineSpacing: 2, nodeSpacing: 3, algorithm: 'overlap',
-        density: '.75', stubWidth: 5
-    }
-    var force = new labella.Force(options)
-        .nodes(nodes)
-        .compute();
-
-    renderer.layout(nodes);
-
-
-    // console.log('node x positions')
-    //     console.log(nodes.map(n=>n.x))
-
-
-    return (
-        <svg width={width} height={200} >
-            {/* add axis */}
-            {/* {console.log(data.map(d=>d.elapsedTime), Math.max(...data.map(d=>d.elapsedTime)))} */}
-            <g style={{"transform":"translate(0px, 100px)"}}>
-                <line x1={0} y1={axisHeight} x2={xScale(maxTime) + 5} y2={axisHeight} style={{ "stroke": "rgb(0,0,0,0.25)", "strokeWidth": 1 }}></line>
-                {data.map((d, i) => {
-                    let rectWidth = (xScale(d.duration) > 5 && d.eventID == 'task') ? xScale(d.duration) - barPadding : xScale(d.duration)
-                    return <React.Fragment key={d.participantID + '_' + Math.random()}>
-                        <Tooltip title={(d.eventID == 'task' ? d.taskID : d.eventID) + " [" + d.duration + ' / ' + d.accuracy + "]"}>
-                            <rect className='count' key={'d_' + d.eventID + '_' + d.elapsedTime} style={{ fill: (d.eventID == 'task' ? 'rgba(171,171,171,0.5)' : d.eventID == 'browse away'  ? 'black'  : colorScale(d.category)), opacity: (d.eventID == 'browse away' ? .4 :.8) , 'rx':(d.eventID == 'browse away' ? 3 : 0) }} // "rgb(93, 131, 210)"
-                                x={xScale(d.elapsedTime) + barPadding}
-                                y={yScale(d.level)}
-                                width={rectWidth}
-                                height={barHeight}></rect>
-                        </Tooltip>
-                       
-                        {/* {d.eventID == 'task' && d.category == 'Study' ?
-                        <text
-                            style={{ fontSize: "1em", textAnchor: "start", fill: 'rgb(90,90,90)' }}
-                            x={xScale(d.elapsedTime)}
-                            y={i % 2 === 0 ? yScale(d.level) - 5 : yScale(d.level) - 15}>
-                            {" "}
-                            {d.taskID}{" "}
-                        </text> : <></>
-                    } */}
-                     
-                    </React.Fragment>
-                }
-                
-                )}
-                   {nodes.map(n =><>
-                    <line x1={xScale(n.data.elapsedTime + n.data.duration/2)} y1={yScale(n.data.level)} x2={xScale(n.data.elapsedTime + n.data.duration/2)} y2={n.dy-8} style={{ stroke:"rgba(171,171,171,.8)",strokeWidth:'2px', strokeDasharray:'2px'}}></line>
-                    <path style={{fill:'none',stroke:"rgba(171,171,171,.8)",strokeWidth:'2px', strokeDasharray:'2px'}}
-                className="polymorph"
-                d={renderer.generatePath(n)}
-                        /><rect className='count' key={'background_' + n.data.eventID} style={{ fill: 'rgba(240,240,240)' }}
-                        x={n.x - n.dx / 2 }
-                        y={n.y - 10}
-
-                        width={58}
-                        height={12}></rect>
-
-                            <text
-                                style={{ fontSize: ".75em", textAnchor: "start", fill: 'rgb(90,90,90)' }}
-                                x={n.x - n.dx / 2}
-                                y={n.y}>
-                                {" "}
-                                {n.data.taskID}{" "}
-                            </text>
-                            <rect className='count' key={'d_' + n.data.eventID} style={{ fill: accuracyScale(n.data.accuracy), opacity: 1 }}
-                            x={n.x - n.dx / 2 -8}
-                            y={n.y-10}
-
-                            width={n.data.eventID == 'task' ? 6 : 0}
-                            height={12}></rect>
-                            </>
-                        )}
-                {phases.map(p =>
-                    <text
-                        style={{ fontSize: "1em", textAnchor: "start", fill: 'rgb(90,90,90)' }}
-                        x={xScale(p.elapsedTime)}
-                        y={axisHeight + 15}>
-                        {" "}
-                        {p.label}{" "}
-                    </text>
-                )}
-                <text
-                    style={{ fontSize: "1em", textAnchor: "start", fill: 'rgb(90,90,90)' }}
-                    x={xScale(maxTime) + 5}
-                    y={axisHeight - 5}>
-                    {" "}
-                    {Math.round(maxTime) + ' min'}{" "}
-                </text>
-
-
-            </g>
-        </svg>)
-}
 
 
 
@@ -208,7 +70,163 @@ export default function StudyCard() {
     const classes = useStyles();
     const bull = <span className={classes.bullet}>•</span>;
 
+    function eventMap(data, size = { width: 130, height: 30 }) {
+        let width = size.width;
+        let height = size.height;
+
+        // let barHeight = 20;
+        let barPadding = 2;
+        //compute scale for data; 
+        // let xDomain = d3.extent(data, d => d.elapsedTime);
+        // let yDomain = d3.extent(data, d => d.level);
+        // let colors = ["rgb(96, 201, 110)", "rgb(0, 191, 128)", "rgb(0, 180, 147)", "rgb(0, 167, 165)", "rgb(0, 153, 179)", "rgb(0, 138, 188)", "rgb(0, 122, 189)", "rgb(0, 104, 182)", "rgb(42, 85, 168)", "rgb(77, 65, 147)"]
+        let colors = ["rgb(0, 153, 179)", "rgb(0, 138, 188)", "rgb(0, 122, 189)", "rgb(0, 104, 182)", "rgb(42, 85, 168)", "rgb(77, 65, 147)"]
+        // let colors = [ "#e6f598", "#abdda4", "#66c2a5", "#3288bd", "#5e4fa2", "#9e0142", "#d53e4f", "#f46d43", "#fdae61","#fee08b", "#ffffbf", ]
+        let barHeight = 15
+    
+        let xScale = d3.scaleLinear().domain([0, xDomain[1]]).range([0, width - 40])
+        let yScale = d3.scaleLinear().domain(yDomain).range([height, 0])
+        let accuracyScale = d3.scaleLinear().domain([0, 1]).range(["#f46d43", "#66c2a5"]) // "#3288bd"
+        // let colorScale = d3.scaleOrdinal(d3.schemeTableau10).domain(categories);
+        let colorScale = d3.scaleOrdinal(colors).domain(categories);
+        
+        let color = function(d){
+            return (d.eventID == 'task' ? 'rgba(171,171,171,0.5)' : d.eventID == 'browse away'  ? 'black'  : colorScale(d.category))
+        }
+
+        let hoverFill = function(d){
+            return (d.uniqueID == hoveredElement ? '#ff5800' : 'rgba(171, 171, 171, 0.5)')
+        }
+    
+        // idealPos: The most preferred position for each label
+        // width:    The width of each label
+    
+    
+        // d3.interpolatePRGn
+        // console.log(xScale.domain(), xScale.range())
+        let maxTime = Math.max(...data.map(d => d.elapsedTime + d.duration))
+        let studyStart = data.find(d => d.eventID == 'study').elapsedTime
+        let axisHeight = yScale.range()[0] + barHeight + 3
+    
+        let phases = data.filter(d => d.level == 0)
+    
+        var renderer = new labella.Renderer({
+            layerGap: 25,
+            nodeHeight: 8,
+            direction: 'up'
+        });
+    
+    
+        var nodes = data.filter(d => d.eventID == 'task' && d.category == 'Study').map(d =>
+            new labella.Node(xScale(d.elapsedTime + d.duration/2), 70, d)
+        )
+    
+        let options = {
+            minPos: 0, maxPos: Math.max(xScale(maxTime)+80,800), lineSpacing: 2, nodeSpacing: 3, algorithm: 'overlap',
+            density: '.75', stubWidth: 5
+        }
+        var force = new labella.Force(options)
+            .nodes(nodes)
+            .compute();
+    
+        renderer.layout(nodes);
+    
+    
+        // console.log('node x positions')
+        //     console.log(nodes.map(n=>n.x))
+    
+    
+        return (
+            <svg width={width} height={200} >
+                {/* add axis */}
+                {/* {console.log(data.map(d=>d.elapsedTime), Math.max(...data.map(d=>d.elapsedTime)))} */}
+                <g style={{"transform":"translate(0px, 100px)"}}>
+                    <line x1={0} y1={axisHeight} x2={xScale(maxTime) + 5} y2={axisHeight} style={{ "stroke": "rgb(0,0,0,0.25)", "strokeWidth": 1 }}></line>
+                    {data.map((d, i) => {
+                        let rectWidth = (xScale(d.duration) > 5 && d.eventID == 'task') ? xScale(d.duration) - barPadding : xScale(d.duration)
+                        return <React.Fragment key={d.participantID + '_' + Math.random()}>
+                            {/* <Tooltip title={(d.eventID == 'task' ? d.taskID : d.eventID) + " [" + d.duration + ' / ' + d.accuracy + "]"}> */}
+                                <rect className='count' key={'d_' + d.eventID + '_' + d.elapsedTime}  onMouseOver={()=>hovered(d)}  onMouseOut={()=>setHovered(undefined)}  style={{ fill: color(d), opacity: (d.eventID == 'browse away' ? .4 :.8) , 'rx':(d.eventID == 'browse away' ? 3 : 0) }} // "rgb(93, 131, 210)"
+                                    x={xScale(d.elapsedTime) + barPadding}
+                                    y={yScale(d.level)}
+                                    width={rectWidth}
+                                    height={barHeight}></rect>
+                            {/* </Tooltip> */}
+                         
+                        </React.Fragment>
+                    }
+                    
+                    )}
+                       {nodes.map(n =><>
+                        <line x1={xScale(n.data.elapsedTime + n.data.duration/2)} y1={yScale(n.data.level)} x2={xScale(n.data.elapsedTime + n.data.duration/2)} y2={n.dy-8} style={{ stroke:hoverFill(n.data),strokeWidth:'2px', strokeDasharray:'2px'}}></line>
+                        <path style={{fill:'none',stroke:hoverFill(n.data),strokeWidth:'2px', strokeDasharray:'2px'}}
+                    className="polymorph"
+                    d={renderer.generatePath(n)}
+                            /><rect className='count' key={'background_' + n.data.eventID} style={{ fill:'rgba(171,171,171,.5)' , stroke:hoverFill(n.data), strokeWidth:'1px',}}
+                            x={n.x - n.dx / 2 }
+                            y={n.y - 10}
+    
+                            width={58}
+                            height={12}></rect>
+    
+                                <text
+                                    style={{ fontSize: ".75em", textAnchor: "start", fill: 'rgb(90,90,90)' }}
+                                    x={n.x - n.dx / 2}
+                                    y={n.y}>
+                                    {" "}
+                                    {n.data.taskID}{" "}
+                                </text>
+                                <rect className='count' key={'d_' + n.data.eventID} style={{ fill: accuracyScale(n.data.accuracy),  opacity: 1 }}
+                                x={n.x - n.dx / 2 -8}
+                                y={n.y-10}
+    
+                                width={n.data.eventID == 'task' ? 6 : 0}
+                                height={12}></rect>
+                                </>
+                            )}
+                    {phases.map(p =>
+                        <text
+                            style={{ fontSize: "1em", textAnchor: "start", fill: 'rgb(90,90,90)' }}
+                            x={xScale(p.elapsedTime)}
+                            y={axisHeight + 15}>
+                            {" "}
+                            {p.label}{" "}
+                        </text>
+                    )}
+                    <text
+                        style={{ fontSize: "1em", textAnchor: "start", fill: 'rgb(90,90,90)' }}
+                        x={xScale(maxTime) + 5}
+                        y={axisHeight - 5}>
+                        {" "}
+                        {Math.round(maxTime) + ' min'}{" "}
+                    </text>
+    
+    
+                </g>
+            </svg>)
+    }
+
+    function hovered(d){
+        if (hoveredElement !== d.uniqueID){
+            setHovered(d.uniqueID)
+        }
+     
+    }
     const { data } = useContext(ProvenanceDataContext);
+
+    useEffect(() => {
+        if (data) {
+            participants = data.participants
+            participants.map(p => {
+                p.study.map(d => {
+                    d.uniqueID = d.eventID + '_' + Math.random()
+                })
+            })
+        }
+
+    }, [data])
+
+    let [hoveredElement, setHovered] = useState();
 
     let participants, conditionGroups;
     if (data) {
@@ -223,6 +241,8 @@ export default function StudyCard() {
         // console.log(yDomain)
         conditionGroups = groupBy(participants, 'condition');
     }
+
+
     // })
     let colorScale = d3.scaleLinear()
         // .domain(d3.extent(allCounts))
@@ -231,9 +251,9 @@ export default function StudyCard() {
 
     //Only render when all API calls have returned 
     let ready = data;
-    if (ready) {
-        console.log(data)
-    }
+    // if (ready) {
+    //     // console.log(data)
+    // }
     // console.log('events', eventGroups)
     return (ready == undefined ? <></> : <React.Fragment key={'events'}>
         <Box m={2} style={{ display: 'inline-block' }} >
@@ -259,7 +279,7 @@ export default function StudyCard() {
 
                                         <Divider />
 
-                                        {conditionGroups[cond].slice(0, 30).map(participant => {
+                                        {conditionGroups[cond].slice(0, 5).map(participant => {
                                             return <>
                                                 <Grid key={participant.participantID} item>
                                                     <Box borderBottom={1} boxShadow={0} p={1} style={{ borderColor: 'rgba(171, 171, 171, 0.5)' }}>
