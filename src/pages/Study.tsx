@@ -104,11 +104,11 @@ function eventMap(data, size = { width: 130, height: 30 }) {
 
 
     var nodes = data.filter(d => d.eventID == 'task' && d.category == 'Study').map(d =>
-        new labella.Node(xScale(d.elapsedTime), 70, d)
+        new labella.Node(xScale(d.elapsedTime + d.duration/2), 70, d)
     )
 
     let options = {
-        minPos: 0, maxPos: xScale(maxTime)+80, lineSpacing: 2, nodeSpacing: 3, algorithm: 'overlap',
+        minPos: 0, maxPos: Math.max(xScale(maxTime)+80,800), lineSpacing: 2, nodeSpacing: 3, algorithm: 'overlap',
         density: '.75', stubWidth: 5
     }
     var force = new labella.Force(options)
@@ -129,10 +129,10 @@ function eventMap(data, size = { width: 130, height: 30 }) {
             <g style={{"transform":"translate(0px, 100px)"}}>
                 <line x1={0} y1={axisHeight} x2={xScale(maxTime) + 5} y2={axisHeight} style={{ "stroke": "rgb(0,0,0,0.25)", "strokeWidth": 1 }}></line>
                 {data.map((d, i) => {
-                    let rectWidth = xScale(d.duration) > 5 ? xScale(d.duration) - barPadding : xScale(d.duration)
+                    let rectWidth = (xScale(d.duration) > 5 && d.eventID == 'task') ? xScale(d.duration) - barPadding : xScale(d.duration)
                     return <React.Fragment key={d.participantID + '_' + Math.random()}>
                         <Tooltip title={(d.eventID == 'task' ? d.taskID : d.eventID) + " [" + d.duration + ' / ' + d.accuracy + "]"}>
-                            <rect className='count' key={'d_' + d.eventID + '_' + d.elapsedTime} style={{ fill: (d.eventID == 'task' ? 'rgba(171,171,171,0.5)' : colorScale(d.category)), opacity: .8 }} // "rgb(93, 131, 210)"
+                            <rect className='count' key={'d_' + d.eventID + '_' + d.elapsedTime} style={{ fill: (d.eventID == 'task' ? 'rgba(171,171,171,0.5)' : d.eventID == 'browse away'  ? 'black'  : colorScale(d.category)), opacity: (d.eventID == 'browse away' ? .4 :.8) , 'rx':(d.eventID == 'browse away' ? 3 : 0) }} // "rgb(93, 131, 210)"
                                 x={xScale(d.elapsedTime) + barPadding}
                                 y={yScale(d.level)}
                                 width={rectWidth}
@@ -154,24 +154,30 @@ function eventMap(data, size = { width: 130, height: 30 }) {
                 
                 )}
                    {nodes.map(n =><>
-                    <line x1={xScale(n.data.elapsedTime)} y1={yScale(n.data.level)} x2={xScale(n.data.elapsedTime)} y2={n.dy-8} style={{ "stroke": "rgba(171,171,171,.5)", "strokeWidth": 2 }}></line>
-                    <path style={{fill:'none',stroke:"rgba(171,171,171,.5)",strokeWidth:'2px'}}
+                    <line x1={xScale(n.data.elapsedTime + n.data.duration/2)} y1={yScale(n.data.level)} x2={xScale(n.data.elapsedTime + n.data.duration/2)} y2={n.dy-8} style={{ stroke:"rgba(171,171,171,.8)",strokeWidth:'2px', strokeDasharray:'2px'}}></line>
+                    <path style={{fill:'none',stroke:"rgba(171,171,171,.8)",strokeWidth:'2px', strokeDasharray:'2px'}}
                 className="polymorph"
                 d={renderer.generatePath(n)}
-                        />
+                        /><rect className='count' key={'background_' + n.data.eventID} style={{ fill: 'rgba(240,240,240)' }}
+                        x={n.x - n.dx / 2 }
+                        y={n.y - 10}
+
+                        width={58}
+                        height={12}></rect>
+
                             <text
-                                style={{ fontSize: "1em", textAnchor: "start", fill: 'rgb(90,90,90)' }}
+                                style={{ fontSize: ".75em", textAnchor: "start", fill: 'rgb(90,90,90)' }}
                                 x={n.x - n.dx / 2}
                                 y={n.y}>
                                 {" "}
                                 {n.data.taskID}{" "}
                             </text>
                             <rect className='count' key={'d_' + n.data.eventID} style={{ fill: accuracyScale(n.data.accuracy), opacity: 1 }}
-                            x={n.x - n.dx / 2 -10}
+                            x={n.x - n.dx / 2 -8}
                             y={n.y-10}
 
-                            width={n.data.eventID == 'task' ? 8 : 0}
-                            height={8}></rect>
+                            width={n.data.eventID == 'task' ? 6 : 0}
+                            height={12}></rect>
                             </>
                         )}
                 {phases.map(p =>
@@ -253,7 +259,7 @@ export default function StudyCard() {
 
                                         <Divider />
 
-                                        {conditionGroups[cond].slice(0, 10).map(participant => {
+                                        {conditionGroups[cond].slice(0, 30).map(participant => {
                                             return <>
                                                 <Grid key={participant.participantID} item>
                                                     <Box borderBottom={1} boxShadow={0} p={1} style={{ borderColor: 'rgba(171, 171, 171, 0.5)' }}>
@@ -267,7 +273,7 @@ export default function StudyCard() {
                                                             </Typography> */}
                                                         {/* </Box> */}
 
-                                                        {eventMap(participant.study, { width: 1600, height: 50 })}
+                                                        {eventMap(participant.study, { width: 1600, height: 30 })}
                                                     </Box>
 
                                                 </Grid>
