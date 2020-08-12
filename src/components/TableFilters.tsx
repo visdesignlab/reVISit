@@ -123,7 +123,7 @@ export const Histogram = ({ data, width, height }) => {
 };
 
 const Brush = (props) => {
-  const { width, scale, height, onBrushFunction } = props;
+  const { width, scale, height, onChange } = props;
   const brushRef = useRef(null);
 
   useEffect(() => {
@@ -154,7 +154,7 @@ const Brush = (props) => {
     }*/
     function cleared() {
       console.warn("clear", event);
-      onBrushFunction(event.selection);
+      onChange(event.selection);
     }
   });
   return (

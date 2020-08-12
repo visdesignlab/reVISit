@@ -38,7 +38,7 @@ import { QuantitativeFilter, CategoricalFilter } from "./TableFilters";
 import tableStyles from "./ProvenanceTable.module.css";
 import { ifError } from "assert";
 import _ from "lodash";
-
+import { QuantitativeColumn, CategoricalColumn } from "./ColumnDefinitions.tsx";
 const GroupCellContent = (props) => {
   console.log("props for group cell", props);
 
@@ -96,12 +96,7 @@ const ProvenanceCells = ({ value, style, ...restProps }) => {
     item = restProps.column.render(restProps.row);
   }
   return (
-    <VirtualTable.Cell
-      {...restProps}
-      style={{
-        backgroundColor: value < 5000 ? "red" : undefined,
-        ...style,
-      }}>
+    <VirtualTable.Cell {...restProps} style={style}>
       {item}
     </VirtualTable.Cell>
   );
@@ -146,6 +141,8 @@ function getGroupSummaryValues(props) {
     });*/
 }
 function generateColumnDefinition(columnSchema, sectionData) {
+  let defaultColumnDefinition;
+
   if (columnSchema.DATA_TYPE === "int" || columnSchema.DATA_TYPE === "float") {
     /*return {
       title: columnSchema.COLUMN_NAME,
@@ -154,86 +151,46 @@ function generateColumnDefinition(columnSchema, sectionData) {
       width: 100,
     };*/
     console.log("Quant", columnSchema.COLUMN_NAME);
-    const quantWidth = 300;
-    const max = d3.max(sectionData, (datum) => datum[columnSchema.COLUMN_NAME]);
-    const xScale = d3.scaleLinear().domain([0, max]).range([0, quantWidth]);
-
-    return {
-      title: columnSchema.COLUMN_NAME,
-      name: columnSchema.COLUMN_NAME,
-      width: 200,
-      customSort: (a, b) =>
-        a[columnSchema.COLUMN_NAME] - b[columnSchema.COLUMN_NAME],
-      render: (rowData) => {
-        console.log(
-          "in quANT CELL",
-          rowData,
-          columnSchema.COLUMN_NAME,
-          rowData[columnSchema.COLUMN_NAME]
-        );
-        return (
-          <QuantitativeCell
-            cellData={rowData[columnSchema.COLUMN_NAME]}
-            commonScale={xScale}></QuantitativeCell>
-        );
-      },
-      customFilterAndSearch: (filter, value, row) => {
-        return filterQuantitativeValues(filter, value, row);
-      },
-      groupedSummaryComponent: ({ incomingData }) => {
-        console.log("dywootto", incomingData);
-        return (
-          <GroupDataResolver incomingData={incomingData}>
-            {({ partitionedData }) => {
-              if (partitionedData.length === 0) {
-                return <div></div>;
-              }
-              return (
-                <QuantitativeFilter
-                  xScale={xScale}
-                  data={partitionedData.map(
-                    (datum) => datum[columnSchema.COLUMN_NAME]
-                  )}></QuantitativeFilter>
-              );
-            }}
-          </GroupDataResolver>
-        );
-      },
-      filterComponent: (props) => (
-        <QuantitativeFilter
-          {...props}
-          xScale={xScale}
-          data={sectionData.map(
-            (datum) => datum[columnSchema.COLUMN_NAME]
-          )}></QuantitativeFilter>
-      ),
-    };
-  } else if (
+    defaultColumnDefinition = new QuantitativeColumn(
+      sectionData,
+      columnSchema.COLUMN_NAME,
+      200
+    );
+  } else {
+    defaultColumnDefinition = new CategoricalColumn(
+      sectionData,
+      columnSchema.COLUMN_NAME,
+      100
+    );
+  }
+  return defaultColumnDefinition;
+  /*
+  if (
     columnSchema.DATA_TYPE === "longtext" ||
     columnSchema.DATA_TYPE === "text"
   ) {
-    return {
+    defaultColumnDefinition = {
       title: columnSchema.COLUMN_NAME,
       name: columnSchema.COLUMN_NAME,
       render: (rowData) => <span>{rowData[columnSchema.COLUMN_NAME]}</span>,
       width: 100,
     };
   } else if (columnSchema.DATA_TYPE === "provenanceEvents") {
-    return {
+    defaultColumnDefinition = {
       title: columnSchema.COLUMN_NAME,
       name: columnSchema.COLUMN_NAME,
       render: (rowData) => <span>{"event"}</span>,
       width: 100,
     };
   } else if (columnSchema.DATA_TYPE === "provenanceSequence") {
-    return {
+    defaultColumnDefinition = {
       title: columnSchema.COLUMN_NAME,
       name: columnSchema.COLUMN_NAME,
       render: (rowData) => <span>{"sequence"}</span>,
       width: 100,
     };
   } else if (columnSchema.DATA_TYPE === "tag") {
-    return {
+    defaultColumnDefinition = {
       title: columnSchema.COLUMN_NAME,
       name: columnSchema.COLUMN_NAME,
       render: (rowData) => <span>{"tag"}</span>,
@@ -244,6 +201,13 @@ function generateColumnDefinition(columnSchema, sectionData) {
       `[DevExtremeTable.tsx] ERROR: Column Schema contains unkown column type ${columnSchema.DATA_TYPE}.`
     );
   }
+  if (columnDefinitionOverrides[columnSchema.COLUMN_NAME]) {
+    // apply any necessary overrides
+    defaultColumnDefinition = Object.assign(
+      defaultColumnDefinition,
+      columnDefinitionOverrides[columnSchema.COLUMN_NAME]
+    );
+  }*/
 }
 const DevExtremeTable = ({
   provenanceData,
@@ -371,16 +335,26 @@ const DevExtremeTable = ({
     setRows(provenanceData);*/
 
     setColumns(
-      tableSchema.map((columnSchema) =>
-        generateColumnDefinition(columnSchema, provenanceData)
-      )
+      tableSchema.map((columnSchema) => {
+        let val = generateColumnDefinition(
+          columnSchema,
+          provenanceData
+        ).generateColumnObject();
+        console.log(val);
+        return val;
+      })
     );
   }, [provenanceData]);
 
   const [columns, setColumns] = useState(
-    tableSchema.map((columnSchema) =>
-      generateColumnDefinition(columnSchema, provenanceData)
-    )
+    tableSchema.map((columnSchema) => {
+      let val = generateColumnDefinition(
+        columnSchema,
+        provenanceData
+      ).generateColumnObject();
+      console.log("table column", val);
+      return val;
+    })
   );
   console.log(columns);
 
@@ -391,7 +365,7 @@ const DevExtremeTable = ({
     console.log(grouping);
     setGroupingInternal(grouping);
   };
-  console.log("dywootto group", grouping);
+  console.log("dywootto group", rows, columns);
   const [integratedGroupingColumnExtensions] = useState([
     // { columnName: "visType", criteria: nameGroupCriteria },
     //{ columnName: "answer", criteria: (data) => data.accuracy > 0.5 },
@@ -603,12 +577,6 @@ function filterCategoricalValue(filter, value, accesssor) {
   }
   return false;
 }
-function filterQuantitativeValues(filter, value, row) {
-  if (value >= filter.filterMin && value <= filter.filterMax) {
-    return true;
-  }
-  return false;
-}
 
 function renderProvenanceNodeColumn(
   currentProvenanceData,
@@ -798,13 +766,7 @@ function renderAccuracyColumn(currentProvenanceData, columnWidth) {
     ),
   };
 }
-const QuantitativeCell = ({ cellData, commonScale }) => {
-  return (
-    <svg width={commonScale.range()?.[1]} height={20}>
-      <rect width={commonScale(cellData)} height={20}></rect>
-    </svg>
-  );
-};
+
 /* Time */
 function renderTimeCell(rowData, timeScale) {
   return (

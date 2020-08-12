@@ -28,6 +28,7 @@ const TableDataLoader = (props) => {
 
     if (tableSchema) {
       // append the provenance sequence nodes onto the end of performance schema
+
       tableSchema = tableSchema.concat({
         COLUMN_NAME: "eventCounts",
         DATA_TYPE: "provenanceEvents",
@@ -43,7 +44,7 @@ const TableDataLoader = (props) => {
       tableSchema = tableSchema.concat({
         COLUMN_NAME: "notes",
         DATA_TYPE: "tag",
-        ORDINAL_POSITION: schemaFromServer.length + 1,
+        ORDINAL_POSITION: schemaFromServer.length + 2,
       });
 
       tableSchema = tableSchema.map((column) => {
