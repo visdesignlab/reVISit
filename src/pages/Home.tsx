@@ -416,7 +416,7 @@ export default function TaskCard() {
                   ]; // console.log(frequentActions)
 
                   return (
-                    <>
+                    <React.Fragment key={'taskcard_' + key}>
                       <Typography variant="overline">{key}</Typography>
 
                       <Grid container className={classes.root} spacing={2}>
@@ -483,7 +483,7 @@ export default function TaskCard() {
                         </Grid>
                       </Grid>
                       <Divider />
-                    </>
+                      </React.Fragment>
                   );
                 })}
                 <div></div>
