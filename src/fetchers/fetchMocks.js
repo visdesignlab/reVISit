@@ -16,7 +16,10 @@ export async function getDataFromServer() {
   let res = await postData(host + "/data");
   return res;
 }
-
+export async function getSchema(tableID) {
+  let res = await getData(`${host}/table/${tableID}/schema`);
+  return res;
+}
 export async function getTaskDataFromServer(taskID) {
   let res = await getData(`${host}/data/task/${taskID}`);
   return res;
