@@ -17,8 +17,15 @@ const TableDataLoader = (props) => {
   let [isLoading, isError, schemaFromServer] = useFetchAPIData(async () => {
     return await getSchema("Performance");
   }, []);
+
+  // Set Schema
   useEffect(() => {
     let tableSchema = schemaFromServer;
+
+    const hiddenColumns = ["id"];
+    // TODO: make this smart, if > column is highly variable, don't show.
+    const hideAggregate = ["participantID", "answer"];
+
     if (tableSchema) {
       // append the provenance sequence nodes onto the end of performance schema
       tableSchema = tableSchema.concat({
@@ -26,14 +33,22 @@ const TableDataLoader = (props) => {
         DATA_TYPE: "provenance",
         ORDINAL_POSITION: schemaFromServer.length,
       });
+      //
+      tableSchema = tableSchema.map((column) => {
+        column.hideAggregate = hideAggregate.includes(column);
+        return column;
+      });
+
+      tableSchema = tableSchema.filter(
+        (column) => !hiddenColumns.includes(column.COLUMN_NAME)
+      );
     }
 
     setTableSchema(tableSchema);
   }, [schemaFromServer]);
-  console.log(isLoading, isError, "table schema", tableSchema);
-
-  const metricsSchema = false;
+  console.log("tableschema", tableSchema);
   const dependenciesLoaded = !!(currentTaskData.length > 0 && tableSchema);
+
   return dependenciesLoaded ? (
     <DevTable
       provenanceData={currentTaskData}
