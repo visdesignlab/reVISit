@@ -145,22 +145,40 @@ function getGroupSummaryValues(props) {
       return IntegratedSummary.defaultCalculator(type, selectedRows, row => row[columnName]);
     });*/
 }
-function generateColumnDefinition(columnSchema) {
+function generateColumnDefinition(columnSchema, sectionData) {
   if (columnSchema.DATA_TYPE === "int" || columnSchema.DATA_TYPE === "float") {
-    return {
+    /*return {
       title: columnSchema.COLUMN_NAME,
       name: columnSchema.COLUMN_NAME,
       render: (rowData) => <span>{rowData[columnSchema.COLUMN_NAME]}</span>,
       width: 100,
-    };
-    /*return {
-      title: column.title,
-      name: column.name,
-      width: quantWidth,
-      customSort: (a, b) => a[column.name].value - b[column.name].value,
-      render: (rowData) => <span>{rowData[column.name].value}</span>, //renderTimeCell(rowData, timeScale),
+    };*/
+    console.log("Quant", columnSchema.COLUMN_NAME);
+    const quantWidth = 300;
+    const max = d3.max(sectionData, (datum) => datum[columnSchema.COLUMN_NAME]);
+    const xScale = d3.scaleLinear().domain([0, max]).range([0, quantWidth]);
+
+    return {
+      title: columnSchema.COLUMN_NAME,
+      name: columnSchema.COLUMN_NAME,
+      width: 200,
+      customSort: (a, b) =>
+        a[columnSchema.COLUMN_NAME] - b[columnSchema.COLUMN_NAME],
+      render: (rowData) => {
+        console.log(
+          "in quANT CELL",
+          rowData,
+          columnSchema.COLUMN_NAME,
+          rowData[columnSchema.COLUMN_NAME]
+        );
+        return (
+          <QuantitativeCell
+            cellData={rowData[columnSchema.COLUMN_NAME]}
+            commonScale={xScale}></QuantitativeCell>
+        );
+      },
       customFilterAndSearch: (filter, value, row) => {
-        return filterQuantitativeValues(filter, value.value, row);
+        return filterQuantitativeValues(filter, value, row);
       },
       groupedSummaryComponent: ({ incomingData }) => {
         console.log("dywootto", incomingData);
@@ -174,7 +192,7 @@ function generateColumnDefinition(columnSchema) {
                 <QuantitativeFilter
                   xScale={xScale}
                   data={partitionedData.map(
-                    (datum) => datum[column.name].value
+                    (datum) => datum[columnSchema.COLUMN_NAME]
                   )}></QuantitativeFilter>
               );
             }}
@@ -185,11 +203,11 @@ function generateColumnDefinition(columnSchema) {
         <QuantitativeFilter
           {...props}
           xScale={xScale}
-          data={provenanceData.map(
-            (datum) => datum[column.name].value
+          data={sectionData.map(
+            (datum) => datum[columnSchema.COLUMN_NAME]
           )}></QuantitativeFilter>
       ),
-    }*/
+    };
   } else if (
     columnSchema.DATA_TYPE === "longtext" ||
     columnSchema.DATA_TYPE === "text"
@@ -223,7 +241,7 @@ function generateColumnDefinition(columnSchema) {
     };
   } else {
     console.error(
-      "[DevExtremeTable.tsx] ERROR: Column Schema contains unkown column type."
+      `[DevExtremeTable.tsx] ERROR: Column Schema contains unkown column type ${columnSchema.DATA_TYPE}.`
     );
   }
 }
@@ -352,12 +370,19 @@ const DevExtremeTable = ({
     //setNotesColumnDefinition(renderNotesColumn(200));
     setRows(provenanceData);*/
 
-    setColumns(tableSchema.map(generateColumnDefinition));
+    setColumns(
+      tableSchema.map((columnSchema) =>
+        generateColumnDefinition(columnSchema, provenanceData)
+      )
+    );
   }, [provenanceData]);
 
   const [columns, setColumns] = useState(
-    tableSchema.map(generateColumnDefinition)
+    tableSchema.map((columnSchema) =>
+      generateColumnDefinition(columnSchema, provenanceData)
+    )
   );
+  console.log(columns);
 
   //console.log(provenanceData, ...extraColumnDefinitions, columns);
   const [rows, setRows] = useState(provenanceData);
@@ -773,7 +798,13 @@ function renderAccuracyColumn(currentProvenanceData, columnWidth) {
     ),
   };
 }
-
+const QuantitativeCell = ({ cellData, commonScale }) => {
+  return (
+    <svg width={commonScale.range()?.[1]} height={20}>
+      <rect width={commonScale(cellData)} height={20}></rect>
+    </svg>
+  );
+};
 /* Time */
 function renderTimeCell(rowData, timeScale) {
   return (
