@@ -29,11 +29,23 @@ const TableDataLoader = (props) => {
     if (tableSchema) {
       // append the provenance sequence nodes onto the end of performance schema
       tableSchema = tableSchema.concat({
-        COLUMN_NAME: "sequence",
-        DATA_TYPE: "provenance",
+        COLUMN_NAME: "eventCounts",
+        DATA_TYPE: "provenanceEvents",
         ORDINAL_POSITION: schemaFromServer.length,
       });
-      //
+
+      tableSchema = tableSchema.concat({
+        COLUMN_NAME: "sequence",
+        DATA_TYPE: "provenanceSequence",
+        ORDINAL_POSITION: schemaFromServer.length + 1,
+      });
+
+      tableSchema = tableSchema.concat({
+        COLUMN_NAME: "notes",
+        DATA_TYPE: "tag",
+        ORDINAL_POSITION: schemaFromServer.length + 1,
+      });
+
       tableSchema = tableSchema.map((column) => {
         column.hideAggregate = hideAggregate.includes(column);
         return column;

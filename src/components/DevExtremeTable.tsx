@@ -145,11 +145,102 @@ function getGroupSummaryValues(props) {
       return IntegratedSummary.defaultCalculator(type, selectedRows, row => row[columnName]);
     });*/
 }
-
-const DevExtremeTable = ({ provenanceData, handleProvenanceNodeClick }) => {
+function generateColumnDefinition(columnSchema) {
+  if (columnSchema.DATA_TYPE === "int" || columnSchema.DATA_TYPE === "float") {
+    return {
+      title: columnSchema.COLUMN_NAME,
+      name: columnSchema.COLUMN_NAME,
+      render: (rowData) => <span>{rowData[columnSchema.COLUMN_NAME]}</span>,
+      width: 100,
+    };
+    /*return {
+      title: column.title,
+      name: column.name,
+      width: quantWidth,
+      customSort: (a, b) => a[column.name].value - b[column.name].value,
+      render: (rowData) => <span>{rowData[column.name].value}</span>, //renderTimeCell(rowData, timeScale),
+      customFilterAndSearch: (filter, value, row) => {
+        return filterQuantitativeValues(filter, value.value, row);
+      },
+      groupedSummaryComponent: ({ incomingData }) => {
+        console.log("dywootto", incomingData);
+        return (
+          <GroupDataResolver incomingData={incomingData}>
+            {({ partitionedData }) => {
+              if (partitionedData.length === 0) {
+                return <div></div>;
+              }
+              return (
+                <QuantitativeFilter
+                  xScale={xScale}
+                  data={partitionedData.map(
+                    (datum) => datum[column.name].value
+                  )}></QuantitativeFilter>
+              );
+            }}
+          </GroupDataResolver>
+        );
+      },
+      filterComponent: (props) => (
+        <QuantitativeFilter
+          {...props}
+          xScale={xScale}
+          data={provenanceData.map(
+            (datum) => datum[column.name].value
+          )}></QuantitativeFilter>
+      ),
+    }*/
+  } else if (
+    columnSchema.DATA_TYPE === "longtext" ||
+    columnSchema.DATA_TYPE === "text"
+  ) {
+    return {
+      title: columnSchema.COLUMN_NAME,
+      name: columnSchema.COLUMN_NAME,
+      render: (rowData) => <span>{rowData[columnSchema.COLUMN_NAME]}</span>,
+      width: 100,
+    };
+  } else if (columnSchema.DATA_TYPE === "provenanceEvents") {
+    return {
+      title: columnSchema.COLUMN_NAME,
+      name: columnSchema.COLUMN_NAME,
+      render: (rowData) => <span>{"event"}</span>,
+      width: 100,
+    };
+  } else if (columnSchema.DATA_TYPE === "provenanceSequence") {
+    return {
+      title: columnSchema.COLUMN_NAME,
+      name: columnSchema.COLUMN_NAME,
+      render: (rowData) => <span>{"sequence"}</span>,
+      width: 100,
+    };
+  } else if (columnSchema.DATA_TYPE === "tag") {
+    return {
+      title: columnSchema.COLUMN_NAME,
+      name: columnSchema.COLUMN_NAME,
+      render: (rowData) => <span>{"tag"}</span>,
+      width: 100,
+    };
+  } else {
+    console.error(
+      "[DevExtremeTable.tsx] ERROR: Column Schema contains unkown column type."
+    );
+  }
+}
+const DevExtremeTable = ({
+  provenanceData,
+  handleProvenanceNodeClick,
+  tableSchema,
+}) => {
   console.log(provenanceData);
-  // map extra columns for now
-  provenanceData = useMemo(
+  // map through the provided schema creating the column definitions
+
+  // float, int -> quantitative, histogram filterable and groupable
+  // text, long text -> categorical, searchable and groupable
+  // event counts -> custom,
+  // provenance -> custom,
+
+  /*provenanceData = useMemo(
     () =>
       provenanceData.map((participant) => {
         extraColumns.forEach((extraColumn) => {
@@ -161,8 +252,9 @@ const DevExtremeTable = ({ provenanceData, handleProvenanceNodeClick }) => {
         return participant;
       }),
     [provenanceData]
-  );
-  console.log(provenanceData, extraColumns);
+  );*/
+
+  /*
   const extraColumnDefinitions = useMemo(() => {
     let tempColumns = [];
 
@@ -223,8 +315,10 @@ const DevExtremeTable = ({ provenanceData, handleProvenanceNodeClick }) => {
     }
     return tempColumns;
   });
-  const [selection, setSelection] = useState([]);
+  */
 
+  const [selection, setSelection] = useState([]);
+  /*
   // Column Defs
   const [userIdColumnDefinition, setUserIdColumnDefinition] = useState(
     renderUserIdColumn(provenanceData, 150)
@@ -248,34 +342,24 @@ const DevExtremeTable = ({ provenanceData, handleProvenanceNodeClick }) => {
 
   const [notesColumnDefinition, setNotesColumnDefinition] = useState(
     renderNotesColumn(200)
-  );
+  );*/
 
   React.useEffect(() => {
+    /*
     setTimeColumnDefinition(renderTimeColumn(provenanceData, 250));
     setAccuracyColumnDefinition(renderAccuracyColumn(provenanceData, 100));
     setEventsColumnDefinition(renderProvenanceNodeColumn(provenanceData, 500));
     //setNotesColumnDefinition(renderNotesColumn(200));
-    setRows(provenanceData);
-    setColumns([
-      userIdColumnDefinition,
-      stimulusColumnDefinition,
-      timeColumnDefinition,
-      accuracyColumnDefinition,
-      eventsColumnDefinition,
-      ...extraColumnDefinitions,
-    ]);
+    setRows(provenanceData);*/
+
+    setColumns(tableSchema.map(generateColumnDefinition));
   }, [provenanceData]);
 
-  const [columns, setColumns] = useState([
-    userIdColumnDefinition,
-    stimulusColumnDefinition,
-    timeColumnDefinition,
-    accuracyColumnDefinition,
-    eventsColumnDefinition,
-    ...extraColumnDefinitions,
-    //notesColumnDefinition,
-  ]);
-  console.log(provenanceData, ...extraColumnDefinitions, columns);
+  const [columns, setColumns] = useState(
+    tableSchema.map(generateColumnDefinition)
+  );
+
+  //console.log(provenanceData, ...extraColumnDefinitions, columns);
   const [rows, setRows] = useState(provenanceData);
   const [grouping, setGroupingInternal] = useState([]);
   const setGrouping = (grouping) => {
@@ -332,9 +416,8 @@ const DevExtremeTable = ({ provenanceData, handleProvenanceNodeClick }) => {
     })
   );
 
-  const [defaultHiddenColumnNames] = useState(
-    extraColumns.map((column) => column.name)
-  );
+  const [defaultHiddenColumnNames] = useState([]);
+
   const summaryCalculator = (type, rows, getValue) => {
     console.log("dywootto rows for group", rows);
 
