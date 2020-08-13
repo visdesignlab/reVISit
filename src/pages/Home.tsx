@@ -408,7 +408,9 @@ export default function TaskCard() {
 
                 {Object.keys(task.conditions).map(key => {
                  let condition = task.conditions[key];
-                let frequentActions = condition.actions.map(a => ({ event: a.label, id: a.actionID, count: a.count, scale: colorScale(a.count) })) //actions.filter(a => a.taskID == task.taskID && a.condition == condition).splice(0, 5).map(a => ({ event: a.label, id: a.actionID, count: a.count, scale: colorScale(a.count) }))
+                 let freqPattern = condition.patterns[0].topK;
+
+                // let frequentActions = condition.actions.map(a => ({ event: a.label, id: a.actionID, count: a.count, scale: colorScale(a.count) })) //actions.filter(a => a.taskID == task.taskID && a.condition == condition).splice(0, 5).map(a => ({ event: a.label, id: a.actionID, count: a.count, scale: colorScale(a.count) }))
                let filteredMetrics = condition.stats //metrics.filter(m => m.group.taskID == task.taskID && m.group.condition == condition);
 
                   let metricValues = [
@@ -423,14 +425,17 @@ export default function TaskCard() {
                         <Grid item xs={12}>
                           <Grid container justify="flex-start" spacing={2}>
                             <Grid key={"prov"} item>
-                              <>
-                                <Box mt={"5px"} mb={"6px"}>
-                                  <ProvenanceIsolatedNodes
-                                    key={task.taskID}
-                                    nodes={
-                                      frequentActions
-                                    }></ProvenanceIsolatedNodes>
-                                </Box>
+                              <>{[0,1,2].map(i=> {
+                               let frequentActions = freqPattern[i].seq.map(a => ({ event: a, id: a, count: freqPattern[i].count, scale: colorScale(freqPattern[i].count) })) //actions.filter(a => a.taskID == task.taskID && a.condition == condition).splice(0, 5).map(a => ({ event: a.label, id: a.actionID, count: a.count, scale: colorScale(a.count) }))
+                              return <Box mt={"5px"} mb={"6px"}>
+                                <ProvenanceIsolatedNodes
+                                  key={task.taskID}
+                                  nodes={
+                                    frequentActions
+                                  }></ProvenanceIsolatedNodes>
+                              </Box>}
+                              )}
+                                
                                 <Typography
                                   className={classes.pos}
                                   variant="overline"
