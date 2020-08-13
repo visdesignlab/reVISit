@@ -359,8 +359,22 @@ const DevExtremeTable = ({
               {...props}></GroupCellContent>
           )}
           showColumnsWhenGrouped
-          stubCellComponent={() => {
-            return <td className="FAKETD" style={{ display: "none" }}></td>;
+          stubCellComponent={(stubProps) => {
+            console.log(stubProps, grouping);
+            let shouldHideStub = false;
+            // if this stub prop matches last grouping
+
+            if (grouping.length > 0) {
+              const groupedByRow = stubProps.tableRow.row.groupedBy;
+              console.log(grouping[grouping.length - 1], groupedByRow);
+              shouldHideStub =
+                grouping[grouping.length - 1].columnName === groupedByRow;
+            }
+            return (
+              <td
+                className="FAKETD"
+                style={shouldHideStub ? { display: "none" } : null}></td>
+            );
           }}
           inlineSummaryComponent={() => {
             return <div>temp div testing</div>;

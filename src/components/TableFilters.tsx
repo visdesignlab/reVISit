@@ -86,34 +86,46 @@ export const CategoricalFilter = (props) => {
   );
 };
 
-export const Histogram = ({ data, width, height }) => {
-  const max = d3.max(data),
-    min = d3.min(data);
+export const Histogram = ({ data, xScale, buckets, yScale, height }) => {
+  console.log("hist props", data, xScale, buckets, yScale, height);
+  const binWidth = 10;
+  const [min, max] = xScale.domain();
+  const currentBinCounter = d3
+    .histogram()
+    .domain([min - 0.001, max + 0.001]) // to make inclusive of threshold
+    .thresholds(buckets.map((bucket) => bucket.x1));
 
-  // the scale
-  let x = d3.scaleLinear().range([0, width - 10]);
-  let y = d3.scaleLinear().range([height, 0]);
-  let niceX = d3.scaleLinear().range([0, width]).domain([0, max]).nice();
-  const binner = d3.histogram().domain(niceX.domain());
-  const buckets = binner(data);
-  let xBand = d3
-    .scaleBand()
-    .domain(d3.range(0, buckets.length))
-    .range([0, width]);
+  const currentBins = currentBinCounter(data);
 
-  x.domain([0, d3.max(data)]);
-  y.domain([0, d3.max(buckets, (bucket) => bucket.length)]);
-  const binWidth = xBand.bandwidth();
   const bars = (
     <g transform={`translate(${(1 / 3) * binWidth},0)`}>
       {buckets.map((bucket, index) => {
+        console.log(
+          index,
+          currentBins,
+          currentBins[index],
+          yScale(currentBins[index].length),
+          yScale(0),
+          yScale(250)
+        );
         return (
-          <rect
-            key={index}
-            x={x(bucket.x0) - 0.5 * binWidth} // 1/2 xBandwidth to move to middle 1/2 another because of -1 index on xBand domain
-            y={y(bucket.length)}
-            width={binWidth}
-            height={height - y(bucket.length)}></rect>
+          <g>
+            <rect
+              key={index}
+              x={xScale(bucket.x0) - 0.5 * binWidth} // 1/2 xBandwidth to move to middle 1/2 another because of -1 index on xBand domain
+              y={yScale(bucket.length)}
+              width={binWidth}
+              fill={"gray"}
+              opacity={0.3}
+              height={height - yScale(bucket.length)}></rect>
+            <rect
+              key={index}
+              x={xScale(bucket.x0) - 0.5 * binWidth} // 1/2 xBandwidth to move to middle 1/2 another because of -1 index on xBand domain
+              y={yScale(currentBins[index].length)}
+              width={binWidth}
+              fill={"black"}
+              height={height - yScale(currentBins[index].length)}></rect>
+          </g>
         );
       })}
     </g>
@@ -123,7 +135,7 @@ export const Histogram = ({ data, width, height }) => {
 };
 
 const Brush = (props) => {
-  const { width, scale, height, onChange } = props;
+  const { width, height, onChange } = props;
   const brushRef = useRef(null);
 
   useEffect(() => {
@@ -164,32 +176,36 @@ const Brush = (props) => {
   );
 };
 
-const BrushableHistogram = ({ data, xScale, setMinimum, setMaximum }) => {
+const BrushableHistogram = ({
+  data,
+  xScale,
+  buckets,
+  yScale,
+  height,
+  setMinimum,
+  setMaximum,
+}) => {
   const width = xScale.range()[1];
-  const height = 20;
-  const scale = xScale;
 
   function setFilterBounds(inputs) {
     if (inputs?.length !== 2) {
       inputs = xScale.domain();
     }
     // scale inversion
-    setMinimum(scale.invert(inputs[0]));
+    setMinimum(xScale.invert(inputs[0]));
     // set bounds
-    setMaximum(scale.invert(inputs[1]));
+    setMaximum(xScale.invert(inputs[1]));
   }
 
   return (
-    <Brush
-      width={width}
-      height={height}
-      scale={scale}
-      onChange={setFilterBounds}>
+    <Brush width={width} height={height} onChange={setFilterBounds}>
       <Histogram
         data={data}
         width={width}
         height={height}
-        scale={scale}></Histogram>
+        yScale={yScale}
+        xScale={xScale}
+        buckets={buckets}></Histogram>
     </Brush>
   );
 };
@@ -197,6 +213,9 @@ const BrushableHistogram = ({ data, xScale, setMinimum, setMaximum }) => {
 export const QuantitativeFilter = ({
   data,
   xScale,
+  buckets,
+  height,
+  yScale,
   onFilter = (val) => {},
 }) => {
   console.log("new Time Filter");
@@ -209,7 +228,10 @@ export const QuantitativeFilter = ({
   }, [debouncedMin, debouncedMax]);
   return (
     <BrushableHistogram
+      yScale={yScale}
       xScale={xScale}
+      buckets={buckets}
+      height={height}
       data={data}
       setMinimum={setMinimum}
       setMaximum={setMaximum}></BrushableHistogram>

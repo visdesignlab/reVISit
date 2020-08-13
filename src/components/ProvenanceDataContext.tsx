@@ -126,9 +126,14 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   // }, [dataFromServer])
 
   //State
+  function timeout(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
-  const handleTagCreation = (participantID, taskID, tag, action) => {
-    console.log("new tag", participantID, taskID, tag, action);
+  const handleTagCreation = async (participantID, taskID, tag, action) => {
+    await timeout(200);
+
+    return tag
   };
   let [taskSort, setTaskSort] = useState("name");
 

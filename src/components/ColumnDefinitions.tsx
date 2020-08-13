@@ -59,15 +59,8 @@ export class NotesColumn {
           <TagWrapper
             tags={rowData.tags}
             onTagChange={(action, tag) => {
-              // check if rowData is selected;
               if (action === "Add") {
                 rowData.tags.push(tag);
-                this.handleTagCreation(
-                  rowData.participantID,
-                  rowData.taskID,
-                  tag,
-                  "Add"
-                );
               } else {
                 const index = rowData.tags.findIndex((iterTag) => {
                   return iterTag.name === tag[0]?.name;
@@ -75,13 +68,14 @@ export class NotesColumn {
                 if (index > -1) {
                   rowData.tags.splice(index, 1);
                 }
-                this.handleTagCreation(
-                  rowData.participantID,
-                  rowData.taskID,
-                  tag,
-                  "Delete"
-                );
               }
+
+              this.handleTagCreation(
+                rowData.participantID,
+                rowData.taskID,
+                tag,
+                action
+              );
             }}></TagWrapper>
         );
       },
@@ -116,6 +110,7 @@ export class QuantitativeColumn {
   constructor(data, name, metaData) {
     this.name = name;
     this.data = data;
+    this.height = 30;
     this.width = metaData.width ? metaData.width : 100;
     this.order = metaData.order;
     this.hideByDefault = metaData.hideByDefault;
@@ -128,11 +123,37 @@ export class QuantitativeColumn {
         <QuantitativeCell
           rowData={rowData}
           name={this.name}
-          commonScale={this.scale}></QuantitativeCell>
+          commonScale={this.xScale}></QuantitativeCell>
       );
     };
-    const max = d3.max(this.data, (datum) => datum[this.name]);
-    this.scale = d3.scaleLinear().domain([0, max]).range([0, this.width]);
+    let [min, max] = d3.extent(this.data, (datum) => datum[this.name]);
+    if (min > 0) {
+      min = 0;
+    }
+
+    this.xScale = d3
+      .scaleLinear()
+      .domain([min - 0.001, max + 0.001])
+      .range([10, this.width - 20]); // offset from sides
+    this.yScale = d3.scaleLinear().range([this.height, 0]);
+    console.log(min, max, data);
+    // the scale
+    let niceX = this.xScale.nice();
+    const binner = d3.histogram().domain(niceX.domain());
+    const buckets = binner(data.map((datum) => datum[this.name]));
+    console.log(buckets);
+    console.log("yscale domain", [
+      0,
+      d3.max(buckets, (bucket) => {
+        console.log(bucket);
+        return bucket.length;
+      }),
+    ]);
+    this.yScale = this.yScale.domain([
+      0,
+      d3.max(buckets, (bucket) => bucket.length),
+    ]);
+    this.buckets = buckets;
   }
 
   set setWidth(newWidth) {
@@ -165,7 +186,10 @@ export class QuantitativeColumn {
               console.log("groupedSumm", this.scale);
               return (
                 <QuantitativeFilter
-                  xScale={this.scale}
+                  xScale={this.xScale}
+                  yScale={this.yScale}
+                  buckets={this.buckets}
+                  height={this.height}
                   data={partitionedData.map(
                     (datum) => datum[this.name]
                   )}></QuantitativeFilter>
@@ -179,7 +203,10 @@ export class QuantitativeColumn {
         return (
           <QuantitativeFilter
             {...props}
-            xScale={this.scale}
+            xScale={this.xScale}
+            yScale={this.yScale}
+            buckets={this.buckets}
+            height={this.height}
             onFilter={(val) => console.log(val)}
             data={this.data.map(
               (datum) => datum[this.name]
