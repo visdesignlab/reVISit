@@ -28,7 +28,6 @@ import {
 } from "@devexpress/dx-react-grid-material-ui";
 
 import ProvenanceGraph from "./ProvenanceGraph";
-import ProvenanceIsolatedNodes from "./ProvenanceIsolatedNodes";
 import * as d3 from "d3";
 import TagsInput from "react-tagsinput";
 import eventMapping from "./eventMapping";
@@ -38,7 +37,11 @@ import { QuantitativeFilter, CategoricalFilter } from "./TableFilters";
 import tableStyles from "./ProvenanceTable.module.css";
 import { ifError } from "assert";
 import _ from "lodash";
-import { QuantitativeColumn, CategoricalColumn } from "./ColumnDefinitions.tsx";
+import {
+  QuantitativeColumn,
+  CategoricalColumn,
+  ProvenanceColumn,
+} from "./ColumnDefinitions.tsx";
 const GroupCellContent = (props) => {
   console.log("props for group cell", props);
 
@@ -140,9 +143,30 @@ function getGroupSummaryValues(props) {
       return IntegratedSummary.defaultCalculator(type, selectedRows, row => row[columnName]);
     });*/
 }
-function generateColumnDefinition(columnSchema, sectionData) {
-  let defaultColumnDefinition;
+// must use non zero order else !order is true
+let columnMetaData = {
+  participantID: { order: 1 },
+  condition: { order: 2 },
+  accuracy: { width: 75, order: 3 },
+  time: { width: 200, order: 4 },
+  sequence: { width: 300, order: 5 },
+};
 
+function getColumnMetaData(columnKey) {
+  if (columnMetaData[columnKey]) {
+    return columnMetaData[columnKey];
+  } else {
+    return { hideByDefault: true };
+  }
+}
+
+function generateColumnDefinition(
+  columnSchema,
+  data,
+  handleProvenanceNodeClick
+) {
+  let defaultColumnDefinition;
+  const columnMetaData = getColumnMetaData(columnSchema.COLUMN_NAME);
   if (columnSchema.DATA_TYPE === "int" || columnSchema.DATA_TYPE === "float") {
     /*return {
       title: columnSchema.COLUMN_NAME,
@@ -151,63 +175,47 @@ function generateColumnDefinition(columnSchema, sectionData) {
       width: 100,
     };*/
     console.log("Quant", columnSchema.COLUMN_NAME);
+
     defaultColumnDefinition = new QuantitativeColumn(
-      sectionData,
+      data,
       columnSchema.COLUMN_NAME,
-      200
+      columnMetaData
     );
-  } else {
-    defaultColumnDefinition = new CategoricalColumn(
-      sectionData,
-      columnSchema.COLUMN_NAME,
-      100
-    );
-  }
-  return defaultColumnDefinition;
-  /*
-  if (
+  } else if (
     columnSchema.DATA_TYPE === "longtext" ||
     columnSchema.DATA_TYPE === "text"
   ) {
-    defaultColumnDefinition = {
-      title: columnSchema.COLUMN_NAME,
-      name: columnSchema.COLUMN_NAME,
-      render: (rowData) => <span>{rowData[columnSchema.COLUMN_NAME]}</span>,
-      width: 100,
-    };
-  } else if (columnSchema.DATA_TYPE === "provenanceEvents") {
-    defaultColumnDefinition = {
-      title: columnSchema.COLUMN_NAME,
-      name: columnSchema.COLUMN_NAME,
-      render: (rowData) => <span>{"event"}</span>,
-      width: 100,
-    };
-  } else if (columnSchema.DATA_TYPE === "provenanceSequence") {
-    defaultColumnDefinition = {
-      title: columnSchema.COLUMN_NAME,
-      name: columnSchema.COLUMN_NAME,
-      render: (rowData) => <span>{"sequence"}</span>,
-      width: 100,
-    };
+    defaultColumnDefinition = new CategoricalColumn(
+      data,
+      columnSchema.COLUMN_NAME,
+      columnMetaData
+    );
+  } else if (columnSchema.DATA_TYPE === "provenance") {
+    defaultColumnDefinition = new ProvenanceColumn(
+      data,
+      handleProvenanceNodeClick,
+      columnMetaData
+    );
   } else if (columnSchema.DATA_TYPE === "tag") {
+    defaultColumnDefinition = new CategoricalColumn(
+      data,
+      columnSchema.COLUMN_NAME,
+      columnMetaData
+    );
+    /*
     defaultColumnDefinition = {
       title: columnSchema.COLUMN_NAME,
       name: columnSchema.COLUMN_NAME,
       render: (rowData) => <span>{"tag"}</span>,
       width: 100,
-    };
+    };*/
   } else {
     console.error(
       `[DevExtremeTable.tsx] ERROR: Column Schema contains unkown column type ${columnSchema.DATA_TYPE}.`
     );
   }
-  if (columnDefinitionOverrides[columnSchema.COLUMN_NAME]) {
-    // apply any necessary overrides
-    defaultColumnDefinition = Object.assign(
-      defaultColumnDefinition,
-      columnDefinitionOverrides[columnSchema.COLUMN_NAME]
-    );
-  }*/
+
+  return defaultColumnDefinition;
 }
 const DevExtremeTable = ({
   provenanceData,
@@ -335,26 +343,48 @@ const DevExtremeTable = ({
     setRows(provenanceData);*/
 
     setColumns(
-      tableSchema.map((columnSchema) => {
-        let val = generateColumnDefinition(
-          columnSchema,
-          provenanceData
-        ).generateColumnObject();
-        console.log(val);
-        return val;
-      })
+      tableSchema
+        .map((columnSchema) =>
+          generateColumnDefinition(
+            columnSchema,
+            provenanceData,
+            handleProvenanceNodeClick
+          ).generateColumnObject()
+        )
+        .sort((a, b) => {
+          console.log("comparator", a, b, a.order, b.order);
+
+          if (!a.order) {
+            return 1;
+          }
+          if (!b.order) {
+            return -1;
+          }
+          return a.order > b.order ? 1 : -1;
+        })
     );
   }, [provenanceData]);
 
   const [columns, setColumns] = useState(
-    tableSchema.map((columnSchema) => {
-      let val = generateColumnDefinition(
-        columnSchema,
-        provenanceData
-      ).generateColumnObject();
-      console.log("table column", val);
-      return val;
-    })
+    tableSchema
+      .map((columnSchema) =>
+        generateColumnDefinition(
+          columnSchema,
+          provenanceData,
+          handleProvenanceNodeClick
+        ).generateColumnObject()
+      )
+      .sort((a, b) => {
+        console.log("comparator", a, b, a.order, b.order);
+
+        if (!a.order) {
+          return 1;
+        }
+        if (!b.order) {
+          return -1;
+        }
+        return a.order > b.order ? 1 : -1;
+      })
   );
   console.log(columns);
 
@@ -415,8 +445,12 @@ const DevExtremeTable = ({
     })
   );
 
-  const [defaultHiddenColumnNames] = useState([]);
-
+  const [defaultHiddenColumnNames] = useState(
+    columns
+      .filter((column) => column.hideByDefault)
+      .map((column) => column.name)
+  );
+  console.log("default", defaultHiddenColumnNames);
   const summaryCalculator = (type, rows, getValue) => {
     console.log("dywootto rows for group", rows);
 
@@ -509,52 +543,6 @@ function renderUserIdColumn(provenanceData, userIdColumnWidth) {
   };
 }
 
-function renderNotesCell(rowData) {
-  if (!Array.isArray(rowData.tableData?.tags)) {
-    rowData.tableData.tags = [];
-  }
-  return (
-    <TagWrapper
-      tags={rowData.tableData.tags}
-      onTagChange={(action, tag) => {
-        // check if rowData is selected;
-        if (action === "Add") {
-          rowData.tableData.tags.push(tag);
-        } else {
-          const index = rowData.tableData.tags.findIndex((iterTag) => {
-            return iterTag.name === tag[0]?.name;
-          });
-          if (index > -1) {
-            rowData.tableData.tags.splice(index, 1);
-          }
-        }
-      }}></TagWrapper>
-  );
-}
-
-function renderNotesColumn(notesColumnWidth) {
-  return {
-    title: "Notes",
-    name: "None",
-    cellStyle: {
-      padding: "4px 16px",
-    },
-    width: notesColumnWidth,
-    customSort: (a, b) => b.tableData.tags.length - a.tableData.tags.length,
-    filterComponent: () => <div></div>,
-    render: renderNotesCell,
-  };
-}
-
-function renderProvenanceNodeCell(data, handleProvenanceNodeClick) {
-  return (
-    <ProvenanceIsolatedNodes
-      nodes={data.provenance}
-      handleProvenanceNodeClick={
-        handleProvenanceNodeClick
-      }></ProvenanceIsolatedNodes>
-  );
-}
 /**
  *
  * @param filter

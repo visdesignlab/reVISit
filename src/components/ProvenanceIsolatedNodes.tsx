@@ -4,7 +4,7 @@ import Tooltip from "@material-ui/core/Tooltip";
 import Fade from "@material-ui/core/Fade";
 import styles from "./ProvenanceIsolatedNodes.module.css";
 const ProvenanceIsolatedNodes = ({ nodes, handleProvenanceNodeClick }) => {
-  // console.log("isolated", nodes);
+  console.log("isolated", nodes);
   return (
     <div className={styles.wrapper}>
       {nodes.map((node, index) => (
@@ -17,8 +17,8 @@ const ProvenanceIsolatedNodes = ({ nodes, handleProvenanceNodeClick }) => {
 };
 
 const IsolatedNode = ({ node }) => {
-  let eventMap = eventMapping[node.id]
-    ? eventMapping[node.id]
+  let eventMap = eventMapping[node.name]
+    ? eventMapping[node.name]
     : eventMapping["custom"];
   //add check for custom icons for newly created events;
   const icon = eventMap.icon;
