@@ -19,6 +19,7 @@ const ProvenanceDataContext = React.createContext({});
 
 export const ProvenanceDataContextProvider = ({ children }) => {
   // console.trace('calling provenanceDataContextProvider')
+  const [selectedTaskIds, setSelectedTaskIds] = React.useState(["S-task01"]);
 
   const taskStructure = [
     { name: "Task 1", key: "S-task01", prompt: "", actions: {}, stats: {} },
@@ -57,7 +58,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     console.log("dywootto handle provenance node click", id);
 
     // hardcoded data for now. ideally, we'll have the event id to be able to select on.
-    const taskId = "S-task01";
+    const taskId = selectedTaskIds[0];
     const participantId = "545d6768fdf99b7f9fca24e3";
     const taskNumber = 1;
     // select all of that provenance graph.
@@ -65,74 +66,12 @@ export const ProvenanceDataContextProvider = ({ children }) => {
 
     promise.then((resolved) => {
       console.log("resolvedclick", resolved);
+      alert(`queried (skinny) provenance from db ${resolved.data}`);
 
       // rehydrate provenance graph
       // render vis using that provenance graph
     });
   }
-
-  // useEffect(() => {
-
-  //   //function that makes the initial calls to the MySQL database and sets up the basic state
-  //   async function setUp() {
-
-  //     let serverRequest;
-
-  //     let metrics = ['accuracy', 'time', 'confidence', 'difficulty'];
-
-  //     serverRequest = await mysql_api('/conditions', {});
-  //     setConditions(serverRequest.data);
-
-  //     serverRequest = await mysql_api('/table', { table: 'Tasks' });
-  //     setTasks(serverRequest.data);
-
-  //     serverRequest = await mysql_api('/table', { table: 'Study' });
-  //     setEvents(serverRequest.data);
-
-  //     //query api for action counts per task and condition
-  //     serverRequest = await mysql_api('/actions', { 'groupBy': ['taskID', 'condition'] });
-  //     // serverRequest = await mysql_api('/table/stats', { 'table': 'Actions', 'metrics': ['actionID'], 'groupBy': ['taskID', 'condition'] });
-  //     setActions(serverRequest.data)
-
-  //     // serverRequest = await mysql_api('/actions', { 'groupBy': ['condition'] });
-  //     // let data = serverRequest.data;
-  //     // let uniqueActions = [... new Set(data.map(d => d.actionID))];
-  //     // let actionSummary = uniqueActions.map(actionID => {
-  //     //   let obj = { actionID: actionID, type: 'native', conditions: {}, visible: true };
-  //     //   let rows = data.filter(d => d.actionID == actionID);
-  //     //   let totalCount = 0;
-  //     //   rows.map(row => {
-  //     //     totalCount = totalCount + row.count;
-  //     //     obj['label'] = row.label;
-  //     //     obj.conditions[row.condition] = row.count;
-  //     //   })
-  //     //   obj['count'] = totalCount;
-  //     //   return obj
-  //     // })
-
-  //     // setActionSummary(actionSummary)
-
-  //     //query api for average metrics (grouped by task and condition) and compute histogram distributions
-  //     serverRequest = await mysql_api('/table/stats', { 'table': 'Performance', 'metrics': metrics, 'groupBy': ['taskID', 'condition'] });
-  //     setMetrics(serverRequest.data)
-
-  //     //query api for average metrics (grouped by task and condition) and compute histogram distributions
-  //     serverRequest = await mysql_api('/table/stats', { 'table': 'Study', 'metrics': ['duration'], 'groupBy': ['eventID', 'condition'], 'commonScale': false });
-  //     setStudy(serverRequest.data)
-
-  //     //get participantSchema
-  //     serverRequest = await mysql_api('/table/schema', { 'table': 'Participants' });
-  //     let cols = serverRequest.data
-
-  //     // console.log('cols are ', cols)
-  //     //query api for average participant metrics and compute histogram distributions
-  //     serverRequest = await mysql_api('/table/stats', { 'table': 'Participants', 'metrics': cols.filter(c => c.COLUMN_NAME !== 'id' && c.COLUMN_NAME !== 'participantID').map(c => c.COLUMN_NAME) });
-  //     setParticipants(serverRequest.data)
-  //   }
-
-  //   setUp();
-
-  // }, [])
 
   // get initial data from server;
   let [isLoading, isError, dataFromServer] = useFetchAPIData(async () => {
@@ -198,7 +137,6 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   );*/
 
   const [currentTaskData, setCurrentTaskData] = React.useState([]);
-  const [selectedTaskIds, setSelectedTaskIds] = React.useState(["S-task01"]);
   let [
     isTaskLoading,
     isTaskError,
@@ -218,7 +156,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
       return datum;
     });
     return response;
-  }, []);
+  }, [selectedTaskIds]);
 
   useEffect(() => {
     setCurrentTaskData(taskDataFromServer);
@@ -269,6 +207,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
         selectedTaskIds,
         data,
         handleTagCreation,
+        handleProvenanceNodeClick,
       }}>
       {children}
     </ProvenanceDataContext.Provider>

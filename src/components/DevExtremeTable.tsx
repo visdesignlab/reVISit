@@ -148,7 +148,8 @@ function generateColumnDefinition(columnSchema, data, columnsMetaData) {
       columnMetaData
     );
   } else if (columnSchema.DATA_TYPE === "provenance") {
-    defaultColumnDefinition = new ProvenanceColumn(data, columnMetaData);
+    console.log("provenance", columnMetaData);
+    defaultColumnDefinition = new ProvenanceColumn(columnMetaData);
   } else if (columnSchema.DATA_TYPE === "tag") {
     defaultColumnDefinition = new NotesColumn(columnMetaData);
     /*
@@ -172,116 +173,8 @@ const DevExtremeTable = ({
   tableSchema,
   handleTagCreation,
 }) => {
-  console.log(provenanceData);
-  // map through the provided schema creating the column definitions
+  console.log("handleProvenanceNodeClick", handleProvenanceNodeClick);
 
-  // float, int -> quantitative, histogram filterable and groupable
-  // text, long text -> categorical, searchable and groupable
-  // event counts -> custom,
-  // provenance -> custom,
-
-  /*provenanceData = useMemo(
-    () =>
-      provenanceData.map((participant) => {
-        extraColumns.forEach((extraColumn) => {
-          participant[extraColumn.name] = {
-            type: extraColumn.type,
-            value: extraColumn.accessor(participant),
-          };
-        });
-        return participant;
-      }),
-    [provenanceData]
-  );*/
-
-  /*
-  const extraColumnDefinitions = useMemo(() => {
-    let tempColumns = [];
-
-    for (let columnIndex in extraColumns) {
-      let column = extraColumns[columnIndex];
-      console.log(column);
-
-      if (column.type === "string") {
-        tempColumns.push({
-          title: column.title,
-          name: column.name,
-          render: (rowData) => <span>{rowData[column.name].value}</span>,
-          width: 100,
-        });
-      } else if (column.type === "quantitative") {
-        const quantWidth = 300;
-        const max = d3.max(provenanceData, (datum) => datum[column.name].value);
-        const xScale = d3.scaleLinear().domain([0, max]).range([0, quantWidth]);
-
-        tempColumns.push({
-          title: column.title,
-          name: column.name,
-          width: quantWidth,
-          customSort: (a, b) => a[column.name].value - b[column.name].value,
-          render: (rowData) => <span>{rowData[column.name].value}</span>, //renderTimeCell(rowData, timeScale),
-          customFilterAndSearch: (filter, value, row) => {
-            return filterQuantitativeValues(filter, value.value, row);
-          },
-          groupedSummaryComponent: ({ incomingData }) => {
-            console.log("dywootto", incomingData);
-            return (
-              <GroupDataResolver incomingData={incomingData}>
-                {({ partitionedData }) => {
-                  if (partitionedData.length === 0) {
-                    return <div></div>;
-                  }
-                  return (
-                    <QuantitativeFilter
-                      xScale={xScale}
-                      data={partitionedData.map(
-                        (datum) => datum[column.name].value
-                      )}></QuantitativeFilter>
-                  );
-                }}
-              </GroupDataResolver>
-            );
-          },
-          filterComponent: (props) => (
-            <QuantitativeFilter
-              {...props}
-              xScale={xScale}
-              data={provenanceData.map(
-                (datum) => datum[column.name].value
-              )}></QuantitativeFilter>
-          ),
-        });
-      }
-    }
-    return tempColumns;
-  });
-  */
-
-  /*
-  // Column Defs
-  const [userIdColumnDefinition, setUserIdColumnDefinition] = useState(
-    renderUserIdColumn(provenanceData, 150)
-  );
-
-  const [stimulusColumnDefinition, setStimulusColumnDefinition] = useState(
-    renderStimulusDefinition(provenanceData, 150)
-  );
-
-  const [timeColumnDefinition, setTimeColumnDefinition] = useState(
-    renderTimeColumn(provenanceData, 300)
-  );
-
-  const [accuracyColumnDefinition, setAccuracyColumnDefinition] = useState(
-    renderAccuracyColumn(provenanceData, 100)
-  );
-
-  const [eventsColumnDefinition, setEventsColumnDefinition] = useState(
-    renderProvenanceNodeColumn(provenanceData, 1000, handleProvenanceNodeClick)
-  );
-
-  const [notesColumnDefinition, setNotesColumnDefinition] = useState(
-    renderNotesColumn(200)
-  );*/
   let columnMetaData = {
     participantID: { order: 1 },
     condition: { order: 2 },
@@ -348,16 +241,14 @@ const DevExtremeTable = ({
   );
   const [selection, setSelectionInternal] = useState([]);
 
-  const setSelection = (indicies) => {
+  const setSelection = (selectionIndicies) => {
     setSelectionInternal(selectionIndicies);
   };
-  console.log(columns);
 
   //console.log(provenanceData, ...extraColumnDefinitions, columns);
   const [rows, setRows] = useState(provenanceData);
   const [grouping, setGroupingInternal] = useState([]);
   const setGrouping = (grouping) => {
-    console.log(grouping);
     setGroupingInternal(grouping);
   };
   console.log("dywootto group", rows, columns);

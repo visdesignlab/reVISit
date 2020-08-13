@@ -190,7 +190,7 @@ export class QuantitativeColumn {
   }
 }
 export class ProvenanceColumn {
-  constructor(data, metaData) {
+  constructor(metaData) {
     this.width = 300;
     this.handleProvenanceNodeClick = metaData.handleProvenanceNodeClick;
   }
