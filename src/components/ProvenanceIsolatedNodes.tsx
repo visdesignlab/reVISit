@@ -29,7 +29,7 @@ const IsolatedNode = ({ node }) => {
     <Tooltip
       TransitionComponent={Fade}
       TransitionProps={{ timeout: 600 }}
-      title={node.event + " [" + node.count + "]"}
+      title={`${node.name} ${node.count ? `[${node.count}]` : ""}`}
       PopperProps={{
         popperOptions: {
           modifiers: {

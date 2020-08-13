@@ -243,7 +243,6 @@ const Brush = (props) => {
     function brushed() {
       onChange(d3.event.selection);
     }
-    
   });
   return (
     <g ref={brushRef} height={height} width={width}>
@@ -472,8 +471,8 @@ export default function TaskCard() {
                 {Object.keys(task.conditions).map((key) => {
                   let condition = task.conditions[key];
                   let frequentActions = condition.actions.map((a) => ({
-                    event: a.label,
-                    id: a.actionID,
+                    label: a.label,
+                    name: a.actionID,
                     count: a.count,
                     scale: colorScale(a.count),
                   })); //actions.filter(a => a.taskID == task.taskID && a.condition == condition).splice(0, 5).map(a => ({ event: a.label, id: a.actionID, count: a.count, scale: colorScale(a.count) }))

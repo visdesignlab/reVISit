@@ -79,9 +79,8 @@ export class QuantitativeColumn {
           commonScale={this.scale}></QuantitativeCell>
       );
     };
-    const quantWidth = 300;
     const max = d3.max(this.data, (datum) => datum[this.name]);
-    this.scale = d3.scaleLinear().domain([0, max]).range([0, quantWidth]);
+    this.scale = d3.scaleLinear().domain([0, max]).range([0, this.width]);
   }
 
   set setWidth(newWidth) {
