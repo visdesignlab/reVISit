@@ -9,9 +9,11 @@ import { useFetchAPIData } from "../hooks/hooks";
 
 const TableDataLoader = (props) => {
   const [height, setHeight] = useState(1000);
-  const { currentTaskData, handleProvenanceNodeClick } = useContext(
-    ProvenanceDataContext
-  );
+  const {
+    currentTaskData,
+    handleProvenanceNodeClick,
+    handleTagCreation,
+  } = useContext(ProvenanceDataContext);
   const [tableSchema, setTableSchema] = useState(null);
 
   let [isLoading, isError, schemaFromServer] = useFetchAPIData(async () => {
@@ -60,7 +62,8 @@ const TableDataLoader = (props) => {
     <DevTable
       provenanceData={currentTaskData}
       tableSchema={tableSchema}
-      handleProvenanceNodeClick={handleProvenanceNodeClick}></DevTable>
+      handleProvenanceNodeClick={handleProvenanceNodeClick}
+      handleTagCreation={handleTagCreation}></DevTable>
   ) : (
     <div>
       <Measure

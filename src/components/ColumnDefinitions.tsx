@@ -28,14 +28,66 @@ const QuantitativeCell = ({ rowData, name, commonScale }) => {
   return (
     <svg width={commonScale.range()?.[1]} height={cellHeight}>
       <rect
-        fill={"whitesmoke"}
+        fill={"gray"}
         width={commonScale(rowData[name])}
         height={cellHeight}></rect>
       {additionalComponents}
     </svg>
   );
 };
-
+export class NotesColumn {
+  constructor(metaData) {
+    this.width = metaData.width;
+    this.handleTagCreation = metaData.handleTagCreation;
+    this.selectionIndicies = [];
+  }
+  generateColumnObject() {
+    return {
+      title: "Notes",
+      name: "None",
+      cellStyle: {
+        padding: "4px 16px",
+      },
+      width: this.width,
+      customSort: (a, b) => b.tags.length - a.tags.length,
+      filterComponent: () => <div></div>,
+      render: (rowData) => {
+        if (!Array.isArray(rowData.tags)) {
+          rowData.tags = [];
+        }
+        return (
+          <TagWrapper
+            tags={rowData.tags}
+            onTagChange={(action, tag) => {
+              // check if rowData is selected;
+              if (action === "Add") {
+                rowData.tags.push(tag);
+                this.handleTagCreation(
+                  rowData.participantID,
+                  rowData.taskID,
+                  tag,
+                  "Add"
+                );
+              } else {
+                const index = rowData.tags.findIndex((iterTag) => {
+                  return iterTag.name === tag[0]?.name;
+                });
+                if (index > -1) {
+                  rowData.tags.splice(index, 1);
+                }
+                this.handleTagCreation(
+                  rowData.participantID,
+                  rowData.taskID,
+                  tag,
+                  "Delete"
+                );
+              }
+            }}></TagWrapper>
+        );
+      },
+    };
+  }
+}
 export class CategoricalColumn {
   constructor(data, name, metaData) {
     this.name = name;
@@ -138,9 +190,9 @@ export class QuantitativeColumn {
   }
 }
 export class ProvenanceColumn {
-  constructor(data, handleProvenanceNodeClick, metaData) {
+  constructor(data, metaData) {
     this.width = 300;
-    this.handleProvenanceNodeClick = handleProvenanceNodeClick;
+    this.handleProvenanceNodeClick = metaData.handleProvenanceNodeClick;
   }
   generateColumnObject() {
     return {
@@ -165,22 +217,23 @@ function renderNotesCell(rowData) {
   }
   return (
     <TagWrapper
-      tags={rowData.tableData.tags}
+      tags={rowData.tags}
       onTagChange={(action, tag) => {
         // check if rowData is selected;
         if (action === "Add") {
-          rowData.tableData.tags.push(tag);
+          rowData.tags.push(tag);
         } else {
-          const index = rowData.tableData.tags.findIndex((iterTag) => {
+          const index = rowData.tags.findIndex((iterTag) => {
             return iterTag.name === tag[0]?.name;
           });
           if (index > -1) {
-            rowData.tableData.tags.splice(index, 1);
+            rowData.tags.splice(index, 1);
           }
         }
       }}></TagWrapper>
   );
 }
+
 function renderNotesColumn(notesColumnWidth) {
   return {
     title: "Notes",

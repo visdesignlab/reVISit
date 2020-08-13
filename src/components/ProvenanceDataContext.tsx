@@ -187,11 +187,15 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   // }, [dataFromServer])
 
   //State
+
+  const handleTagCreation = (participantID, taskID, tag, action) => {
+    console.log("new tag", participantID, taskID, tag, action);
+  };
   let [taskSort, setTaskSort] = useState("name");
 
-  const [allProvenanceData, setAllProvenanceData] = useState(() =>
+  /*const [allProvenanceData, setAllProvenanceData] = useState(() =>
     processRawProvenanceData(initProvData)
-  );
+  );*/
 
   const [currentTaskData, setCurrentTaskData] = React.useState([]);
   const [selectedTaskIds, setSelectedTaskIds] = React.useState(["S-task01"]);
@@ -259,12 +263,12 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   return (
     <ProvenanceDataContext.Provider
       value={{
-        allProvenanceData,
         currentTaskData,
         taskStructure,
         handleChangeSelectedTaskId,
         selectedTaskIds,
         data,
+        handleTagCreation,
       }}>
       {children}
     </ProvenanceDataContext.Provider>

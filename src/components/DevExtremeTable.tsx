@@ -41,6 +41,7 @@ import {
   QuantitativeColumn,
   CategoricalColumn,
   ProvenanceColumn,
+  NotesColumn,
 } from "./ColumnDefinitions.tsx";
 const GroupCellContent = (props) => {
   console.log("props for group cell", props);
@@ -99,40 +100,12 @@ const ProvenanceCells = ({ value, style, ...restProps }) => {
     item = restProps.column.render(restProps.row);
   }
   return (
-    <VirtualTable.Cell {...restProps} style={style}>
+    <VirtualTable.Cell {...restProps} style={{ margin: "16px" }}>
       {item}
     </VirtualTable.Cell>
   );
 };
 
-const extraColumns = [
-  {
-    title: "Confidence",
-    name: "answerConfidence",
-    type: "quantitative",
-    accessor: (participant) => {
-      return parseInt(participant.feedback.confidence);
-    },
-  },
-  {
-    title: "Difficulty",
-    name: "taskDifficulty",
-    type: "quantitative",
-    accessor: (participant) => {
-      return parseInt(participant.feedback.difficulty);
-    },
-  },
-  {
-    title: "Answer Text",
-    name: "answerText",
-    type: "string",
-    accessor: (participant) => {
-      return participant.answer.value !== ""
-        ? participant.answer.value
-        : participant.answer.nodes;
-    },
-  },
-];
 function getGroupSummaryValues(props) {
   console.log(props);
   //const { selection, rows, totalSummaryItems } = this.state;
@@ -144,15 +117,8 @@ function getGroupSummaryValues(props) {
     });*/
 }
 // must use non zero order else !order is true
-let columnMetaData = {
-  participantID: { order: 1 },
-  condition: { order: 2 },
-  accuracy: { width: 75, order: 3 },
-  time: { width: 200, order: 4 },
-  sequence: { width: 300, order: 5 },
-};
 
-function getColumnMetaData(columnKey) {
+function getColumnMetaData(columnKey, columnMetaData) {
   if (columnMetaData[columnKey]) {
     return columnMetaData[columnKey];
   } else {
@@ -160,22 +126,13 @@ function getColumnMetaData(columnKey) {
   }
 }
 
-function generateColumnDefinition(
-  columnSchema,
-  data,
-  handleProvenanceNodeClick
-) {
+function generateColumnDefinition(columnSchema, data, columnsMetaData) {
   let defaultColumnDefinition;
-  const columnMetaData = getColumnMetaData(columnSchema.COLUMN_NAME);
+  const columnMetaData = getColumnMetaData(
+    columnSchema.COLUMN_NAME,
+    columnsMetaData
+  );
   if (columnSchema.DATA_TYPE === "int" || columnSchema.DATA_TYPE === "float") {
-    /*return {
-      title: columnSchema.COLUMN_NAME,
-      name: columnSchema.COLUMN_NAME,
-      render: (rowData) => <span>{rowData[columnSchema.COLUMN_NAME]}</span>,
-      width: 100,
-    };*/
-    console.log("Quant", columnSchema.COLUMN_NAME);
-
     defaultColumnDefinition = new QuantitativeColumn(
       data,
       columnSchema.COLUMN_NAME,
@@ -191,17 +148,9 @@ function generateColumnDefinition(
       columnMetaData
     );
   } else if (columnSchema.DATA_TYPE === "provenance") {
-    defaultColumnDefinition = new ProvenanceColumn(
-      data,
-      handleProvenanceNodeClick,
-      columnMetaData
-    );
+    defaultColumnDefinition = new ProvenanceColumn(data, columnMetaData);
   } else if (columnSchema.DATA_TYPE === "tag") {
-    defaultColumnDefinition = new CategoricalColumn(
-      data,
-      columnSchema.COLUMN_NAME,
-      columnMetaData
-    );
+    defaultColumnDefinition = new NotesColumn(columnMetaData);
     /*
     defaultColumnDefinition = {
       title: columnSchema.COLUMN_NAME,
@@ -221,6 +170,7 @@ const DevExtremeTable = ({
   provenanceData,
   handleProvenanceNodeClick,
   tableSchema,
+  handleTagCreation,
 }) => {
   console.log(provenanceData);
   // map through the provided schema creating the column definitions
@@ -307,7 +257,6 @@ const DevExtremeTable = ({
   });
   */
 
-  const [selection, setSelection] = useState([]);
   /*
   // Column Defs
   const [userIdColumnDefinition, setUserIdColumnDefinition] = useState(
@@ -333,7 +282,18 @@ const DevExtremeTable = ({
   const [notesColumnDefinition, setNotesColumnDefinition] = useState(
     renderNotesColumn(200)
   );*/
-
+  let columnMetaData = {
+    participantID: { order: 1 },
+    condition: { order: 2 },
+    accuracy: { width: 125, order: 3 },
+    time: { width: 200, order: 4 },
+    sequence: {
+      width: 300,
+      order: 5,
+      handleProvenanceNodeClick: handleProvenanceNodeClick,
+    },
+    notes: { width: 200, order: 6, handleTagCreation: handleTagCreation },
+  };
   React.useEffect(() => {
     /*
     setTimeColumnDefinition(renderTimeColumn(provenanceData, 250));
@@ -348,7 +308,7 @@ const DevExtremeTable = ({
           generateColumnDefinition(
             columnSchema,
             provenanceData,
-            handleProvenanceNodeClick
+            columnMetaData
           ).generateColumnObject()
         )
         .sort((a, b) => {
@@ -371,7 +331,7 @@ const DevExtremeTable = ({
         generateColumnDefinition(
           columnSchema,
           provenanceData,
-          handleProvenanceNodeClick
+          columnMetaData
         ).generateColumnObject()
       )
       .sort((a, b) => {
@@ -386,6 +346,11 @@ const DevExtremeTable = ({
         return a.order > b.order ? 1 : -1;
       })
   );
+  const [selection, setSelectionInternal] = useState([]);
+
+  const setSelection = (indicies) => {
+    setSelectionInternal(selectionIndicies);
+  };
   console.log(columns);
 
   //console.log(provenanceData, ...extraColumnDefinitions, columns);
