@@ -6,7 +6,7 @@ import TagWrapper from "./reactTagWrapper";
 import ProvenanceIsolatedNodes from "./ProvenanceIsolatedNodes";
 
 const columnOverrides = {};
-const filterQuantitativeValues = (filter, value, row) =>
+const filterQuantitativeValues = (filter, value) =>
   filter.filterMin && value <= filter.filterMax;
 
 const QuantitativeCell = ({ rowData, name, commonScale }) => {
@@ -107,7 +107,7 @@ export class CategoricalColumn {
   }
 }
 export class QuantitativeColumn {
-  constructor(data, name, metaData) {
+  constructor(data, name, metaData, handleFilterChange) {
     this.name = name;
     this.data = data;
     this.height = 30;
@@ -115,8 +115,10 @@ export class QuantitativeColumn {
     this.order = metaData.order;
     this.hideByDefault = metaData.hideByDefault;
     this.customSort = (a, b) => a[this.name] - b[this.name];
-    this.customFilterAndSearch = (filter, value, row) => {
-      return filterQuantitativeValues(filter, value, row);
+    this.handleFilterChange = handleFilterChange;
+    this.customFilterAndSearch = (filter, value) => {
+      console.log("inside customFilterAndSearch", filter, value);
+      return filterQuantitativeValues(filter.value, value);
     };
     this.cellComponent = (rowData) => {
       return (
@@ -207,7 +209,10 @@ export class QuantitativeColumn {
             yScale={this.yScale}
             buckets={this.buckets}
             height={this.height}
-            onFilter={(val) => console.log(val)}
+            onFilter={(filter, value, row) => {
+              console.log("in filter", filter, value, row);
+              return this.handleFilterChange(this.name, filter);
+            }}
             data={this.data.map(
               (datum) => datum[this.name]
             )}></QuantitativeFilter>

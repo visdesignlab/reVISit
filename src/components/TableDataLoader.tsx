@@ -56,7 +56,11 @@ const TableDataLoader = (props) => {
     setTableSchema(tableSchema);
   }, [schemaFromServer]);
   console.log("tableschema", tableSchema);
-  const dependenciesLoaded = !!(currentTaskData.length > 0 && tableSchema);
+  const dependenciesLoaded = !!(
+    currentTaskData &&
+    currentTaskData.length > 0 &&
+    tableSchema
+  );
 
   return dependenciesLoaded ? (
     <DevTable

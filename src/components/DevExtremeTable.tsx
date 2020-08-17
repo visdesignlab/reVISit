@@ -126,7 +126,12 @@ function getColumnMetaData(columnKey, columnMetaData) {
   }
 }
 
-function generateColumnDefinition(columnSchema, data, columnsMetaData) {
+function generateColumnDefinition(
+  columnSchema,
+  data,
+  columnsMetaData,
+  handleFilterChange
+) {
   let defaultColumnDefinition;
   const columnMetaData = getColumnMetaData(
     columnSchema.COLUMN_NAME,
@@ -136,7 +141,8 @@ function generateColumnDefinition(columnSchema, data, columnsMetaData) {
     defaultColumnDefinition = new QuantitativeColumn(
       data,
       columnSchema.COLUMN_NAME,
-      columnMetaData
+      columnMetaData,
+      handleFilterChange
     );
   } else if (
     columnSchema.DATA_TYPE === "longtext" ||
@@ -145,7 +151,8 @@ function generateColumnDefinition(columnSchema, data, columnsMetaData) {
     defaultColumnDefinition = new CategoricalColumn(
       data,
       columnSchema.COLUMN_NAME,
-      columnMetaData
+      columnMetaData,
+      handleFilterChange
     );
   } else if (columnSchema.DATA_TYPE === "provenance") {
     console.log("provenance", columnMetaData);
@@ -174,7 +181,20 @@ const DevExtremeTable = ({
   handleTagCreation,
 }) => {
   console.log("handleProvenanceNodeClick", handleProvenanceNodeClick);
-
+  const [filters, setFilters] = React.useState([]);
+  const handleFilter = (columnName, value) => {
+    console.log("in handle filter", columnName, value);
+    const currentFilterIndex = filters.findIndex(
+      (filter) => filter.name === columnName
+    );
+    const clonedFilters = Object.assign([], filters);
+    if (currentFilterIndex > -1) {
+      clonedFilters[currentFilterIndex] = { name: columnName, value: value };
+    } else {
+      clonedFilters.push({ columnName: columnName, value: value });
+    }
+    setFilters(clonedFilters);
+  };
   let columnMetaData = {
     participantID: { order: 1 },
     condition: { order: 2 },
@@ -187,6 +207,7 @@ const DevExtremeTable = ({
     },
     notes: { width: 200, order: 6, handleTagCreation: handleTagCreation },
   };
+
   React.useEffect(() => {
     /*
     setTimeColumnDefinition(renderTimeColumn(provenanceData, 250));
@@ -201,7 +222,8 @@ const DevExtremeTable = ({
           generateColumnDefinition(
             columnSchema,
             provenanceData,
-            columnMetaData
+            columnMetaData,
+            handleFilter
           ).generateColumnObject()
         )
         .sort((a, b) => {
@@ -276,9 +298,11 @@ const DevExtremeTable = ({
 
   const [filteringColumnExtensions] = useState(
     columns.map((column) => {
+      console.log("in custom filter", column);
       return {
         columnName: column.name,
         predicate: (value, filter, row) => {
+          console.log("in predicate filter", value, filter, row);
           //if (!filter.value.length) return true;
           if (column.customFilterAndSearch) {
             return column.customFilterAndSearch(filter, value, row);
@@ -288,6 +312,7 @@ const DevExtremeTable = ({
       };
     })
   );
+  console.log("filteringColumnExtensions", filteringColumnExtensions);
 
   const [groupSummaryItems] = useState(
     columns.map((column) => {
@@ -318,7 +343,7 @@ const DevExtremeTable = ({
     }
     return rows;
   };
-
+  console.log("current filters", filters);
   return (
     <Paper>
       <Grid rows={rows} columns={columns}>
@@ -334,7 +359,7 @@ const DevExtremeTable = ({
           columnExtensions={integratedGroupingColumnExtensions}
         />
         <IntegratedSummary calculator={summaryCalculator} />
-        <FilteringState defaultFilters={[]} />
+        <FilteringState filters={filters} onFiltersChange={setFilters} />
         <IntegratedFiltering
           columnExtensions={filteringColumnExtensions}></IntegratedFiltering>
         <SelectionState
