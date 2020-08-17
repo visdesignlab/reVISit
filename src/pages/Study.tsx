@@ -64,8 +64,6 @@ function scale(width, maxValue) {
 let xDomain, yDomain, categories;
 
 
-
-
 export default function StudyCard() {
     const classes = useStyles();
     const bull = <span className={classes.bullet}>•</span>;
@@ -76,32 +74,29 @@ export default function StudyCard() {
         let width = size.width;
         let height = size.height;
 
+        let xScale = d3.scaleLinear().domain([0, xDomain[1]]).range([0, width - 40])
+        let yScale = d3.scaleLinear().domain(yDomain).range([height, 0])
+
+        //metrics to plot in each task label
+        let metrics = ['accuracy', 'difficulty', 'confidence']
+
+
         // let barHeight = 20;
         let barPadding = 2;
         let metricSquare = 8;
-        let metrics = ['accuracy', 'difficulty', 'confidence']
+        let barHeight = 16
+        let labelHeight = 15
+        let textWidth = 30;
+        let labelWidth = textWidth + metrics.length * (metricSquare + barPadding) + textWidth  + barPadding
+        let axisHeight = yScale.range()[0] + barHeight + 3
+
         //compute scale for data; 
         // let xDomain = d3.extent(data, d => d.elapsedTime);
         // let yDomain = d3.extent(data, d => d.level);
         // let colors = ["rgb(96, 201, 110)", "rgb(0, 191, 128)", "rgb(0, 180, 147)", "rgb(0, 167, 165)", "rgb(0, 153, 179)", "rgb(0, 138, 188)", "rgb(0, 122, 189)", "rgb(0, 104, 182)", "rgb(42, 85, 168)", "rgb(77, 65, 147)"]
         let colors = ["rgb(0, 153, 179)", "rgb(0, 138, 188)", "rgb(0, 122, 189)", "rgb(0, 104, 182)", "rgb(42, 85, 168)", "rgb(77, 65, 147)"]
         // let colors = [ "#e6f598", "#abdda4", "#66c2a5", "#3288bd", "#5e4fa2", "#9e0142", "#d53e4f", "#f46d43", "#fdae61","#fee08b", "#ffffbf", ]
-        let barHeight = 16
-        let labelHeight = 24
-
-        let timeAxisHeight = 10
-
-        let xScale = d3.scaleLinear().domain([0, xDomain[1]]).range([0, width - 40])
-        let yScale = d3.scaleLinear().domain(yDomain).range([height, 0])
-        let accuracyScale = d3.scaleLinear().domain([0, 1]).range(["#e6550d", "#3182bd"]) // "#3288bd"
-        let confidenceScale = d3.scaleLinear().domain([1, 7]).range(["#e6550d", "#3182bd"]) // "#3288bd"
-        let difficultyScale = d3.scaleLinear().domain([1, 7]).range(["#3182bd", "#e6550d"]) // "#3288bd"
-
-        let accScale = d3.scaleLinear().domain([0, 1]).range([barPadding, labelHeight - barPadding]) // "#3288bd"
-        let confScale = d3.scaleLinear().domain([1, 7]).range([barPadding, labelHeight - barPadding]) // "#3288bd"
-        let diffScale = d3.scaleLinear().domain([1, 7]).range([labelHeight - barPadding, barPadding]) // "#3288bd"
-
-        // let colorScale = d3.scaleOrdinal(d3.schemeTableau10).domain(categories);
+       
         let colorScale = d3.scaleOrdinal(colors).domain(categories);
 
         let color = function (d) {
@@ -113,28 +108,22 @@ export default function StudyCard() {
         }
 
         let maxTime = Math.max(...eventData.map(d => d.elapsedTime + d.duration))
-        let studyStart = eventData.find(d => d.eventID == 'study').elapsedTime
-        let axisHeight = yScale.range()[0] + barHeight + 3
-
         let phases = eventData.filter(d => d.level == 0)
 
-
         var filteredData = eventData.filter(d => d.eventID == 'task' && d.category == 'Study' && d.taskID && d.taskID.includes('S-task')).sort((a, b) => a.elapsedTime > b.elapsedTime ? 1 : - 1);
-        let labelPos = [];
+    
+        //compute y position for labels
         let y = 1;
-        let textWidth = 30;
-        let labelWidth = textWidth + metrics.length * (metricSquare + barPadding)
+        let labelPos = [];
 
         let nodes = filteredData.map(d => {
-
             let labelStart = xScale(d.elapsedTime)
             let labelExtent = xScale(d.elapsedTime) + labelWidth + 8;
             let level = labelPos.find(p => p.x < labelStart);
             let n = {};
             n['data'] = d;
-            // console.log(level)
             if (!level) {
-                y = y + 1.2;
+                y = y + 1;
                 labelPos.push({ y, x: labelExtent, label: d.shortName })
                 n['y'] = y;
             } else {
@@ -147,24 +136,51 @@ export default function StudyCard() {
             return n;
         })
 
-        nodes.map(n => {
-            let taskInfo = data.tasks.find(dd => dd.taskID == n.data.taskID);
+        let metricColorScales={}; //one color scale per metric
+        let metricYScales={} // one y scale per metric
+        let taskTimeScales = {} // one time scale per task (depending on the range of completion times)
 
+        let colorRange = ["#e6550d", "#3182bd"];
+        let heightRange = [barPadding, labelHeight - barPadding]
+        let timeScaleRange = [barPadding, textWidth-2*barPadding];
+
+ 
+        let getStats = function(taskID,condition,metric){
+            let taskInfo = data.tasks.find(dd => dd.taskID == taskID);
+            let out = {}
             if (taskInfo) {
-                let stats = taskInfo.conditions[n.data.condition.trim()].stats.find(t => t.metric == 'time');
-                n.data['average'] = stats.ci[0];
-                n.data['lowerBound'] = stats.ci[1];
-                n.data['upperBound'] = stats.ci[2];
+                let stats = taskInfo.conditions[condition.trim()].stats.find(t => t.metric == metric);
+                out['average'] = stats.ci[0];
+                out['lowerBound'] = stats.ci[1];
+                out['upperBound'] = stats.ci[2];
+                out['min'] =stats.min;
+                out['max'] = stats.max;
             }
+            return out
+        }
 
-
+        //get stats for all metrics to be displayed in the label plus time. 
+        nodes.map(n=>{
+            n.data.stats={}
+            metrics.map(metric=>{
+                n.data.stats[metric] = getStats(n.data.taskID,n.data.condition,metric)
+            })
+            n.data.stats['time'] = getStats(n.data.taskID,n.data.condition,'time')
         })
 
-        let durations = nodes.map(n => n.data.duration)
-        let averages = nodes.map(n => n.data.upperBound)
-        
+        metrics.map(metric => {
+            //create metric scales for color and height of bars
+            metricColorScales[metric] = d3.scaleLinear().range(colorRange).domain(data.metrics[metric])
+            metricYScales[metric] = d3.scaleLinear().range(heightRange).domain(data.metrics[metric])
+        })
 
-        let compressedTimeScale = d3.scaleLinear().range([barPadding, textWidth]).domain([0, d3.max([...durations, ...averages])])
+        data.taskList.map(task => {
+            data.conditions.map(condition => {
+                let stats = getStats(task, condition, 'time')
+                //WARNING, right now setting a single range for time, regardless of task/condtion since the backend returns a common scale for all metrics
+                taskTimeScales[task] = d3.scaleLinear().range(timeScaleRange).domain([stats['min'], stats['max']])
+            })
+        })
 
         // console.log(nodes)
         // console.log('nodePos',labelPos)
@@ -201,11 +217,10 @@ export default function StudyCard() {
 
                     {nodes.map(n => <line x1={xScale(n.data.elapsedTime) + barPadding} y1={yScale(n.data.level) + 15} x2={xScale(n.data.elapsedTime) + barPadding} y2={yScale(n.y)+labelHeight} style={{ stroke: 'rgb(150,150,150)', strokeWidth: '.8px'}}></line>)}
 
-
-
                     {nodes.map(n => {
                         let ciPlot, background;
 
+                        let timeScale = taskTimeScales[n.data.taskID];
 
                         let label = <g style={{ "transform": "translate(" + (xScale(n.data.elapsedTime)+barPadding) + "px, " + (yScale(n.y)) + "px)" }}>
                         <rect className='count' key={'background_' + n.data.eventID} style={{ fill: 'rgb(245,245,245)' }}
@@ -225,19 +240,24 @@ export default function StudyCard() {
                             </text>
                         </g>
 
-                        if (n.data.average) {
-
-                            let plotHeight = yScale(n.y) + barHeight
+                        if (Object.keys(n.data.stats).includes('time')) {
+                            let plotHeight  = yScale(n.y) + barHeight
                             let maxWidth = Math.max(xScale(n.data.duration) + barPadding, xScale(n.data.upperBound));
 
-                            let slower = n.data.average < n.data.duration;
-                            let diff = Math.abs(n.data.average - n.data.duration)
+                            let avg = n.data.stats['time'].average
+                            let slower = avg < n.data.duration;
+                            let minTime = Math.min(avg,n.data.duration)
+                            let diff = Math.abs(avg - n.data.duration)
 
-                            ciPlot = <g style={{ "transform": "translate(" + (xScale(n.data.elapsedTime) + 2*barPadding) + "px, " + (yScale(n.y)+labelHeight*0.75) + "px)" }}>
+                            let timePadding = 2;
+                            let glyphSize = 4;
+                            let lineHeight = 2;
 
-                                {/* <line x1={compressedTimeScale.range()[0]} y1={0} x2={compressedTimeScale.range()[1]} y2={0} style={{ stroke: 'rgb(150,150,150)', strokeWidth: '.8px' }}></line> */}
+                            ciPlot = <g style={{ "transform": "translate(" + (xScale(n.data.elapsedTime) + (labelWidth - textWidth) + barPadding) + "px, " + (yScale(n.y)) + "px)" }}>
 
-                           
+                                <line x1={timeScale.range()[0]} y1={labelHeight/2+lineHeight/2} x2={timeScale.range()[1]} y2={labelHeight/2+lineHeight/2} style={{ stroke: 'rgb(200,200,200)', strokeWidth: '.8px' }}></line>
+
+                       
 
      {/*
                                 <line
@@ -248,15 +268,23 @@ export default function StudyCard() {
                                     y1={0}
                                     y2={0}></line> */}
 
+                                <rect x={timeScale(minTime)} y={timePadding} width={Math.abs(timeScale(avg) - timeScale(n.data.duration))} height={labelHeight - 2 * timePadding} style={{ fill: slower ? '#ff8d00' : 'rgb(53 130 184)', opacity: '.8' }}></rect>
 
-                                <rect x={compressedTimeScale.range()[0]} y={-3} width ={Math.abs(compressedTimeScale(n.data.average) - compressedTimeScale(n.data.duration))} height={6} style={{ fill: slower ? '#ff8d00' : 'rgb(53 130 184)', opacity: '.8' }}></rect>
+                                <rect x={timeScale(minTime)} y={labelHeight/2} width={timeScale(diff)} height={lineHeight} style={{ fill: slower ? '#ff8d00' : 'rgb(53 130 184)', opacity: '.8' }}></rect>
+                                {/* <rect x={timeScale(avg)} y={timePadding} width={1} height={labelHeight - 2 * timePadding} style={{ fill: 'black', opacity: '1', 'rx': 0 }}></rect> */}
 
-                                <circle
+                                {/* <rect x={0} y={0} width ={glyphSize} height={glyphSize}  transform ={"translate(" + timeScale(avg) + "," +  (labelHeight/2) + ") rotate(45,2,2)"} style={{ fill: 'black', opacity: '1'}}></rect> */}
+                                <rect x={0} y={0} width ={glyphSize} height={glyphSize}  style={{ fill: 'black', opacity: '1', transform: "translate(" + timeScale(avg) + "px," +  (labelHeight/2 - glyphSize/2) + "px) rotate(45deg)"}}></rect>
+
+                                <rect x={0} y={0} width ={glyphSize} height={glyphSize}  style={{ fill: 'red', opacity: '1', transform: "translate(" + timeScale(n.data.duration) + "px," +  (labelHeight/2 - glyphSize/2) + "px) rotate(45deg)"}}></rect>
+
+
+                                {/* <circle
                                     className="count"
                                     style={{ stroke: "black", opacity: 1, strokeWidth: '1px' }}
                                     cx={ slower ? compressedTimeScale.range()[0] : compressedTimeScale(diff)  }
                                     cy={0}
-                                    r={1}></circle>
+                                    r={1}></circle> */}
 
                                 {/* <line x1={compressedTimeScale(n.data.average)} y1={-3} x2={compressedTimeScale(n.data.average)} y2={3} style={{ stroke: 'black', strokeWidth: '1px' }}></line> */}
 
@@ -275,44 +303,45 @@ export default function StudyCard() {
                         let metricPlot = <>
                             {metrics.map((m, i) => {
 
-                                let c;
-                                let d = n.data[m]
-                                if (m == 'accuracy') {
-                                    c = accuracyScale(d)
-                                } else if (m == 'difficulty') {
-                                    c = difficultyScale(d)
-                                } else {
-                                    c = confidenceScale(d)
-                                }
-
-                                let e;
-                                if (m == 'accuracy') {
-                                    e = accScale(d)
-                                } else if (m == 'difficulty') {
-                                    e = diffScale(d)
-                                } else {
-                                    e = confScale(d)
-                                }
+                                let avg = n.data.stats[m].average;
+                                let value = n.data[m]
+                                let vertScale = metricYScales[m];
+                                let colorScale = metricColorScales[m];
+                                let better = value > avg;
+                                let maxValue = Math.max(avg, value)
+                                let diff = Math.abs(avg - value)
 
 
-                                // return <rect className='count' key={'d_' + n.data.eventID + Math.random()} style={{ fill: c, opacity: 1, 'rx': metricSquare }} // 'rx': metricSquare 
-                                //     x={xScale(n.data.elapsedTime) + 25 + barPadding + i * (metricSquare + barPadding)}
-                                //     y={yScale(n.y)+barHeight/2 - metricSquare/2}
-                                //     width={n.data.eventID == 'task' ? metricSquare : 0}
-                                //     height={metricSquare}></rect>
-
-
-                                return <>
-                                    <line x1={xScale(n.data.elapsedTime) + textWidth + barPadding + i * (metricSquare + barPadding)} y1={yScale(n.y)} x2={xScale(n.data.elapsedTime) + textWidth + barPadding + i * (metricSquare + barPadding)} y2={yScale(n.y) + labelHeight} style={{ "stroke": "rgb(0,0,0,0.25)", "strokeWidth": .8, 'strokeDasharray': '1px' }}></line>
-                                    <rect className='count' key={'d_' + n.data.eventID + Math.random()} style={{ fill: c, opacity: 1 }} // 'rx': metricSquare 
-                                        x={xScale(n.data.elapsedTime) + textWidth + barPadding + i * (metricSquare + barPadding)}
-                                        y={yScale(n.y) + labelHeight - e}
+                                return <g style={{ "transform": "translate(" + (xScale(n.data.elapsedTime) + textWidth + barPadding + i * (metricSquare + barPadding)) + "px, " + yScale(n.y) + "px)" }}>
+                                    {/* <line x1={xScale(n.data.elapsedTime) + textWidth + i * (metricSquare + barPadding)} y1={yScale(n.y)} x2={xScale(n.data.elapsedTime) + textWidth  + i * (metricSquare + barPadding)} y2={yScale(n.y) + labelHeight} style={{ "stroke": "rgb(0,0,0,0.25)", "strokeWidth": .8 }}></line> */}
+                                    {/* <rect className='count' key={'d_' + n.data.eventID + Math.random()} style={{ fill: colorScale(value), opacity: 1 }} // 'rx': metricSquare 
+                                        x={0}
+                                        y={labelHeight - yScale(value)}
                                         width={n.data.eventID == 'task' ? metricSquare : 0}
-                                        height={2}></rect>
-                                    {i == metrics.length - 1 ? <line x1={xScale(n.data.elapsedTime) + textWidth + barPadding + (i + 1) * (metricSquare + barPadding)} y1={yScale(n.y)} x2={xScale(n.data.elapsedTime) + textWidth + barPadding + (i + 1) * (metricSquare + barPadding)} y2={yScale(n.y) + labelHeight} style={{ "stroke": "rgb(0,0,0,0.25)", "strokeWidth": .8, 'strokeDasharray': '1px' }}></line>
-                                        : ''}
+                                        height={2}></rect> */}
+                                    <rect className='count' key={'d_' + n.data.eventID + Math.random()} style={{ fill: 'black', opacity: 1 }} // 'rx': metricSquare 
+                                        x={0}
+                                        y={labelHeight - vertScale(avg)}
+                                        width={n.data.eventID == 'task' ? metricSquare : 0}
+                                        height={1}></rect>
 
-                                </>
+                                    {/* <rect className='count' key={'d_' + n.data.eventID + Math.random()} style={{ fill: 'red', opacity: 1 }} // 'rx': metricSquare 
+                                        x={-5}
+                                        y={labelHeight - vertScale(value)}
+                                        width={n.data.eventID == 'task' ? metricSquare + 5 : 0}
+                                        height={.5}></rect> */}
+
+
+                                    <rect className='count' key={'d_' + n.data.eventID + Math.random()} style={{ fill: colorScale(value), opacity: .8 }} // 'rx': metricSquare 
+                                        x={0}
+                                        y={labelHeight - vertScale(maxValue)}
+                                        width={n.data.eventID == 'task' ? metricSquare : 0}
+                                        height={Math.abs(vertScale(avg) - vertScale(value))}></rect>
+
+                                    {/* {i == metrics.length - 1 ? <line x1={xScale(n.data.elapsedTime) + textWidth + barPadding + (i + 1) * (metricSquare + barPadding)} y1={yScale(n.y)} x2={xScale(n.data.elapsedTime) + textWidth + barPadding + (i + 1) * (metricSquare + barPadding)} y2={yScale(n.y) + labelHeight} style={{ "stroke": "rgb(0,0,0,0.25)", "strokeWidth": .8}}></line> */}
+                                        {/* : ''} */}
+
+                                </g>
                             })}
                         </>
 
@@ -429,7 +458,7 @@ export default function StudyCard() {
                                                             </Typography> */}
                                                         {/* </Box> */}
 
-                                                        {eventMap(participant.study, { width: 1600, height: 30 })}
+                                                        {eventMap(participant.study, { width: 1600, height: 25 })}
                                                     </Box>
 
                                                 </Grid>

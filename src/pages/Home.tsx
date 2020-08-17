@@ -2,6 +2,8 @@ import React, { useContext } from "react";
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
 import Card from "@material-ui/core/Card";
 import CardActions from "@material-ui/core/CardActions";
+import CardMedia from '@material-ui/core/CardMedia';
+
 import CardContent from "@material-ui/core/CardContent";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
@@ -9,6 +11,14 @@ import Box from "@material-ui/core/Box";
 import Tooltip from "@material-ui/core/Tooltip";
 import TrendingFlatIcon from "@material-ui/icons/TrendingFlat";
 import Divider from "@material-ui/core/Divider";
+
+
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+
+import ListItemText from '@material-ui/core/ListItemText';
+
+
 
 import { useFetchAPIData } from "../hooks/hooks";
 
@@ -28,6 +38,11 @@ const useStyles = makeStyles({
     minWidth: 275,
     flexGrow: 1,
   },
+  media:{
+    width:411,
+    height:217,
+    border: '1px solid lightgray'
+  },
   bullet: {
     display: "inline-block",
     margin: "0 2px",
@@ -42,10 +57,10 @@ const useStyles = makeStyles({
 });
 
 var groupBy = function (xs, key) {
-    return xs.reduce(function (rv, x) {
-        (rv[x[key]] = rv[x[key]] || []).push(x);
-        return rv;
-    }, {});
+  return xs.reduce(function (rv, x) {
+    (rv[x[key]] = rv[x[key]] || []).push(x);
+    return rv;
+  }, {});
 };
 
 
@@ -252,118 +267,118 @@ function BarChart(props) {
 }
 
 export default function TaskCard() {
-    // const classes = useStyles();
-    // const bull = <span className={classes.bullet}>•</span>;
+  // const classes = useStyles();
+  // const bull = <span className={classes.bullet}>•</span>;
 
-    // const { data } = useContext(ProvenanceDataContext);
+  // const { data } = useContext(ProvenanceDataContext);
 
-    // // })
-    // let colorScale = d3.scaleLinear()
-    //     .domain([0, 800])
-    //     .range([0.3, 1])
+  // // })
+  // let colorScale = d3.scaleLinear()
+  //     .domain([0, 800])
+  //     .range([0.3, 1])
 
-    //     // console.log(data)
-    // //Only render when all API calls have returned 
-    // let ready = data;
-    // return (ready == undefined ? <></> : <>
-    //     {
-    //         data.tasks.map(task => {
-    //             let taskTooltip =
-    //                 <Typography>
-    //                     {task.prompt}
-    //                 </Typography>
-    //             return (<Box m={2} key={'box_' + task.taskID} style={{ display: 'inline-block' }} >
-    //                 {/* style={{ 'width': 600 }}  */}
-    //                 <Card className={classes.root} key={task.taskID}  >
-    //                     <CardContent>
-    //                         <Typography variant="h5" component="h2">
-    //                             {task.name}
-    //                         </Typography>
-    //                         <Tooltip title={taskTooltip}>
-    //                             <Typography className={classes.pos} color="textSecondary"  >
-    //                                 {task.prompt.slice(0, 60)}
-    //                             </Typography>
-    //                         </Tooltip>
-    //                         <Divider />
+  //     // console.log(data)
+  // //Only render when all API calls have returned 
+  // let ready = data;
+  // return (ready == undefined ? <></> : <>
+  //     {
+  //         data.tasks.map(task => {
+  //             let taskTooltip =
+  //                 <Typography>
+  //                     {task.prompt}
+  //                 </Typography>
+  //             return (<Box m={2} key={'box_' + task.taskID} style={{ display: 'inline-block' }} >
+  //                 {/* style={{ 'width': 600 }}  */}
+  //                 <Card className={classes.root} key={task.taskID}  >
+  //                     <CardContent>
+  //                         <Typography variant="h5" component="h2">
+  //                             {task.name}
+  //                         </Typography>
+  //                         <Tooltip title={taskTooltip}>
+  //                             <Typography className={classes.pos} color="textSecondary"  >
+  //                                 {task.prompt.slice(0, 60)}
+  //                             </Typography>
+  //                         </Tooltip>
+  //                         <Divider />
 
-    //                         {Object.keys(task.conditions).map(key => {
-    //                             let condition = task.conditions[key];
-    //                             //old way with /actions endpoint. 
-    //                             let frequentActions = condition.actions.map(a => ({ event: a.label, id: a.actionID, count: a.count, scale: colorScale(a.count) })) //actions.filter(a => a.taskID == task.taskID && a.condition == condition).splice(0, 5).map(a => ({ event: a.label, id: a.actionID, count: a.count, scale: colorScale(a.count) }))
-    //                             // let obj = actions.find(a => a.group.taskID == task.taskID && a.group.condition == condition).count
-    //                             // let frequentActions = Object.entries(obj).sort((a, b) => a[1] > b[1] ? -1 : 1).splice(0, 5).map(a => ({ event: a[0], id: a[0], count: a[1], scale: colorScale(a[1]) }))
-    //                             let filteredMetrics = condition.stats //metrics.filter(m => m.group.taskID == task.taskID && m.group.condition == condition);
-    //                             let metricValues = [... new Set(filteredMetrics.map(m => m.metric))];// console.log(frequentActions)
+  //                         {Object.keys(task.conditions).map(key => {
+  //                             let condition = task.conditions[key];
+  //                             //old way with /actions endpoint. 
+  //                             let frequentActions = condition.actions.map(a => ({ event: a.label, id: a.actionID, count: a.count, scale: colorScale(a.count) })) //actions.filter(a => a.taskID == task.taskID && a.condition == condition).splice(0, 5).map(a => ({ event: a.label, id: a.actionID, count: a.count, scale: colorScale(a.count) }))
+  //                             // let obj = actions.find(a => a.group.taskID == task.taskID && a.group.condition == condition).count
+  //                             // let frequentActions = Object.entries(obj).sort((a, b) => a[1] > b[1] ? -1 : 1).splice(0, 5).map(a => ({ event: a[0], id: a[0], count: a[1], scale: colorScale(a[1]) }))
+  //                             let filteredMetrics = condition.stats //metrics.filter(m => m.group.taskID == task.taskID && m.group.condition == condition);
+  //                             let metricValues = [... new Set(filteredMetrics.map(m => m.metric))];// console.log(frequentActions)
 
-    //                             return <>
-    //                                 <Typography variant='overline'>
-    //                                     {key}
-    //                                 </Typography>
+  //                             return <>
+  //                                 <Typography variant='overline'>
+  //                                     {key}
+  //                                 </Typography>
 
-    //                                 <Grid container className={classes.root} spacing={2}>
-    //                                     <Grid item xs={12}>
-    //                                         <Grid container justify="flex-start" spacing={2}>
-    //                                             <Grid key={'prov'} item>
-    //                                                 <>
-    //                                                     <Box mt={'5px'} mb={'6px'} >
-    //                                                         <ProvenanceIsolatedNodes key={task.taskID} nodes={frequentActions}></ProvenanceIsolatedNodes>
-    //                                                     </Box>
-    //                                                     <Typography className={classes.pos} variant='overline' color="primary"  >
-    //                                                         Actions
-    //                                                     </Typography>
-    //                                                 </>
-    //                                             </Grid>
-    //                                             <Box mt={'15px'}>
-    //                                                 <Grid key={'then'} item>
-    //                                                     <TrendingFlatIcon />
-    //                                                 </Grid>
+  //                                 <Grid container className={classes.root} spacing={2}>
+  //                                     <Grid item xs={12}>
+  //                                         <Grid container justify="flex-start" spacing={2}>
+  //                                             <Grid key={'prov'} item>
+  //                                                 <>
+  //                                                     <Box mt={'5px'} mb={'6px'} >
+  //                                                         <ProvenanceIsolatedNodes key={task.taskID} nodes={frequentActions}></ProvenanceIsolatedNodes>
+  //                                                     </Box>
+  //                                                     <Typography className={classes.pos} variant='overline' color="primary"  >
+  //                                                         Actions
+  //                                                     </Typography>
+  //                                                 </>
+  //                                             </Grid>
+  //                                             <Box mt={'15px'}>
+  //                                                 <Grid key={'then'} item>
+  //                                                     <TrendingFlatIcon />
+  //                                                 </Grid>
 
-    //                                             </Box>
-    //                                             {metricValues.map(metric => {
-    //                                                 let value = filteredMetrics.find(m => m.metric == metric)
-    //                                                 if (value.type == 'int' || value.type == 'float') {
-    //                                                     return <Grid key={metric} item>
-    //                                                         {histogram(value, value.ci)}
-    //                                                         <Typography style={{ display: 'block' }} color="primary" variant='overline'  >
-    //                                                             {metric}
-    //                                                         </Typography>
-    //                                                     </Grid>
-    //                                                 }
-    //                                                 if (value.type == 'text') {
-    //                                                     return <Grid key={metric} item>
-    //                                                         {barChart(value)}
-    //                                                         <Typography style={{ display: 'block' }} color="primary" variant='overline'  >
-    //                                                             {metric}
-    //                                                         </Typography>
-    //                                                     </Grid>
-    //                                                 }
-    //                                                 return <></>
+  //                                             </Box>
+  //                                             {metricValues.map(metric => {
+  //                                                 let value = filteredMetrics.find(m => m.metric == metric)
+  //                                                 if (value.type == 'int' || value.type == 'float') {
+  //                                                     return <Grid key={metric} item>
+  //                                                         {histogram(value, value.ci)}
+  //                                                         <Typography style={{ display: 'block' }} color="primary" variant='overline'  >
+  //                                                             {metric}
+  //                                                         </Typography>
+  //                                                     </Grid>
+  //                                                 }
+  //                                                 if (value.type == 'text') {
+  //                                                     return <Grid key={metric} item>
+  //                                                         {barChart(value)}
+  //                                                         <Typography style={{ display: 'block' }} color="primary" variant='overline'  >
+  //                                                             {metric}
+  //                                                         </Typography>
+  //                                                     </Grid>
+  //                                                 }
+  //                                                 return <></>
 
-    //                                             })}
-    //                                         </Grid>
-    //                                     </Grid>
-    //                                 </Grid>
-    //                                 <Divider />
-    //                             </>
+  //                                             })}
+  //                                         </Grid>
+  //                                     </Grid>
+  //                                 </Grid>
+  //                                 <Divider />
+  //                             </>
 
-    //                         }
-    //                         )}
-    //                         <div>
+  //                         }
+  //                         )}
+  //                         <div>
 
-    //                         </div>
-
-
-    //                     </CardContent>
-    //                     <CardActions>
-    //                         <Button size="small">Explore</Button>
-    //                     </CardActions>
-    //                 </Card>
-    //             </Box>)
-    //         }
+  //                         </div>
 
 
-    //         )
-    //     }
+  //                     </CardContent>
+  //                     <CardActions>
+  //                         <Button size="small">Explore</Button>
+  //                     </CardActions>
+  //                 </Card>
+  //             </Box>)
+  //         }
+
+
+  //         )
+  //     }
   const classes = useStyles();
   const bull = <span className={classes.bullet}>•</span>;
 
@@ -384,124 +399,172 @@ export default function TaskCard() {
   return ready == undefined ? (
     <></>
   ) : (
-    <>
-     
-      { data.tasks.map(task => {
-        let taskTooltip = <Typography>{task.prompt}</Typography>;
-        return (
-          <Box
-            m={2}
-            key={"box_" + task.taskID}
-            style={{ display: "inline-block" }}>
-            {/* style={{ 'width': 600 }}  */}
-            <Card className={classes.root} key={task.taskID}>
-              <CardContent>
-                <Typography variant="h5" component="h2">
-                  {task.name}
-                </Typography>
-                <Tooltip title={taskTooltip}>
-                  <Typography className={classes.pos} color="textSecondary">
-                    {task.prompt.slice(0, 60)}
+      <>
+
+        {data.tasks.map(task => {
+          let taskTooltip = <Typography>{task.prompt}</Typography>;
+          return (
+            <Box
+              m={2}
+              key={"box_" + task.taskID}
+            // style={{ display: "inline-block" }}
+            >
+              {/* style={{ 'width': 600 }}  */}
+              <Card className={classes.root} key={task.taskID}>
+                <CardContent>
+                  <Typography variant="h5" component="h2" style={{display:'inline-block' }}>
+                    {task.name}
                   </Typography>
-                </Tooltip>
-                <Divider />
+                  {/* <Tooltip title={taskTooltip}> */}
+                    <Typography className={classes.pos} color="textSecondary" style={{display:'inline-block', marginLeft:'10px'}}>
+                       {task.prompt}
+                    </Typography>
+                    <Typography className={classes.pos} variant="caption" color="textSecondary" style={{display:'block'}}>
+                       {task.answer}
+                    </Typography>
+                  {/* </Tooltip> */}
+                  <Divider />
 
-                {Object.keys(task.conditions).map(key => {
-                 let condition = task.conditions[key];
-                 let freqPattern = condition.patterns[0].topK;
+                  {Object.keys(task.conditions).map(key => {
+                    let condition = task.conditions[key];
+                    let freqPattern = condition.patterns[0].topK;
 
-                // let frequentActions = condition.actions.map(a => ({ event: a.label, id: a.actionID, count: a.count, scale: colorScale(a.count) })) //actions.filter(a => a.taskID == task.taskID && a.condition == condition).splice(0, 5).map(a => ({ event: a.label, id: a.actionID, count: a.count, scale: colorScale(a.count) }))
-               let filteredMetrics = condition.stats //metrics.filter(m => m.group.taskID == task.taskID && m.group.condition == condition);
+                    // let frequentActions = condition.actions.map(a => ({ event: a.label, id: a.actionID, count: a.count, scale: colorScale(a.count) })) //actions.filter(a => a.taskID == task.taskID && a.condition == condition).splice(0, 5).map(a => ({ event: a.label, id: a.actionID, count: a.count, scale: colorScale(a.count) }))
+                    let filteredMetrics = condition.stats //metrics.filter(m => m.group.taskID == task.taskID && m.group.condition == condition);
 
-                  let metricValues = [
-                    ...new Set(filteredMetrics.map((m) => m.metric)),
-                  ]; // console.log(frequentActions)
+                    let metricValues = [
+                      ...new Set(filteredMetrics.map((m) => m.metric)),
+                    ]; // console.log(frequentActions)
 
-                  return (
-                    <React.Fragment key={'taskcard_' + key}>
-                      <Typography variant="overline">{key}</Typography>
+                    let countScale = d3.scaleLinear().range([0,100]).domain([0,300])
 
-                      <Grid container className={classes.root} spacing={2}>
-                        <Grid item xs={12}>
-                          <Grid container justify="flex-start" spacing={2}>
-                            <Grid key={"prov"} item>
-                              <>{[0,1,2].map(i=> {
-                               let frequentActions = freqPattern[i].seq.map(a => ({ event: a, id: a, count: freqPattern[i].count, scale: colorScale(freqPattern[i].count) })) //actions.filter(a => a.taskID == task.taskID && a.condition == condition).splice(0, 5).map(a => ({ event: a.label, id: a.actionID, count: a.count, scale: colorScale(a.count) }))
-                              return <Box mt={"5px"} mb={"6px"}>
-                                <ProvenanceIsolatedNodes
-                                  key={task.taskID}
-                                  nodes={
-                                    frequentActions
-                                  }></ProvenanceIsolatedNodes>
-                              </Box>}
-                              )}
-                                
-                                <Typography
-                                  className={classes.pos}
-                                  variant="overline"
-                                  color="primary">
-                                  Actions
-                                </Typography>
-                              </>
-                            </Grid>
-                            <Box mt={"15px"}>
-                              <Grid key={"then"} item>
-                                <TrendingFlatIcon />
+                    return (
+                      <React.Fragment key={'taskcard_' + key}>
+                        <Typography variant="overline">{key}</Typography>
+
+                        <Grid container className={classes.root} spacing={2}>
+                          <Grid item xs={12}>
+                            <Grid container justify="flex-start" spacing={2}>
+                            <Grid key={'cat'} item>
+                            <Box mt={"5px"} mb={"6px"} mr={'10px'}>
+                                <CardMedia
+                                  style={{ display: "inline-block" }}
+                                  className={classes.media}
+                                  component="img"
+                                  image = {require('../static/taskImages/' + task.taskID + '_' + key + '.png')}
+                                  // image="https://placekitten.com/g/100/100"
+                                  title="Task 1 AM"
+                                />
+                                </Box>
                               </Grid>
-                            </Box>
-                            {metricValues.map((metric) => {
-                              let value = filteredMetrics.find(
-                                (m) => m.metric == metric
-                              );
-                              if (
-                                value.type == "int" ||
-                                value.type == "float"
-                              ) {
-                                return (
-                                  <Grid key={metric} item>
-                                    {<Histogram data={value} ci={value.ci} />}
-                                    <Typography
-                                      style={{ display: "block" }}
-                                      color="primary"
-                                      variant="overline">
-                                      {metric}
-                                    </Typography>
-                                  </Grid>
+                              
+
+                              <Grid key={"prov"} item>
+                                <>{[0, 1, 2,3,4].map(i => {
+                                  let frequentActions = freqPattern[i].seq.map(a => ({ event: a, id: a, count: freqPattern[i].count, scale: colorScale(freqPattern[i].count) })) //actions.filter(a => a.taskID == task.taskID && a.condition == condition).splice(0, 5).map(a => ({ event: a.label, id: a.actionID, count: a.count, scale: colorScale(a.count) }))
+                                  return <>
+                                    <Box style={{ display: 'block' }}>
+                                      <Box  mb={"6px"} style={{ display: 'inline-block', width: 100 }}>
+
+                                        <svg width={100} height={34}>
+                                        <rect x={100-countScale(freqPattern[i].count)} y={0} width={countScale(freqPattern[i].count)} height={30} style={{fill: 'rgb(147 195 209)', 'stroke':'white', strokeWidth:'8px' }}></rect>
+                                        <text x={90} y={20} style={{'fontWeight':'bold','textAnchor':'end'}}>{freqPattern[i].count}</text>
+
+                                        </svg>
+                                      </Box>
+                                      <Box mt={"5px"} mb={"6px"} style={{ display: 'inline-block', width: 300 }}>
+                                        <ProvenanceIsolatedNodes
+                                          key={task.taskID}
+                                          nodes={
+                                            frequentActions
+                                          }></ProvenanceIsolatedNodes>
+                                      </Box>
+                                    </Box>
+                                  </>
+                                }
+                                )}
+
+                                  <Typography
+                                    className={classes.pos}
+                                    variant="overline"
+                                    color="primary">
+                                    Actions
+                                </Typography>
+                                </>
+                              </Grid>
+                              <Box mt={"15px"}>
+                                <Grid key={"then"} item>
+                                  <TrendingFlatIcon />
+                                </Grid>
+                              </Box>
+                              {metricValues.map((metric) => {
+                                let value = filteredMetrics.find(
+                                  (m) => m.metric == metric
                                 );
-                              }
-                              if (value.type == "text") {
-                                return (
-                                  <Grid key={metric} item>
-                                    <BarChart data={value}></BarChart>
-                                    <Typography
-                                      style={{ display: "block" }}
-                                      color="primary"
-                                      variant="overline">
-                                      {metric}
-                                    </Typography>
-                                  </Grid>
-                                );
-                              }
-                              return <></>;
-                            })}
+                                if (
+                                  value.type == "int" ||
+                                  value.type == "float"
+                                ) {
+                                  return (
+                                    <Grid key={metric} item>
+                                      {<Histogram data={value} ci={value.ci} />}
+                                      <Typography
+                                        style={{ display: "block" }}
+                                        color="primary"
+                                        variant="overline">
+                                        {metric}
+                                      </Typography>
+                                    </Grid>
+                                  );
+                                }
+                                if (value.type == "text") {
+                                  return (
+                                    <Grid key={metric} item>
+                                      <BarChart data={value}></BarChart>
+                                      <Typography
+                                        style={{ display: "block" }}
+                                        color="primary"
+                                        variant="overline">
+                                        {metric}
+                                      </Typography>
+                                    </Grid>
+                                  );
+                                }
+                                return <></>;
+                              })}
+                              {condition.textAnswers.map(txt=>{
+                                return <List dense={true}>
+                                <ListItem>
+                                  <ListItemText
+                                    primary={txt.answer}
+                                    secondary={null}
+                                  />
+                                </ListItem>
+                            </List>
+                              })}
+                              
+
+
+
+                            </Grid>
+
                           </Grid>
                         </Grid>
-                      </Grid>
-                      <Divider />
+                        <Divider />
                       </React.Fragment>
-                  );
-                })}
-                <div></div>
-              </CardContent>
-              <CardActions>
-                <Button size="small">Explore</Button>
-              </CardActions>
-            </Card>
-          </Box>
-        );
-      })}
-    </>
-  );
+                    );
+                  })}
+                  <div></div>
+                </CardContent>
+                <CardActions>
+                  <Button size="small">Explore</Button>
+                </CardActions>
+              </Card>
+            </Box>
+          );
+        })}
+      </>
+    );
 }
 
 
