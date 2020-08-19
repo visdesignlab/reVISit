@@ -198,12 +198,16 @@ const DevExtremeTable = ({
     const currentFilterIndex = filters.findIndex(
       (filter) => filter.name === columnName
     );
-    const clonedFilters = Object.assign([], filters);
+    let clonedFilters = [...filters];
     if (currentFilterIndex > -1) {
-      clonedFilters[currentFilterIndex] = { name: columnName, value: value };
+      clonedFilters[currentFilterIndex] = {
+        columnName: columnName,
+        value: value,
+      };
     } else {
       clonedFilters.push({ columnName: columnName, value: value });
     }
+    console.log("dywootto about to save", clonedFilters);
     setFilters(clonedFilters);
   };
   let columnMetaData = {
@@ -284,27 +288,36 @@ const DevExtremeTable = ({
   const setGrouping = (newGrouping) => {
     console.log("grouping", newGrouping, grouping, "dff");
     // if an item is recently grouped on, remove any filters for it.
-    const newlyAddedGroups = differenceFilter(newGrouping, grouping);
-    const clonedFilters = [...filters].filter(
+    let newlyAddedGroups = differenceFilter(newGrouping, grouping)?.[0];
+    if (newlyAddedGroups.length === 1) {
+      newlyAddedGroups = newlyAddedGroups[0];
+    }
+    console.log(newlyAddedGroups);
+    /*const clonedFilters = [...filters].filter(
       (filterItem) =>
         !newlyAddedGroups.some(
           (newGroupItem) => newGroupItem.columnName === filterItem.columnName
         )
+    );*/
+    const currentFilter = filters.find(
+      (filterItem) => newlyAddedGroups.columnName === filterItem.columnName
     );
-    setFilters(clonedFilters);
+    console.log("new current filter", currentFilter);
+    const newGroupIndex = newGrouping.findIndex(
+      (newGroup) => newGroup.columnName === newlyAddedGroups.columnName
+    );
+    newGrouping[newGroupIndex] = Object.assign(newGrouping[newGroupIndex], {
+      groupMetaData: currentFilter.value,
+    });
     // search through grouping,
     setGroupingInternal(newGrouping);
+    //setFilters(clonedFilters);
   };
-  const quantitativePredicate = (value, column) => {
+  const quantitativePredicate = (value, column, filterValue) => {
     // find filter value
     console.log("in quant pred", value, column);
-    const filterIndex = filters.findIndex(
-      (filter) => filter.name === column.name
-    );
-    let filterValue =
-      filterIndex > -1
-        ? filters[filterIndex].value
-        : { filterMin: 0.6, filterMax: 1.2 };
+
+    console.log("filterValue", filterValue);
     const isRowInTrueGroup = column.customFilterAndSearch(
       { value: filterValue },
       value
@@ -315,17 +328,30 @@ const DevExtremeTable = ({
     };
   };
   console.log("dywootto group", rows, columns);
-  const [integratedGroupingColumnExtensions] = useState(
-    columns.map((column) => {
-      // if quantitative column, group with filter value
-      if (column.type && column.type === "quantitative") {
-        return {
-          columnName: column.name,
-          criteria: (value) => quantitativePredicate(value, column),
-        };
-      }
-      return { columnName: column.name };
-    })
+  const integratedGroupingColumnExtensions = useMemo(
+    () => {
+      return columns.map((column) => {
+        // if quantitative column, group with filter value
+        if (column.type && column.type === "quantitative") {
+          const group = grouping.find(
+            (group) => group.columnName === column.name
+          );
+          let groupingValue = group
+            ? group.groupMetaData
+            : { filterMin: 0.2, filterMax: 1.2 };
+          console.log("quantFiltervalue", groupingValue);
+
+          return {
+            columnName: column.name,
+            criteria: (value) =>
+              quantitativePredicate(value, column, groupingValue),
+          };
+        }
+        return { columnName: column.name };
+      });
+    },
+    [columns, grouping]
+
     // { columnName: "visType", criteria: nameGroupCriteria },
     //{ columnName: "answer", criteria: (data) => data.accuracy > 0.5 },
   );
