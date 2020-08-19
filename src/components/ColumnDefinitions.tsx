@@ -110,6 +110,7 @@ export class QuantitativeColumn {
   constructor(data, name, metaData, handleFilterChange) {
     this.name = name;
     this.data = data;
+    this.type = "quantitative";
     this.height = 30;
     this.width = metaData.width ? metaData.width : 100;
     this.order = metaData.order;
@@ -172,6 +173,7 @@ export class QuantitativeColumn {
       title: this.name,
       name: this.name,
       width: this.width,
+      type: this.type,
       customSort: this.customSort,
       render: this.cellComponent,
       order: this.order,

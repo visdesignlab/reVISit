@@ -43,6 +43,17 @@ import {
   ProvenanceColumn,
   NotesColumn,
 } from "./ColumnDefinitions.tsx";
+import { CodeSandboxCircleFilled } from "@ant-design/icons";
+
+const differenceFilter = (firstArray, secondArray) => {
+  return firstArray.filter(
+    (firstArrayItem) =>
+      !secondArray.some(
+        (secondArrayItem) => firstArrayItem._user === secondArrayItem._user
+      )
+  );
+};
+
 const GroupCellContent = (props) => {
   console.log("props for group cell", props);
 
@@ -270,14 +281,54 @@ const DevExtremeTable = ({
   //console.log(provenanceData, ...extraColumnDefinitions, columns);
   const [rows, setRows] = useState(provenanceData);
   const [grouping, setGroupingInternal] = useState([]);
-  const setGrouping = (grouping) => {
-    setGroupingInternal(grouping);
+  const setGrouping = (newGrouping) => {
+    console.log("grouping", newGrouping, grouping, "dff");
+    // if an item is recently grouped on, remove any filters for it.
+    const newlyAddedGroups = differenceFilter(newGrouping, grouping);
+    const clonedFilters = [...filters].filter(
+      (filterItem) =>
+        !newlyAddedGroups.some(
+          (newGroupItem) => newGroupItem.columnName === filterItem.columnName
+        )
+    );
+    setFilters(clonedFilters);
+    // search through grouping,
+    setGroupingInternal(newGrouping);
+  };
+  const quantitativePredicate = (value, column) => {
+    // find filter value
+    console.log("in quant pred", value, column);
+    const filterIndex = filters.findIndex(
+      (filter) => filter.name === column.name
+    );
+    let filterValue =
+      filterIndex > -1
+        ? filters[filterIndex].value
+        : { filterMin: 0.6, filterMax: 1.2 };
+    const isRowInTrueGroup = column.customFilterAndSearch(
+      { value: filterValue },
+      value
+    );
+    return {
+      value: isRowInTrueGroup,
+      key: `${column.name}-${isRowInTrueGroup}`,
+    };
   };
   console.log("dywootto group", rows, columns);
-  const [integratedGroupingColumnExtensions] = useState([
+  const [integratedGroupingColumnExtensions] = useState(
+    columns.map((column) => {
+      // if quantitative column, group with filter value
+      if (column.type && column.type === "quantitative") {
+        return {
+          columnName: column.name,
+          criteria: (value) => quantitativePredicate(value, column),
+        };
+      }
+      return { columnName: column.name };
+    })
     // { columnName: "visType", criteria: nameGroupCriteria },
     //{ columnName: "answer", criteria: (data) => data.accuracy > 0.5 },
-  ]);
+  );
   const [tableGroupColumnExtension] = useState([
     columns.map((column) => ({
       columnName: column.name,
