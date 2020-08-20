@@ -147,7 +147,7 @@ const Brush = (props) => {
         [width, height],
       ])
       //.on("brush", brushed)
-      .on("end", cleared);
+      .on("end", brushed);
 
     select(node)
       .selectAll("g.brush")
@@ -164,7 +164,11 @@ const Brush = (props) => {
       console.warn(event);
       onBrushFunction(event.selection);
     }*/
-    function cleared() {
+    function brushed() {
+      // if filter cleared, set to all
+      if (!event.selection) {
+        event.selection = [0, width];
+      }
       console.warn("clear", event);
       onChange(event.selection);
     }

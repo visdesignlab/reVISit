@@ -43,17 +43,29 @@ import {
   ProvenanceColumn,
   NotesColumn,
 } from "./ColumnDefinitions.tsx";
-import { CodeSandboxCircleFilled } from "@ant-design/icons";
+import {
+  CodeSandboxCircleFilled,
+  PropertySafetyFilled,
+} from "@ant-design/icons";
+import { Typography } from "@material-ui/core";
 
 const differenceFilter = (firstArray, secondArray) => {
   return firstArray.filter(
     (firstArrayItem) =>
       !secondArray.some(
-        (secondArrayItem) => firstArrayItem._user === secondArrayItem._user
+        (secondArrayItem) =>
+          firstArrayItem.columnName === secondArrayItem.columnName
       )
   );
 };
-
+function toFixedTrunc(x, n) {
+  const v = (typeof x === "string" ? x : x.toString()).split(".");
+  if (n <= 0) return v[0];
+  let f = v[1] || "";
+  if (f.length > n) return `${v[0]}.${f.substr(0, n)}`;
+  while (f.length < n) f += "0";
+  return `${v[0]}.${f}`;
+}
 const GroupCellContent = (props) => {
   console.log("props for group cell", props);
 
@@ -286,29 +298,38 @@ const DevExtremeTable = ({
   const [rows, setRows] = useState(provenanceData);
   const [grouping, setGroupingInternal] = useState([]);
   const setGrouping = (newGrouping) => {
-    console.log("grouping", newGrouping, grouping, "dff");
+    console.log(
+      "grouping",
+      newGrouping,
+      grouping,
+      "dff",
+      differenceFilter(newGrouping, grouping)
+    );
     // if an item is recently grouped on, remove any filters for it.
     let newlyAddedGroups = differenceFilter(newGrouping, grouping)?.[0];
-    if (newlyAddedGroups.length === 1) {
-      newlyAddedGroups = newlyAddedGroups[0];
+    if (newlyAddedGroups) {
+      console.log(newlyAddedGroups);
+      /*const clonedFilters = [...filters].filter(
+        (filterItem) =>
+          !newlyAddedGroups.some(
+            (newGroupItem) => newGroupItem.columnName === filterItem.columnName
+          )
+      );*/
+      let currentFilter = filters.find(
+        (filterItem) => newlyAddedGroups.columnName === filterItem.columnName
+      );
+      if (!currentFilter) {
+        currentFilter = { value: { filterMin: 0.5, filterMax: 1.5 } };
+      }
+      console.log("new current filter", currentFilter);
+      const newGroupIndex = newGrouping.findIndex(
+        (newGroup) => newGroup.columnName === newlyAddedGroups.columnName
+      );
+      newGrouping[newGroupIndex] = Object.assign(newGrouping[newGroupIndex], {
+        groupMetaData: currentFilter.value,
+      });
     }
-    console.log(newlyAddedGroups);
-    /*const clonedFilters = [...filters].filter(
-      (filterItem) =>
-        !newlyAddedGroups.some(
-          (newGroupItem) => newGroupItem.columnName === filterItem.columnName
-        )
-    );*/
-    const currentFilter = filters.find(
-      (filterItem) => newlyAddedGroups.columnName === filterItem.columnName
-    );
-    console.log("new current filter", currentFilter);
-    const newGroupIndex = newGrouping.findIndex(
-      (newGroup) => newGroup.columnName === newlyAddedGroups.columnName
-    );
-    newGrouping[newGroupIndex] = Object.assign(newGrouping[newGroupIndex], {
-      groupMetaData: currentFilter.value,
-    });
+    console.log("newGrouping", newGrouping);
     // search through grouping,
     setGroupingInternal(newGrouping);
     //setFilters(clonedFilters);
@@ -420,6 +441,44 @@ const DevExtremeTable = ({
     }
     return rows;
   };
+  const TempRowComponent = (props) => {
+    console.log("dywootto row props", props, filters);
+    let groupedRowHeader = `Grouped Row`;
+    const columnName = props.row.groupedBy;
+    const columnInfo = columns.find((column) => column.name == columnName);
+    if (columnInfo) {
+      if (columnInfo.type === "quantitative") {
+        const group = grouping.find((group) => group.columnName === columnName);
+        console.log("group dywootto", group);
+        if (props.row.value === true) {
+          // grab values from filters
+          groupedRowHeader = `${columnName} is greater than ${toFixedTrunc(
+            group.groupMetaData.filterMin,
+            2
+          )} and less than ${toFixedTrunc(group.groupMetaData.filterMax, 2)}`;
+        } else {
+          groupedRowHeader = `${columnName} is outside of range [${toFixedTrunc(
+            group.groupMetaData.filterMin,
+            2
+          )}, ${toFixedTrunc(group.groupMetaData.filterMax, 2)}]`;
+        }
+      } else {
+        groupedRowHeader = `${columnName} is ${props.row.value}`;
+      }
+    }
+    return (
+      <React.Fragment>
+        <tr>
+          <td colSpan={42}>
+            <Typography className={tableStyles.groupRowHeader}>
+              {groupedRowHeader}
+            </Typography>
+          </td>
+        </tr>
+        <TableGroupRow.Row {...props}>{props.children}</TableGroupRow.Row>
+      </React.Fragment>
+    );
+  };
   console.log("current filters", filters);
   return (
     <Paper>
@@ -453,6 +512,7 @@ const DevExtremeTable = ({
         <TableSelection showSelectAll />
         <TableFilterRow cellComponent={FilterCells} />
         <TableGroupRow
+          rowComponent={TempRowComponent}
           columnExtensions={tableGroupColumnExtension}
           summaryCellComponent={(props) => (
             <GroupCellContent

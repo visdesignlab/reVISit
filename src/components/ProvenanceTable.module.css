@@ -13,3 +13,8 @@
     transform: rotate(360deg);
   }
 }
+
+.groupRowHeader {
+  padding: 12px;
+  font-weight: bold;
+}
