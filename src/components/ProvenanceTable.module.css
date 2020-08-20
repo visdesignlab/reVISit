@@ -13,8 +13,10 @@
     transform: rotate(360deg);
   }
 }
-
-.groupRowHeader {
+.groupHeaderRow {
+  background-color: whitesmoke;
+}
+.groupHeaderContent {
   padding: 12px;
   font-weight: bold;
 }

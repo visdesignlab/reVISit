@@ -15,7 +15,6 @@ const QuantitativeCell = ({ rowData, name, commonScale }) => {
   if (name === "time" && rowData?.sequence) {
     // map through requences
     additionalComponents = rowData.sequence.map((node) => {
-      console.log("sequence node", node);
       return (
         <rect
           width={3}
@@ -118,7 +117,6 @@ export class QuantitativeColumn {
     this.customSort = (a, b) => a[this.name] - b[this.name];
     this.handleFilterChange = handleFilterChange;
     this.customFilterAndSearch = (filter, value) => {
-      console.log("inside customFilterAndSearch", filter, value);
       return filterQuantitativeValues(filter.value, value);
     };
     this.cellComponent = (rowData) => {
@@ -139,19 +137,10 @@ export class QuantitativeColumn {
       .domain([min - 0.001, max + 0.001])
       .range([10, this.width - 20]); // offset from sides
     this.yScale = d3.scaleLinear().range([this.height, 0]);
-    console.log(min, max, data);
     // the scale
     let niceX = this.xScale.nice();
     const binner = d3.histogram().domain(niceX.domain());
     const buckets = binner(data.map((datum) => datum[this.name]));
-    console.log(buckets);
-    console.log("yscale domain", [
-      0,
-      d3.max(buckets, (bucket) => {
-        console.log(bucket);
-        return bucket.length;
-      }),
-    ]);
     this.yScale = this.yScale.domain([
       0,
       d3.max(buckets, (bucket) => bucket.length),
@@ -180,14 +169,12 @@ export class QuantitativeColumn {
       hideByDefault: this.hideByDefault,
       customFilterAndSearch: this.customFilterAndSearch,
       groupedSummaryComponent: ({ incomingData }) => {
-        console.log("dywootto", incomingData);
         return (
           <GroupDataResolver incomingData={incomingData}>
             {({ partitionedData }) => {
               if (partitionedData.length === 0) {
                 return <div></div>;
               }
-              console.log("groupedSumm", this.scale);
               return (
                 <QuantitativeFilter
                   xScale={this.xScale}
@@ -203,7 +190,6 @@ export class QuantitativeColumn {
         );
       },
       filterComponent: (props) => {
-        console.log("groupedSumm", this.scale, this.data);
         return (
           <QuantitativeFilter
             {...props}
@@ -212,7 +198,6 @@ export class QuantitativeColumn {
             buckets={this.buckets}
             height={this.height}
             onFilter={(filter, value, row) => {
-              console.log("in filter", filter, value, row);
               return this.handleFilterChange(this.name, filter);
             }}
             data={this.data.map(
@@ -237,7 +222,6 @@ export class ProvenanceColumn {
       render: (renderData) =>
         renderProvenanceNodeCell(renderData, this.handleProvenanceNodeClick),
       groupedSummaryComponent: ({ incomingData }) => {
-        console.log("dywootto", incomingData);
         return <div></div>;
       },
       filterComponent: (props) => <div></div>,

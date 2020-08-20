@@ -34,7 +34,7 @@ import eventMapping from "./eventMapping";
 import TagStyles from "./tagstyles.module.css";
 import TagWrapper from "./reactTagWrapper";
 import { QuantitativeFilter, CategoricalFilter } from "./TableFilters";
-import tableStyles from "./ProvenanceTable.module.css";
+import styles from "./ProvenanceTable.module.css";
 import { ifError } from "assert";
 import _ from "lodash";
 import {
@@ -67,8 +67,6 @@ function toFixedTrunc(x, n) {
   return `${v[0]}.${f}`;
 }
 const GroupCellContent = (props) => {
-  console.log("props for group cell", props);
-
   const { provenanceData, column, row, children } = props;
   const groupData = children.props.columnSummaries[0].value;
 
@@ -130,7 +128,6 @@ const ProvenanceCells = ({ value, style, ...restProps }) => {
 };
 
 function getGroupSummaryValues(props) {
-  console.log(props);
   //const { selection, rows, totalSummaryItems } = this.state;
   //const selectionSet = new Set(selection);
   //const selectedRows = rows.filter((row, rowIndex) => selectionSet.has(rowIndex));
@@ -178,7 +175,6 @@ function generateColumnDefinition(
       handleFilterChange
     );
   } else if (columnSchema.DATA_TYPE === "provenance") {
-    console.log("provenance", columnMetaData);
     defaultColumnDefinition = new ProvenanceColumn(columnMetaData);
   } else if (columnSchema.DATA_TYPE === "tag") {
     defaultColumnDefinition = new NotesColumn(columnMetaData);
@@ -203,10 +199,8 @@ const DevExtremeTable = ({
   tableSchema,
   handleTagCreation,
 }) => {
-  console.log("handleProvenanceNodeClick", handleProvenanceNodeClick);
   const [filters, setFilters] = React.useState([]);
   const handleFilter = (columnName, value) => {
-    console.log("in handle filter", columnName, value);
     const currentFilterIndex = filters.findIndex(
       (filter) => filter.name === columnName
     );
@@ -219,7 +213,6 @@ const DevExtremeTable = ({
     } else {
       clonedFilters.push({ columnName: columnName, value: value });
     }
-    console.log("dywootto about to save", clonedFilters);
     setFilters(clonedFilters);
   };
   let columnMetaData = {
@@ -254,8 +247,6 @@ const DevExtremeTable = ({
           ).generateColumnObject()
         )
         .sort((a, b) => {
-          console.log("comparator", a, b, a.order, b.order);
-
           if (!a.order) {
             return 1;
           }
@@ -277,8 +268,6 @@ const DevExtremeTable = ({
         ).generateColumnObject()
       )
       .sort((a, b) => {
-        console.log("comparator", a, b, a.order, b.order);
-
         if (!a.order) {
           return 1;
         }
@@ -294,34 +283,18 @@ const DevExtremeTable = ({
     setSelectionInternal(selectionIndicies);
   };
 
-  //console.log(provenanceData, ...extraColumnDefinitions, columns);
   const [rows, setRows] = useState(provenanceData);
   const [grouping, setGroupingInternal] = useState([]);
   const setGrouping = (newGrouping) => {
-    console.log(
-      "grouping",
-      newGrouping,
-      grouping,
-      "dff",
-      differenceFilter(newGrouping, grouping)
-    );
     // if an item is recently grouped on, remove any filters for it.
     let newlyAddedGroups = differenceFilter(newGrouping, grouping)?.[0];
     if (newlyAddedGroups) {
-      console.log(newlyAddedGroups);
-      /*const clonedFilters = [...filters].filter(
-        (filterItem) =>
-          !newlyAddedGroups.some(
-            (newGroupItem) => newGroupItem.columnName === filterItem.columnName
-          )
-      );*/
       let currentFilter = filters.find(
         (filterItem) => newlyAddedGroups.columnName === filterItem.columnName
       );
       if (!currentFilter) {
         currentFilter = { value: { filterMin: 0.5, filterMax: 1.5 } };
       }
-      console.log("new current filter", currentFilter);
       const newGroupIndex = newGrouping.findIndex(
         (newGroup) => newGroup.columnName === newlyAddedGroups.columnName
       );
@@ -329,16 +302,12 @@ const DevExtremeTable = ({
         groupMetaData: currentFilter.value,
       });
     }
-    console.log("newGrouping", newGrouping);
     // search through grouping,
     setGroupingInternal(newGrouping);
     //setFilters(clonedFilters);
   };
   const quantitativePredicate = (value, column, filterValue) => {
     // find filter value
-    console.log("in quant pred", value, column);
-
-    console.log("filterValue", filterValue);
     const isRowInTrueGroup = column.customFilterAndSearch(
       { value: filterValue },
       value
@@ -348,7 +317,6 @@ const DevExtremeTable = ({
       key: `${column.name}-${isRowInTrueGroup}`,
     };
   };
-  console.log("dywootto group", rows, columns);
   const integratedGroupingColumnExtensions = useMemo(
     () => {
       return columns.map((column) => {
@@ -360,7 +328,6 @@ const DevExtremeTable = ({
           let groupingValue = group
             ? group.groupMetaData
             : { filterMin: 0.2, filterMax: 1.2 };
-          console.log("quantFiltervalue", groupingValue);
 
           return {
             columnName: column.name,
@@ -396,11 +363,9 @@ const DevExtremeTable = ({
 
   const [filteringColumnExtensions] = useState(
     columns.map((column) => {
-      console.log("in custom filter", column);
       return {
         columnName: column.name,
         predicate: (value, filter, row) => {
-          console.log("in predicate filter", value, filter, row);
           //if (!filter.value.length) return true;
           if (column.customFilterAndSearch) {
             return column.customFilterAndSearch(filter, value, row);
@@ -410,7 +375,6 @@ const DevExtremeTable = ({
       };
     })
   );
-  console.log("filteringColumnExtensions", filteringColumnExtensions);
 
   const [groupSummaryItems] = useState(
     columns.map((column) => {
@@ -429,10 +393,7 @@ const DevExtremeTable = ({
       .filter((column) => column.hideByDefault)
       .map((column) => column.name)
   );
-  console.log("default", defaultHiddenColumnNames);
   const summaryCalculator = (type, rows, getValue) => {
-    console.log("dywootto rows for group", rows);
-
     if (type === "custom") {
       if (!rows.length) {
         return null;
@@ -442,22 +403,20 @@ const DevExtremeTable = ({
     return rows;
   };
   const TempRowComponent = (props) => {
-    console.log("dywootto row props", props, filters);
     let groupedRowHeader = `Grouped Row`;
     const columnName = props.row.groupedBy;
     const columnInfo = columns.find((column) => column.name == columnName);
     if (columnInfo) {
       if (columnInfo.type === "quantitative") {
         const group = grouping.find((group) => group.columnName === columnName);
-        console.log("group dywootto", group);
         if (props.row.value === true) {
           // grab values from filters
-          groupedRowHeader = `${columnName} is greater than ${toFixedTrunc(
+          groupedRowHeader = `Grouped on: ${columnName} [${toFixedTrunc(
             group.groupMetaData.filterMin,
             2
-          )} and less than ${toFixedTrunc(group.groupMetaData.filterMax, 2)}`;
+          )},${toFixedTrunc(group.groupMetaData.filterMax, 2)}]`;
         } else {
-          groupedRowHeader = `${columnName} is outside of range [${toFixedTrunc(
+          groupedRowHeader = `Grouped on: ${columnName} is outside of range [${toFixedTrunc(
             group.groupMetaData.filterMin,
             2
           )}, ${toFixedTrunc(group.groupMetaData.filterMax, 2)}]`;
@@ -468,9 +427,11 @@ const DevExtremeTable = ({
     }
     return (
       <React.Fragment>
-        <tr>
+        <tr className={styles.groupHeaderRow}>
           <td colSpan={42}>
-            <Typography className={tableStyles.groupRowHeader}>
+            <Typography
+              className={styles.groupHeaderContent}
+              variant={"overline"}>
               {groupedRowHeader}
             </Typography>
           </td>
@@ -479,7 +440,6 @@ const DevExtremeTable = ({
       </React.Fragment>
     );
   };
-  console.log("current filters", filters);
   return (
     <Paper>
       <Grid rows={rows} columns={columns}>
@@ -522,13 +482,11 @@ const DevExtremeTable = ({
           )}
           showColumnsWhenGrouped
           stubCellComponent={(stubProps) => {
-            console.log(stubProps, grouping);
             let shouldHideStub = false;
             // if this stub prop matches last grouping
 
             if (grouping.length > 0) {
               const groupedByRow = stubProps.tableRow.row.groupedBy;
-              console.log(grouping[grouping.length - 1], groupedByRow);
               shouldHideStub =
                 grouping[grouping.length - 1].columnName === groupedByRow;
             }
@@ -628,7 +586,6 @@ function renderProvenanceNodeColumn(
       }
     }, incomingData);
 
-    console.log(partitionedData);
     const partitionedNodes = partitionedData
       .map((graph) => {
         return graph.provenance.map((node) => node.event);
@@ -664,7 +621,6 @@ function renderProvenanceNodeColumn(
       return filterCategoricalValue(filter, value, (node) => node.event);
     },
     groupedSummaryComponent: ({ incomingData }) => {
-      console.log("dywootto", incomingData);
       return (
         <GroupDataResolver incomingData={incomingData}>
           {({ partitionedData }) => {
@@ -750,11 +706,9 @@ function renderAccuracyColumn(currentProvenanceData, columnWidth) {
       );
     },
     groupedSummaryComponent: ({ incomingData }) => {
-      console.log("dywootto", incomingData);
       return (
         <GroupDataResolver incomingData={incomingData}>
           {({ partitionedData }) => {
-            console.log(partitionedData);
             if (partitionedData.length === 0) {
               return <div></div>;
             }
@@ -813,7 +767,6 @@ function renderTimeColumn(currentProvenanceData, columnWidth) {
       return filterQuantitativeValues(filter, value, row);
     },
     groupedSummaryComponent: ({ incomingData }) => {
-      console.log("dywootto", incomingData);
       return (
         <GroupDataResolver incomingData={incomingData}>
           {({ partitionedData }) => {
