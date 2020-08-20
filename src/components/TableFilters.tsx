@@ -1,3 +1,4 @@
+//@ts-nocheck
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import * as d3 from "d3";
 import { select, event } from "d3-selection";

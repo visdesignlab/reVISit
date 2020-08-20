@@ -1,16 +1,29 @@
+//@ts-nocheck
 import React from "react";
 import eventMapping from "./eventMapping.js";
 import Tooltip from "@material-ui/core/Tooltip";
 import Fade from "@material-ui/core/Fade";
 import styles from "./ProvenanceIsolatedNodes.module.css";
-const ProvenanceIsolatedNodes = ({ nodes, handleProvenanceNodeClick }) => {
+const ProvenanceIsolatedNodes = ({
+  nodes,
+  selectedItemId,
+  handleProvenanceNodeClick,
+}) => {
   return (
-    <div className={styles.wrapper}>
-      {nodes.map((node, index) => (
-        <div key={index} onClick={() => handleProvenanceNodeClick(node)}>
-          <IsolatedNode node={node}></IsolatedNode>
-        </div>
-      ))}
+    <div
+      className={styles.wrapper}
+      style={{ display: "flex", flexDirection: "row" }}>
+      {nodes.map((node, index) => {
+        const opacity = node.id === selectedItemId ? 1 : 0.5;
+        return (
+          <div
+            key={index}
+            style={!!selectedItemId ? { opacity } : null}
+            onClick={() => handleProvenanceNodeClick(node)}>
+            <IsolatedNode node={node}></IsolatedNode>
+          </div>
+        );
+      })}
     </div>
   );
 };

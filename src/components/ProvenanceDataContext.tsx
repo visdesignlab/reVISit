@@ -40,18 +40,6 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     { name: "Task 16", key: "S-task16" },
   ];
 
-  //Data
-  // let [tasks, setTasks] = useState()
-  // let [conditions, setConditions] = useState()
-  // let [actions, setActions] = useState()
-  // let [events, setEvents] = useState()
-  // let [study, setStudy] = useState()
-  // let [actionSummary, setActionSummary] = useState()
-  // let [metrics, setMetrics] = useState()
-  // let [participants, setParticipants] = useState()
-
-  // let [patterns, setPatterns] = useState()
-
   let [data, setData] = useState();
 
   function handleProvenanceNodeClick(id) {
@@ -72,7 +60,6 @@ export const ProvenanceDataContextProvider = ({ children }) => {
       // render vis using that provenance graph
     });
   }
-
   // get initial data from server;
   let [isLoading, isError, dataFromServer] = useFetchAPIData(async () => {
     return await getDataFromServer();
@@ -127,13 +114,13 @@ export const ProvenanceDataContextProvider = ({ children }) => {
 
   //State
   function timeout(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
 
   const handleTagCreation = async (participantID, taskID, tag, action) => {
     await timeout(200);
 
-    return tag
+    return tag;
   };
   let [taskSort, setTaskSort] = useState("name");
 

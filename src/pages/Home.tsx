@@ -2,6 +2,8 @@ import React, { useContext, useEffect, useRef } from "react";
 import { makeStyles, createStyles, Theme } from "@material-ui/core/styles";
 import Card from "@material-ui/core/Card";
 import CardActions from "@material-ui/core/CardActions";
+import CardMedia from "@material-ui/core/CardMedia";
+
 import CardContent from "@material-ui/core/CardContent";
 import Button from "@material-ui/core/Button";
 import Typography from "@material-ui/core/Typography";
@@ -9,6 +11,11 @@ import Box from "@material-ui/core/Box";
 import Tooltip from "@material-ui/core/Tooltip";
 import TrendingFlatIcon from "@material-ui/icons/TrendingFlat";
 import Divider from "@material-ui/core/Divider";
+
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
+
+import ListItemText from "@material-ui/core/ListItemText";
 
 import { useFetchAPIData } from "../hooks/hooks";
 
@@ -27,6 +34,11 @@ const useStyles = makeStyles({
   root: {
     minWidth: 275,
     flexGrow: 1,
+  },
+  media: {
+    width: 411,
+    height: 217,
+    border: "1px solid lightgray",
   },
   bullet: {
     display: "inline-block",
@@ -454,50 +466,139 @@ export default function TaskCard() {
           <Box
             m={2}
             key={"box_" + task.taskID}
-            style={{ display: "inline-block" }}>
+            // style={{ display: "inline-block" }}
+          >
             {/* style={{ 'width': 600 }}  */}
             <Card className={classes.root} key={task.taskID}>
               <CardContent>
-                <Typography variant="h5" component="h2">
+                <Typography
+                  variant="h5"
+                  component="h2"
+                  style={{ display: "inline-block" }}>
                   {task.name}
                 </Typography>
-                <Tooltip title={taskTooltip}>
-                  <Typography className={classes.pos} color="textSecondary">
-                    {task.prompt.slice(0, 60)}
-                  </Typography>
-                </Tooltip>
+                {/* <Tooltip title={taskTooltip}> */}
+                <Typography
+                  className={classes.pos}
+                  color="textSecondary"
+                  style={{ display: "inline-block", marginLeft: "10px" }}>
+                  {task.prompt}
+                </Typography>
+                <Typography
+                  className={classes.pos}
+                  variant="caption"
+                  color="textSecondary"
+                  style={{ display: "block" }}>
+                  {task.answer}
+                </Typography>
+                {/* </Tooltip> */}
                 <Divider />
 
                 {Object.keys(task.conditions).map((key) => {
                   let condition = task.conditions[key];
-                  let frequentActions = condition.actions.map((a) => ({
-                    label: a.label,
-                    name: a.actionID,
-                    count: a.count,
-                    scale: colorScale(a.count),
-                  })); //actions.filter(a => a.taskID == task.taskID && a.condition == condition).splice(0, 5).map(a => ({ event: a.label, id: a.actionID, count: a.count, scale: colorScale(a.count) }))
+                  let freqPattern = condition.patterns[0].topK;
+
+                  // let frequentActions = condition.actions.map(a => ({ event: a.label, id: a.actionID, count: a.count, scale: colorScale(a.count) })) //actions.filter(a => a.taskID == task.taskID && a.condition == condition).splice(0, 5).map(a => ({ event: a.label, id: a.actionID, count: a.count, scale: colorScale(a.count) }))
                   let filteredMetrics = condition.stats; //metrics.filter(m => m.group.taskID == task.taskID && m.group.condition == condition);
 
                   let metricValues = [
                     ...new Set(filteredMetrics.map((m) => m.metric)),
                   ]; // console.log(frequentActions)
 
+                  let countScale = d3
+                    .scaleLinear()
+                    .range([0, 100])
+                    .domain([0, 300]);
+
                   return (
-                    <>
+                    <React.Fragment key={"taskcard_" + key}>
                       <Typography variant="overline">{key}</Typography>
 
                       <Grid container className={classes.root} spacing={2}>
                         <Grid item xs={12}>
                           <Grid container justify="flex-start" spacing={2}>
+                            <Grid key={"cat"} item>
+                              <Box mt={"5px"} mb={"6px"} mr={"10px"}>
+                                <CardMedia
+                                  style={{ display: "inline-block" }}
+                                  className={classes.media}
+                                  component="img"
+                                  image={require("../static/taskImages/" +
+                                    task.taskID +
+                                    "_" +
+                                    key +
+                                    ".png")}
+                                  // image="https://placekitten.com/g/100/100"
+                                  title="Task 1 AM"
+                                />
+                              </Box>
+                            </Grid>
+
                             <Grid key={"prov"} item>
                               <>
-                                <Box mt={"5px"} mb={"6px"}>
-                                  <ProvenanceIsolatedNodes
-                                    key={task.taskID}
-                                    nodes={
-                                      frequentActions
-                                    }></ProvenanceIsolatedNodes>
-                                </Box>
+                                {[0, 1, 2, 3, 4].map((i) => {
+                                  let frequentActions = freqPattern[
+                                    i
+                                  ].seq.map((a) => ({
+                                    event: a,
+                                    id: a,
+                                    count: freqPattern[i].count,
+                                    scale: colorScale(freqPattern[i].count),
+                                  })); //actions.filter(a => a.taskID == task.taskID && a.condition == condition).splice(0, 5).map(a => ({ event: a.label, id: a.actionID, count: a.count, scale: colorScale(a.count) }))
+                                  return (
+                                    <>
+                                      <Box style={{ display: "block" }}>
+                                        <Box
+                                          mb={"6px"}
+                                          style={{
+                                            display: "inline-block",
+                                            width: 100,
+                                          }}>
+                                          <svg width={100} height={34}>
+                                            <rect
+                                              x={
+                                                100 -
+                                                countScale(freqPattern[i].count)
+                                              }
+                                              y={0}
+                                              width={countScale(
+                                                freqPattern[i].count
+                                              )}
+                                              height={30}
+                                              style={{
+                                                fill: "rgb(147 195 209)",
+                                                stroke: "white",
+                                                strokeWidth: "8px",
+                                              }}></rect>
+                                            <text
+                                              x={90}
+                                              y={20}
+                                              style={{
+                                                fontWeight: "bold",
+                                                textAnchor: "end",
+                                              }}>
+                                              {freqPattern[i].count}
+                                            </text>
+                                          </svg>
+                                        </Box>
+                                        <Box
+                                          mt={"5px"}
+                                          mb={"6px"}
+                                          style={{
+                                            display: "inline-block",
+                                            width: 300,
+                                          }}>
+                                          <ProvenanceIsolatedNodes
+                                            key={task.taskID}
+                                            nodes={
+                                              frequentActions
+                                            }></ProvenanceIsolatedNodes>
+                                        </Box>
+                                      </Box>
+                                    </>
+                                  );
+                                })}
+
                                 <Typography
                                   className={classes.pos}
                                   variant="overline"
@@ -521,15 +622,7 @@ export default function TaskCard() {
                               ) {
                                 return (
                                   <Grid key={metric} item>
-                                    {
-                                      <Histogram
-                                        data={value}
-                                        ci={value.ci}
-                                        onHandleBrush={(obj) =>
-                                          console.log("brushed", obj)
-                                        }
-                                      />
-                                    }
+                                    {<Histogram data={value} ci={value.ci} />}
                                     <Typography
                                       style={{ display: "block" }}
                                       color="primary"
@@ -554,11 +647,23 @@ export default function TaskCard() {
                               }
                               return <></>;
                             })}
+                            {condition.textAnswers.map((txt) => {
+                              return (
+                                <List dense={true}>
+                                  <ListItem>
+                                    <ListItemText
+                                      primary={txt.answer}
+                                      secondary={null}
+                                    />
+                                  </ListItem>
+                                </List>
+                              );
+                            })}
                           </Grid>
                         </Grid>
                       </Grid>
                       <Divider />
-                    </>
+                    </React.Fragment>
                   );
                 })}
                 <div></div>

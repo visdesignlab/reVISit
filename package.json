@@ -12,6 +12,8 @@
     "@material-ui/core": "^4.10.2",
     "@material-ui/icons": "^4.9.1",
     "@material-ui/lab": "^4.0.0-alpha.56",
+    "@storybook/addon-essentials": "^6.0.13",
+    "@storybook/addon-knobs": "^6.0.13",
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.5.0",
     "@testing-library/user-event": "^7.2.1",
@@ -31,6 +33,7 @@
     "firebase": "^7.15.5",
     "firesql": "^2.0.2",
     "fs": "0.0.1-security",
+    "labella": "^1.1.4",
     "lodash": "^4.17.15",
     "material-table": "^1.59.0",
     "material-ui": "^0.20.2",
@@ -39,7 +42,6 @@
     "pouchdb-browser": "^7.2.2",
     "prop-types": "^15.7.2",
     "react": "^16.13.1",
-    "react-docgen-typescript-loader": "^3.7.2",
     "react-dom": "^16.13.1",
     "react-material-ui-icon-picker": "0.0.1",
     "react-measure": "^2.3.0",
@@ -50,7 +52,9 @@
     "react-tagging": "0.0.8",
     "react-tagsinput": "^3.19.0",
     "react-transition-group": "^4.4.1",
+    "react-virtualized": "^9.22.2",
     "react-vis": "^1.11.7",
+    "storybook": "^6.0.13",
     "styled-components": "^5.1.1",
     "ts-loader": "^7.0.5",
     "typescript": "^3.7.5",
@@ -61,7 +65,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "storybook": "start-storybook -p 9009 -s public",
+    "storybook": "start-storybook -p 9001 -c .storybook",
     "build-storybook": "build-storybook -s public",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build"
@@ -82,13 +86,16 @@
     ]
   },
   "devDependencies": {
-    "@storybook/addon-actions": "^5.3.18",
-    "@storybook/addon-links": "^5.3.18",
-    "@storybook/addons": "^5.3.18",
-    "@storybook/preset-create-react-app": "^2.1.2",
-    "@storybook/react": "^5.3.18",
+    "@storybook/addon-actions": "^6.0.13",
+    "@storybook/addon-links": "^6.0.13",
+    "@storybook/addons": "^6.0.13",
+    "@storybook/preset-create-react-app": "^3.1.4",
+    "@storybook/react": "^6.0.13",
     "@visdesignlab/provenance-lib-core": "^4.2.1",
+    "awesome-typescript-loader": "^5.2.1",
     "fetch-mock": "^9.10.3",
-    "gh-pages": "^3.0.0"
+    "gh-pages": "^3.0.0",
+    "react-docgen-typescript-loader": "^3.7.2",
+    "react-docgen-typescript-webpack-plugin": "^1.1.0"
   }
 }

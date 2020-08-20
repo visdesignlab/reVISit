@@ -56,10 +56,14 @@ export async function completePromise(uri, requestOptions) {
   let response;
   try {
     response = await fetch(uri, requestOptions);
+    // console.log(response.text())
     // console.log("inpromise", response);
     response.data = await response.json();
     response.success = response.ok;
   } catch (err) {
+    // console.log(response.text())
+
+    console.log("error", err);
     throw err;
   }
   return response;

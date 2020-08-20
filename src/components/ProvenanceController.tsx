@@ -33,7 +33,7 @@ const optionsObj: any = {
   display: "multi-select",
 };
 
-const stories = storiesOf("ProvGraphs", module);
+const stories = storiesOf("Provenance Controller", module);
 stories.addDecorator(withKnobs);
 /*stories.add("with a button", () => {
   const style = {
