@@ -208,6 +208,20 @@ export class QuantitativeColumn {
     };
   }
 }
+
+const EventsSummary = (props) => {
+  const { incomingData } = props;
+  if (!incomingData || !incomingData[0]) {
+    return <div></div>;
+  }
+  console.log("events summary", incomingData);
+
+  return (
+    <ProvenanceIsolatedNodes
+      nodes={incomingData[0].sequence}
+      handleProvenanceNodeClick={console.log}></ProvenanceIsolatedNodes>
+  );
+};
 export class ProvenanceColumn {
   constructor(metaData) {
     this.width = 300;
@@ -221,9 +235,9 @@ export class ProvenanceColumn {
       customSort: (a, b) => a.sequence.length - b.sequence.length,
       render: (renderData) =>
         renderProvenanceNodeCell(renderData, this.handleProvenanceNodeClick),
-      groupedSummaryComponent: ({ incomingData }) => {
-        return <div></div>;
-      },
+      groupedSummaryComponent: (incomingData) => (
+        <EventsSummary incomingData={incomingData}></EventsSummary>
+      ),
       filterComponent: (props) => <div></div>,
     };
   }

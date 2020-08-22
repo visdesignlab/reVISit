@@ -68,6 +68,7 @@ function toFixedTrunc(x, n) {
 }
 const GroupCellContent = (props) => {
   const { provenanceData, column, row, children } = props;
+  console.log(column, props);
   const groupData = children.props.columnSummaries[0].value;
 
   let Content = () => <div></div>;

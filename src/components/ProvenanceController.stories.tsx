@@ -126,42 +126,45 @@ const ProvenanceController = ({ nodes, selectedNode }) => {
     .domain(d3.extent(nodes, (node) => node.time))
     .range([0, 100]);
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateRows: "50px 20px",
-        gridTemplateColumns: "max-content",
-      }}>
-      <div style={{ gridRow: 1 }}>
-        <ProvenanceIsolatedNodes
-          selectedItemId={selectedItemId}
-          nodes={nodes}
-          handleProvenanceNodeClick={(node) =>
-            setSelectedItemId(node.id)
-          }></ProvenanceIsolatedNodes>
-      </div>
+    <div>
+      <iframe width={300} height={300}></iframe>
       <div
         style={{
-          gridRow: 2,
-          width: "100%",
-          height: "100%",
-          background: "whitesmoke",
-          overflow: "hidden",
+          display: "grid",
+          gridTemplateRows: "50px 20px",
+          gridTemplateColumns: "max-content",
         }}>
-        <svg viewBox={"0 0 100 20"} perserveAspectRatio="none">
-          {nodes.map((node) => {
-            console.log("", selectedItemId, node.id);
-            const opacity = node.id === selectedItemId ? 0.5 : 0.1;
-            return (
-              <rect
-                onClick={() => setSelectedItemId(node.id)}
-                width={0.75}
-                x={commonScale(node.time)}
-                height={20}
-                opacity={!!selectedItemId ? opacity : null}></rect>
-            );
-          })}
-        </svg>
+        <div style={{ gridRow: 1 }}>
+          <ProvenanceIsolatedNodes
+            selectedItemId={selectedItemId}
+            nodes={nodes}
+            handleProvenanceNodeClick={(node) =>
+              setSelectedItemId(node.id)
+            }></ProvenanceIsolatedNodes>
+        </div>
+        <div
+          style={{
+            gridRow: 2,
+            width: "100%",
+            height: "100%",
+            background: "whitesmoke",
+            overflow: "hidden",
+          }}>
+          <svg viewBox={"0 0 100 20"} perserveAspectRatio="none">
+            {nodes.map((node) => {
+              console.log("", selectedItemId, node.id);
+              const opacity = node.id === selectedItemId ? 0.5 : 0.1;
+              return (
+                <rect
+                  onClick={() => setSelectedItemId(node.id)}
+                  width={0.75}
+                  x={commonScale(node.time)}
+                  height={20}
+                  opacity={!!selectedItemId ? opacity : null}></rect>
+              );
+            })}
+          </svg>
+        </div>
       </div>
     </div>
   );
