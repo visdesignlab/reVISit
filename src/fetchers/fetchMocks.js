@@ -40,7 +40,9 @@ export async function postData(uri, postBody, fetchOptions) {
     },
     body: JSON.stringify(postBody),
   };
-  return await completePromise(uri, defaultHeaders);
+  const val = await completePromise(uri, defaultHeaders);
+  console.log("dywootto", val);
+  return val;
 }
 
 export async function getData(uri, fetchOptions) {

@@ -9,6 +9,7 @@ const ProvenanceIsolatedNodes = ({
   selectedItemId,
   handleProvenanceNodeClick,
 }) => {
+  console.log("dywootto", nodes);
   return (
     <div
       className={styles.wrapper}

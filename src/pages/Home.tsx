@@ -144,7 +144,7 @@ function scatter(data, metric, scale, label) {
 }
 
 export const Histogram = (props) => {
-  const { data, ci, size = { width: 150, height: 40 }, commonScales } = props;
+  const { data, ci, size = { width: 150, height: 40 }, onHandleBrush } = props;
 
   let average = ci[0];
   let lowerBound = ci[1];
