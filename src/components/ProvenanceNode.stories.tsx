@@ -1,3 +1,4 @@
+//@ts-nocheck
 import React from "react";
 import { storiesOf } from "@storybook/react";
 import provData from "../common/data/provenanceMocks.js";

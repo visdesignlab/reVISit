@@ -1,25 +1,37 @@
+//@ts-nocheck
 import React from "react";
 import eventMapping from "./eventMapping.js";
 import Tooltip from "@material-ui/core/Tooltip";
 import Fade from "@material-ui/core/Fade";
 import styles from "./ProvenanceIsolatedNodes.module.css";
-const ProvenanceIsolatedNodes = ({ nodes, handleProvenanceNodeClick }) => {
-  // console.log("isolated", nodes);
+const ProvenanceIsolatedNodes = ({
+  nodes,
+  selectedItemId,
+  handleProvenanceNodeClick,
+}) => {
+  console.log("dywootto", nodes);
   return (
-    //style={{overflowX:'scroll',width:'240px',flexWrap:'inherit'}}
-    <div className={styles.wrapper}> 
-      {nodes.map((node, index) => (
-        <div key={index} onClick={() => handleProvenanceNodeClick(node)}>
-          <IsolatedNode node={node}></IsolatedNode>
-        </div>
-      ))}
+    <div
+      className={styles.wrapper}
+      style={{ display: "flex", flexDirection: "row" }}>
+      {nodes.map((node, index) => {
+        const opacity = node.id === selectedItemId ? 1 : 0.5;
+        return (
+          <div
+            key={index}
+            style={!!selectedItemId ? { opacity } : null}
+            onClick={() => handleProvenanceNodeClick(node)}>
+            <IsolatedNode node={node}></IsolatedNode>
+          </div>
+        );
+      })}
     </div>
   );
 };
 
 const IsolatedNode = ({ node }) => {
-  let eventMap = eventMapping[node.id]
-    ? eventMapping[node.id]
+  let eventMap = eventMapping[node.name]
+    ? eventMapping[node.name]
     : eventMapping["custom"];
   //add check for custom icons for newly created events;
   const icon = eventMap.icon;
@@ -30,7 +42,7 @@ const IsolatedNode = ({ node }) => {
     <Tooltip
       TransitionComponent={Fade}
       TransitionProps={{ timeout: 600 }}
-      title={node.event + " [" + node.count + "]"}
+      title={`${node.name} ${node.count ? `[${node.count}]` : ""}`}
       PopperProps={{
         popperOptions: {
           modifiers: {

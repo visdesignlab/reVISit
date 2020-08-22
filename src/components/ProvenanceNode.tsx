@@ -1,3 +1,5 @@
+//@ts-nocheck
+//@ts-nocheck
 import React, { useRef, useEffect } from "react";
 import eventMapping from "./eventMapping.js";
 import Icon from "@material-ui/core/Icon";
