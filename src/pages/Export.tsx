@@ -1,18 +1,8 @@
-import React, { useContext } from "react";
-import DevTable from "../components/DevExtremeTable";
-
-import ProvenanceDataContext from "../components/ProvenanceDataContext";
+import React from "react";
+import TableDataLoader from "../components/TableDataLoader";
 
 const Export = () => {
-  const { currentTaskData, handleProvenanceNodeClick } = useContext(
-    ProvenanceDataContext
-  );
-
-  return (
-    <DevTable
-      provenanceData={currentTaskData}
-      handleProvenanceNodeClick={handleProvenanceNodeClick}></DevTable>
-  );
+  return <div>This is export </div>;
 };
 
 export default Export;

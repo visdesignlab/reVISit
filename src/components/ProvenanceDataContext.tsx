@@ -4,7 +4,12 @@ import initProvData from "../common/data/provenance_summary.json";
 import prefixSpanSampleData from "../common/data/prefix_span_sample_data.json";
 import * as d3 from "d3";
 import _ from "lodash";
-import { performPrefixSpan, getDataFromServer, mysql_api } from "../fetchers/fetchMocks.js";
+import {
+  performPrefixSpan,
+  getDataFromServer,
+  getTaskDataFromServer,
+  mysql_api,
+} from "../fetchers/fetchMocks.js";
 import { useFetchAPIData } from "../hooks/hooks";
 import { ConsoleSqlOutlined } from "@ant-design/icons";
 
@@ -14,6 +19,7 @@ const ProvenanceDataContext = React.createContext({});
 
 export const ProvenanceDataContextProvider = ({ children }) => {
   // console.trace('calling provenanceDataContextProvider')
+  const [selectedTaskIds, setSelectedTaskIds] = React.useState(["S-task01"]);
 
   const taskStructure = [
     { name: "Task 1", key: "S-task01", prompt: "", actions: {}, stats: {} },
@@ -34,35 +40,37 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     { name: "Task 16", key: "S-task16" },
   ];
 
+  let [data, setData] = useState();
 
-
-   let [data,setData] = useState();
-
-   function handleProvenanceNodeClick(id) {
+  function handleProvenanceNodeClick(id) {
     console.log("dywootto handle provenance node click", id);
 
     // hardcoded data for now. ideally, we'll have the event id to be able to select on.
-    const taskId = "S-task01";
+    const taskId = selectedTaskIds[0];
     const participantId = "545d6768fdf99b7f9fca24e3";
     const taskNumber = 1;
     // select all of that provenance graph.
     const promise = mysql_api(`/actions/${participantId}/${taskId}`);
+
     promise.then((resolved) => {
       console.log("resolvedclick", resolved);
+      alert(`queried (skinny) provenance from db ${resolved.data}`);
 
       // rehydrate provenance graph
       // render vis using that provenance graph
     });
   }
-    // get initial data from server;
-    let [isLoading, isError, dataFromServer] = useFetchAPIData(async () => {
-      return await getDataFromServer();
-    }, []);
+  // get initial data from server;
+  let [isLoading, isError, dataFromServer] = useFetchAPIData(async () => {
+    return await getDataFromServer();
+  }, []);
+  // console.log(isLoading, isError, dataFromServer);
+  /*[{"_id":"startedProvenance","actionID":"startedProvenance","category":"Study\r","condition":"nodeLink","elapsedTime":0,"id":1,"label":"Start Task","participantID":"545d6768fdf99b7f9fca24e3","target":null,"taskID":"S-task01","time":"Wed, 28 Aug 2019 00:51:18 GMT","type":"action"},{"_id":"Hard Selected A Node","actionID":"Hard Selected a Node","category":"Answer\r","condition":"nodeLink","elapsedTime":0.283333,"id":2,"label":"Select","participantID":"545d6768fdf99b7f9fca24e3","target":null,"taskID":"S-task01","time":"Wed, 28 Aug 2019 00:51:35 GMT","type":"action"},{"_id":"Hard Unselected A Node","actionID":"Hard Unselected a Node","category":"Answer\r","condition":"nodeLink","elapsedTime":0.316667,"id":3,"label":"Unselect","participantID":"545d6768fdf99b7f9fca24e3","target":null,"taskID":"S-task01","time":"Wed, 28 Aug 2019 00:51:37 GMT","type":"action"},{"_id":"Hard Selected A Node","actionID":"Hard Selected a Node","category":"Answer\r","condition":"nodeLink","elapsedTime":0.45,"id":2,"label":"Select","participantID":"545d6768fdf99b7f9fca24e3","target":null,"taskID":"S-task01","time":"Wed, 28 Aug 2019 00:51:45 GMT","type":"action"},{"_id":"Finished Task","actionID":"Finished Task","category":"Study\r","condition":"nodeLink","elapsedTime":0.666667,"id":4,"label":"Finish Task","participantID":"545d6768fdf99b7f9fca24e3","target":null,"taskID":"S-task01","time":"Wed, 28 Aug 2019 00:51:58 GMT","type":"action"}]*/
 
   useEffect(() => {
-    console.log('data from server', dataFromServer)
-    setData(dataFromServer)
-    },[dataFromServer])
+    console.log("data from server", dataFromServer);
+    setData(dataFromServer);
+  }, [dataFromServer]);
 
   // // get initial data from server;
   // let [isLoading, isError, dataFromServer] = useFetchAPIData(async () => {
@@ -84,7 +92,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
 
   // useEffect(() => {
 
-  //   //convert sequences back to names; 
+  //   //convert sequences back to names;
   //   if (dataFromServer) {
   //     Object.keys(dataFromServer).map(event => {
   //       let eventObj = dataFromServer[event]['results']
@@ -106,18 +114,51 @@ export const ProvenanceDataContextProvider = ({ children }) => {
 
   // }, [dataFromServer])
 
+  //State
+  function timeout(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
 
-  //State 
-  let [taskSort, setTaskSort] = useState('name');
+  const handleTagCreation = async (participantID, taskID, tag, action) => {
+    await timeout(200);
 
-  const [allProvenanceData, setAllProvenanceData] = useState(() =>
+    return tag;
+  };
+  let [taskSort, setTaskSort] = useState("name");
+
+  /*const [allProvenanceData, setAllProvenanceData] = useState(() =>
     processRawProvenanceData(initProvData)
-  );
+  );*/
 
-  const [selectedTaskIds, setSelectedTaskIds] = React.useState(["S-task01"]);
+  const [currentTaskData, setCurrentTaskData] = React.useState([]);
+  let [
+    isTaskLoading,
+    isTaskError,
+    taskDataFromServer,
+  ] = useFetchAPIData(async () => {
+    const response = await getTaskDataFromServer(selectedTaskIds[0]);
+    response.data = response.data.map((datum) => {
+      // console.log(datum.sequence);
+      try {
+        datum.sequence = JSON.parse(`[${datum.sequence}]`);
+      } catch (err) {
+        console.error(
+          `[Provenance Data Context] Error Parsing ${datum.participantID}'s event sequence. This is likely caused by the sequence being > 16k characters.`
+        );
+        datum.sequence = [];
+      }
+      return datum;
+    });
+    return response;
+  }, [selectedTaskIds]);
 
+  useEffect(() => {
+    setCurrentTaskData(taskDataFromServer);
+  }, [taskDataFromServer]);
 
-  let currentTaskData = React.useMemo(() => {
+  // console.log(isTaskLoading, isTaskError, taskDataFromServer);
+
+  /*let currentTaskData = React.useMemo(() => {
     let internalTaskData = [];
 
     selectedTaskIds.map((selectedTaskId) => {
@@ -145,7 +186,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     });
 
     return internalTaskData;
-  }, [allProvenanceData, selectedTaskIds]);
+  }, [allProvenanceData, selectedTaskIds]);*/
 
   function handleChangeSelectedTaskId(event) {
     setSelectedTaskIds([event.target.value]);
@@ -154,12 +195,13 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   return (
     <ProvenanceDataContext.Provider
       value={{
-        allProvenanceData,
         currentTaskData,
         taskStructure,
         handleChangeSelectedTaskId,
         selectedTaskIds,
-        data
+        data,
+        handleTagCreation,
+        handleProvenanceNodeClick,
       }}>
       {children}
     </ProvenanceDataContext.Provider>

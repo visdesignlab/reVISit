@@ -28,21 +28,47 @@ import {
 } from "@devexpress/dx-react-grid-material-ui";
 
 import ProvenanceGraph from "./ProvenanceGraph";
-import ProvenanceIsolatedNodes from "./ProvenanceIsolatedNodes";
 import * as d3 from "d3";
 import TagsInput from "react-tagsinput";
 import eventMapping from "./eventMapping";
 import TagStyles from "./tagstyles.module.css";
 import TagWrapper from "./reactTagWrapper";
 import { QuantitativeFilter, CategoricalFilter } from "./TableFilters";
-import tableStyles from "./ProvenanceTable.module.css";
+import styles from "./ProvenanceTable.module.css";
 import { ifError } from "assert";
 import _ from "lodash";
+import {
+  QuantitativeColumn,
+  CategoricalColumn,
+  ProvenanceColumn,
+  NotesColumn,
+} from "./ColumnDefinitions.tsx";
+import {
+  CodeSandboxCircleFilled,
+  PropertySafetyFilled,
+} from "@ant-design/icons";
+import { Typography } from "@material-ui/core";
 
+const differenceFilter = (firstArray, secondArray) => {
+  return firstArray.filter(
+    (firstArrayItem) =>
+      !secondArray.some(
+        (secondArrayItem) =>
+          firstArrayItem.columnName === secondArrayItem.columnName
+      )
+  );
+};
+function toFixedTrunc(x, n) {
+  const v = (typeof x === "string" ? x : x.toString()).split(".");
+  if (n <= 0) return v[0];
+  let f = v[1] || "";
+  if (f.length > n) return `${v[0]}.${f.substr(0, n)}`;
+  while (f.length < n) f += "0";
+  return `${v[0]}.${f}`;
+}
 const GroupCellContent = (props) => {
-  console.log("props for group cell", props);
-
   const { provenanceData, column, row, children } = props;
+  console.log(column, props);
   const groupData = children.props.columnSummaries[0].value;
 
   let Content = () => <div></div>;
@@ -96,47 +122,13 @@ const ProvenanceCells = ({ value, style, ...restProps }) => {
     item = restProps.column.render(restProps.row);
   }
   return (
-    <VirtualTable.Cell
-      {...restProps}
-      style={{
-        backgroundColor: value < 5000 ? "red" : undefined,
-        ...style,
-      }}>
+    <VirtualTable.Cell {...restProps} style={{ margin: "16px" }}>
       {item}
     </VirtualTable.Cell>
   );
 };
 
-const extraColumns = [
-  {
-    title: "Confidence",
-    name: "answerConfidence",
-    type: "quantitative",
-    accessor: (participant) => {
-      return parseInt(participant.feedback.confidence);
-    },
-  },
-  {
-    title: "Difficulty",
-    name: "taskDifficulty",
-    type: "quantitative",
-    accessor: (participant) => {
-      return parseInt(participant.feedback.difficulty);
-    },
-  },
-  {
-    title: "Answer Text",
-    name: "answerText",
-    type: "string",
-    accessor: (participant) => {
-      return participant.answer.value !== ""
-        ? participant.answer.value
-        : participant.answer.nodes;
-    },
-  },
-];
 function getGroupSummaryValues(props) {
-  console.log(props);
   //const { selection, rows, totalSummaryItems } = this.state;
   //const selectionSet = new Set(selection);
   //const selectedRows = rows.filter((row, rowIndex) => selectionSet.has(rowIndex));
@@ -145,148 +137,214 @@ function getGroupSummaryValues(props) {
       return IntegratedSummary.defaultCalculator(type, selectedRows, row => row[columnName]);
     });*/
 }
+// must use non zero order else !order is true
 
-const DevExtremeTable = ({ provenanceData, handleProvenanceNodeClick }) => {
-  console.log(provenanceData);
-  // map extra columns for now
-  provenanceData = useMemo(
-    () =>
-      provenanceData.map((participant) => {
-        extraColumns.forEach((extraColumn) => {
-          participant[extraColumn.name] = {
-            type: extraColumn.type,
-            value: extraColumn.accessor(participant),
-          };
-        });
-        return participant;
-      }),
-    [provenanceData]
+function getColumnMetaData(columnKey, columnMetaData) {
+  if (columnMetaData[columnKey]) {
+    return columnMetaData[columnKey];
+  } else {
+    return { hideByDefault: true };
+  }
+}
+
+function generateColumnDefinition(
+  columnSchema,
+  data,
+  columnsMetaData,
+  handleFilterChange
+) {
+  let defaultColumnDefinition;
+  const columnMetaData = getColumnMetaData(
+    columnSchema.COLUMN_NAME,
+    columnsMetaData
   );
-  console.log(provenanceData, extraColumns);
-  const extraColumnDefinitions = useMemo(() => {
-    let tempColumns = [];
+  if (columnSchema.DATA_TYPE === "int" || columnSchema.DATA_TYPE === "float") {
+    defaultColumnDefinition = new QuantitativeColumn(
+      data,
+      columnSchema.COLUMN_NAME,
+      columnMetaData,
+      handleFilterChange
+    );
+  } else if (
+    columnSchema.DATA_TYPE === "longtext" ||
+    columnSchema.DATA_TYPE === "text"
+  ) {
+    defaultColumnDefinition = new CategoricalColumn(
+      data,
+      columnSchema.COLUMN_NAME,
+      columnMetaData,
+      handleFilterChange
+    );
+  } else if (columnSchema.DATA_TYPE === "provenance") {
+    defaultColumnDefinition = new ProvenanceColumn(columnMetaData);
+  } else if (columnSchema.DATA_TYPE === "tag") {
+    defaultColumnDefinition = new NotesColumn(columnMetaData);
+    /*
+    defaultColumnDefinition = {
+      title: columnSchema.COLUMN_NAME,
+      name: columnSchema.COLUMN_NAME,
+      render: (rowData) => <span>{"tag"}</span>,
+      width: 100,
+    };*/
+  } else {
+    console.error(
+      `[DevExtremeTable.tsx] ERROR: Column Schema contains unkown column type ${columnSchema.DATA_TYPE}.`
+    );
+  }
 
-    for (let columnIndex in extraColumns) {
-      let column = extraColumns[columnIndex];
-      console.log(column);
-
-      if (column.type === "string") {
-        tempColumns.push({
-          title: column.title,
-          name: column.name,
-          render: (rowData) => <span>{rowData[column.name].value}</span>,
-          width: 100,
-        });
-      } else if (column.type === "quantitative") {
-        const quantWidth = 300;
-        const max = d3.max(provenanceData, (datum) => datum[column.name].value);
-        const xScale = d3.scaleLinear().domain([0, max]).range([0, quantWidth]);
-
-        tempColumns.push({
-          title: column.title,
-          name: column.name,
-          width: quantWidth,
-          customSort: (a, b) => a[column.name].value - b[column.name].value,
-          render: (rowData) => <span>{rowData[column.name].value}</span>, //renderTimeCell(rowData, timeScale),
-          customFilterAndSearch: (filter, value, row) => {
-            return filterQuantitativeValues(filter, value.value, row);
-          },
-          groupedSummaryComponent: ({ incomingData }) => {
-            console.log("dywootto", incomingData);
-            return (
-              <GroupDataResolver incomingData={incomingData}>
-                {({ partitionedData }) => {
-                  if (partitionedData.length === 0) {
-                    return <div></div>;
-                  }
-                  return (
-                    <QuantitativeFilter
-                      xScale={xScale}
-                      data={partitionedData.map(
-                        (datum) => datum[column.name].value
-                      )}></QuantitativeFilter>
-                  );
-                }}
-              </GroupDataResolver>
-            );
-          },
-          filterComponent: (props) => (
-            <QuantitativeFilter
-              {...props}
-              xScale={xScale}
-              data={provenanceData.map(
-                (datum) => datum[column.name].value
-              )}></QuantitativeFilter>
-          ),
-        });
-      }
+  return defaultColumnDefinition;
+}
+const DevExtremeTable = ({
+  provenanceData,
+  handleProvenanceNodeClick,
+  tableSchema,
+  handleTagCreation,
+}) => {
+  const [filters, setFilters] = React.useState([]);
+  const handleFilter = (columnName, value) => {
+    const currentFilterIndex = filters.findIndex(
+      (filter) => filter.name === columnName
+    );
+    let clonedFilters = [...filters];
+    if (currentFilterIndex > -1) {
+      clonedFilters[currentFilterIndex] = {
+        columnName: columnName,
+        value: value,
+      };
+    } else {
+      clonedFilters.push({ columnName: columnName, value: value });
     }
-    return tempColumns;
-  });
-  const [selection, setSelection] = useState([]);
-
-  // Column Defs
-  const [userIdColumnDefinition, setUserIdColumnDefinition] = useState(
-    renderUserIdColumn(provenanceData, 150)
-  );
-
-  const [stimulusColumnDefinition, setStimulusColumnDefinition] = useState(
-    renderStimulusDefinition(provenanceData, 150)
-  );
-
-  const [timeColumnDefinition, setTimeColumnDefinition] = useState(
-    renderTimeColumn(provenanceData, 300)
-  );
-
-  const [accuracyColumnDefinition, setAccuracyColumnDefinition] = useState(
-    renderAccuracyColumn(provenanceData, 100)
-  );
-
-  const [eventsColumnDefinition, setEventsColumnDefinition] = useState(
-    renderProvenanceNodeColumn(provenanceData, 1000, handleProvenanceNodeClick)
-  );
-
-  const [notesColumnDefinition, setNotesColumnDefinition] = useState(
-    renderNotesColumn(200)
-  );
+    setFilters(clonedFilters);
+    console.log("new filter", clonedFilters);
+  };
+  let columnMetaData = {
+    participantID: { order: 1 },
+    condition: { order: 2 },
+    accuracy: { width: 125, order: 3 },
+    time: { width: 200, order: 4 },
+    sequence: {
+      width: 300,
+      order: 5,
+      handleProvenanceNodeClick: handleProvenanceNodeClick,
+    },
+    notes: { width: 200, order: 6, handleTagCreation: handleTagCreation },
+  };
 
   React.useEffect(() => {
+    /*
     setTimeColumnDefinition(renderTimeColumn(provenanceData, 250));
     setAccuracyColumnDefinition(renderAccuracyColumn(provenanceData, 100));
     setEventsColumnDefinition(renderProvenanceNodeColumn(provenanceData, 500));
     //setNotesColumnDefinition(renderNotesColumn(200));
-    setRows(provenanceData);
-    setColumns([
-      userIdColumnDefinition,
-      stimulusColumnDefinition,
-      timeColumnDefinition,
-      accuracyColumnDefinition,
-      eventsColumnDefinition,
-      ...extraColumnDefinitions,
-    ]);
+    setRows(provenanceData);*/
+
+    setColumns(
+      tableSchema
+        .map((columnSchema) =>
+          generateColumnDefinition(
+            columnSchema,
+            provenanceData,
+            columnMetaData,
+            handleFilter
+          ).generateColumnObject()
+        )
+        .sort((a, b) => {
+          if (!a.order) {
+            return 1;
+          }
+          if (!b.order) {
+            return -1;
+          }
+          return a.order > b.order ? 1 : -1;
+        })
+    );
   }, [provenanceData]);
 
-  const [columns, setColumns] = useState([
-    userIdColumnDefinition,
-    stimulusColumnDefinition,
-    timeColumnDefinition,
-    accuracyColumnDefinition,
-    eventsColumnDefinition,
-    ...extraColumnDefinitions,
-    //notesColumnDefinition,
-  ]);
-  console.log(provenanceData, ...extraColumnDefinitions, columns);
+  const [columns, setColumns] = useState(
+    tableSchema
+      .map((columnSchema) =>
+        generateColumnDefinition(
+          columnSchema,
+          provenanceData,
+          columnMetaData
+        ).generateColumnObject()
+      )
+      .sort((a, b) => {
+        if (!a.order) {
+          return 1;
+        }
+        if (!b.order) {
+          return -1;
+        }
+        return a.order > b.order ? 1 : -1;
+      })
+  );
+  const [selection, setSelectionInternal] = useState([]);
+
+  const setSelection = (selectionIndicies) => {
+    setSelectionInternal(selectionIndicies);
+  };
+
   const [rows, setRows] = useState(provenanceData);
   const [grouping, setGroupingInternal] = useState([]);
-  const setGrouping = (grouping) => {
-    console.log(grouping);
-    setGroupingInternal(grouping);
+  const setGrouping = (newGrouping) => {
+    // if an item is recently grouped on, remove any filters for it.
+    let newlyAddedGroups = differenceFilter(newGrouping, grouping)?.[0];
+    if (newlyAddedGroups) {
+      let currentFilter = filters.find(
+        (filterItem) => newlyAddedGroups.columnName === filterItem.columnName
+      );
+      if (!currentFilter) {
+        currentFilter = { value: { filterMin: 0.5, filterMax: 1.5 } };
+      }
+      const newGroupIndex = newGrouping.findIndex(
+        (newGroup) => newGroup.columnName === newlyAddedGroups.columnName
+      );
+      newGrouping[newGroupIndex] = Object.assign(newGrouping[newGroupIndex], {
+        groupMetaData: currentFilter.value,
+      });
+    }
+    // search through grouping,
+    setGroupingInternal(newGrouping);
+    //setFilters(clonedFilters);
   };
-  console.log("dywootto group", grouping);
-  const [integratedGroupingColumnExtensions] = useState([
+  const quantitativePredicate = (value, column, filterValue) => {
+    // find filter value
+    const isRowInTrueGroup = column.customFilterAndSearch(
+      { value: filterValue },
+      value
+    );
+    return {
+      value: isRowInTrueGroup,
+      key: `${column.name}-${isRowInTrueGroup}`,
+    };
+  };
+  const integratedGroupingColumnExtensions = useMemo(
+    () => {
+      return columns.map((column) => {
+        // if quantitative column, group with filter value
+        if (column.type && column.type === "quantitative") {
+          const group = grouping.find(
+            (group) => group.columnName === column.name
+          );
+          let groupingValue = group
+            ? group.groupMetaData
+            : { filterMin: 0.2, filterMax: 1.2 };
+
+          return {
+            columnName: column.name,
+            criteria: (value) =>
+              quantitativePredicate(value, column, groupingValue),
+          };
+        }
+        return { columnName: column.name };
+      });
+    },
+    [columns, grouping]
+
     // { columnName: "visType", criteria: nameGroupCriteria },
     //{ columnName: "answer", criteria: (data) => data.accuracy > 0.5 },
-  ]);
+  );
   const [tableGroupColumnExtension] = useState([
     columns.map((column) => ({
       columnName: column.name,
@@ -333,11 +391,11 @@ const DevExtremeTable = ({ provenanceData, handleProvenanceNodeClick }) => {
   );
 
   const [defaultHiddenColumnNames] = useState(
-    extraColumns.map((column) => column.name)
+    columns
+      .filter((column) => column.hideByDefault)
+      .map((column) => column.name)
   );
   const summaryCalculator = (type, rows, getValue) => {
-    console.log("dywootto rows for group", rows);
-
     if (type === "custom") {
       if (!rows.length) {
         return null;
@@ -346,7 +404,44 @@ const DevExtremeTable = ({ provenanceData, handleProvenanceNodeClick }) => {
     }
     return rows;
   };
-
+  const TempRowComponent = (props) => {
+    let groupedRowHeader = `Grouped Row`;
+    const columnName = props.row.groupedBy;
+    const columnInfo = columns.find((column) => column.name == columnName);
+    if (columnInfo) {
+      if (columnInfo.type === "quantitative") {
+        const group = grouping.find((group) => group.columnName === columnName);
+        if (props.row.value === true) {
+          // grab values from filters
+          groupedRowHeader = `Grouped on: ${columnName} [${toFixedTrunc(
+            group.groupMetaData.filterMin,
+            2
+          )},${toFixedTrunc(group.groupMetaData.filterMax, 2)}]`;
+        } else {
+          groupedRowHeader = `Grouped on: ${columnName} is outside of range [${toFixedTrunc(
+            group.groupMetaData.filterMin,
+            2
+          )}, ${toFixedTrunc(group.groupMetaData.filterMax, 2)}]`;
+        }
+      } else {
+        groupedRowHeader = `${columnName} is ${props.row.value}`;
+      }
+    }
+    return (
+      <React.Fragment>
+        <tr className={styles.groupHeaderRow}>
+          <td colSpan={42}>
+            <Typography
+              className={styles.groupHeaderContent}
+              variant={"overline"}>
+              {groupedRowHeader}
+            </Typography>
+          </td>
+        </tr>
+        <TableGroupRow.Row {...props}>{props.children}</TableGroupRow.Row>
+      </React.Fragment>
+    );
+  };
   return (
     <Paper>
       <Grid rows={rows} columns={columns}>
@@ -362,7 +457,7 @@ const DevExtremeTable = ({ provenanceData, handleProvenanceNodeClick }) => {
           columnExtensions={integratedGroupingColumnExtensions}
         />
         <IntegratedSummary calculator={summaryCalculator} />
-        <FilteringState defaultFilters={[]} />
+        <FilteringState filters={filters} onFiltersChange={setFilters} />
         <IntegratedFiltering
           columnExtensions={filteringColumnExtensions}></IntegratedFiltering>
         <SelectionState
@@ -379,6 +474,7 @@ const DevExtremeTable = ({ provenanceData, handleProvenanceNodeClick }) => {
         <TableSelection showSelectAll />
         <TableFilterRow cellComponent={FilterCells} />
         <TableGroupRow
+          rowComponent={TempRowComponent}
           columnExtensions={tableGroupColumnExtension}
           summaryCellComponent={(props) => (
             <GroupCellContent
@@ -387,8 +483,20 @@ const DevExtremeTable = ({ provenanceData, handleProvenanceNodeClick }) => {
               {...props}></GroupCellContent>
           )}
           showColumnsWhenGrouped
-          stubCellComponent={() => {
-            return <td className="FAKETD" style={{ display: "none" }}></td>;
+          stubCellComponent={(stubProps) => {
+            let shouldHideStub = false;
+            // if this stub prop matches last grouping
+
+            if (grouping.length > 0) {
+              const groupedByRow = stubProps.tableRow.row.groupedBy;
+              shouldHideStub =
+                grouping[grouping.length - 1].columnName === groupedByRow;
+            }
+            return (
+              <td
+                className="FAKETD"
+                style={shouldHideStub ? { display: "none" } : null}></td>
+            );
           }}
           inlineSummaryComponent={() => {
             return <div>temp div testing</div>;
@@ -427,52 +535,6 @@ function renderUserIdColumn(provenanceData, userIdColumnWidth) {
   };
 }
 
-function renderNotesCell(rowData) {
-  if (!Array.isArray(rowData.tableData?.tags)) {
-    rowData.tableData.tags = [];
-  }
-  return (
-    <TagWrapper
-      tags={rowData.tableData.tags}
-      onTagChange={(action, tag) => {
-        // check if rowData is selected;
-        if (action === "Add") {
-          rowData.tableData.tags.push(tag);
-        } else {
-          const index = rowData.tableData.tags.findIndex((iterTag) => {
-            return iterTag.name === tag[0]?.name;
-          });
-          if (index > -1) {
-            rowData.tableData.tags.splice(index, 1);
-          }
-        }
-      }}></TagWrapper>
-  );
-}
-
-function renderNotesColumn(notesColumnWidth) {
-  return {
-    title: "Notes",
-    name: "None",
-    cellStyle: {
-      padding: "4px 16px",
-    },
-    width: notesColumnWidth,
-    customSort: (a, b) => b.tableData.tags.length - a.tableData.tags.length,
-    filterComponent: () => <div></div>,
-    render: renderNotesCell,
-  };
-}
-
-function renderProvenanceNodeCell(data, handleProvenanceNodeClick) {
-  return (
-    <ProvenanceIsolatedNodes
-      nodes={data.provenance}
-      handleProvenanceNodeClick={
-        handleProvenanceNodeClick
-      }></ProvenanceIsolatedNodes>
-  );
-}
 /**
  *
  * @param filter
@@ -492,12 +554,6 @@ function filterCategoricalValue(filter, value, accesssor) {
     if (Object.values(filter).includes(newValues[i])) {
       return true;
     }
-  }
-  return false;
-}
-function filterQuantitativeValues(filter, value, row) {
-  if (value >= filter.filterMin && value <= filter.filterMax) {
-    return true;
   }
   return false;
 }
@@ -532,7 +588,6 @@ function renderProvenanceNodeColumn(
       }
     }, incomingData);
 
-    console.log(partitionedData);
     const partitionedNodes = partitionedData
       .map((graph) => {
         return graph.provenance.map((node) => node.event);
@@ -568,7 +623,6 @@ function renderProvenanceNodeColumn(
       return filterCategoricalValue(filter, value, (node) => node.event);
     },
     groupedSummaryComponent: ({ incomingData }) => {
-      console.log("dywootto", incomingData);
       return (
         <GroupDataResolver incomingData={incomingData}>
           {({ partitionedData }) => {
@@ -654,11 +708,9 @@ function renderAccuracyColumn(currentProvenanceData, columnWidth) {
       );
     },
     groupedSummaryComponent: ({ incomingData }) => {
-      console.log("dywootto", incomingData);
       return (
         <GroupDataResolver incomingData={incomingData}>
           {({ partitionedData }) => {
-            console.log(partitionedData);
             if (partitionedData.length === 0) {
               return <div></div>;
             }
@@ -717,7 +769,6 @@ function renderTimeColumn(currentProvenanceData, columnWidth) {
       return filterQuantitativeValues(filter, value, row);
     },
     groupedSummaryComponent: ({ incomingData }) => {
-      console.log("dywootto", incomingData);
       return (
         <GroupDataResolver incomingData={incomingData}>
           {({ partitionedData }) => {
