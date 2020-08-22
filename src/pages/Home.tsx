@@ -150,7 +150,7 @@ function scatter(data, metric, scale, label) {
 }
 
 export const Histogram = (props) => {
-  const { data, ci, size = { width: 150, height: 40 }, commonScales } = props;
+  const { data, ci, size = { width: 150, height: 40 }, commonScales, hoveredRow } = props;
 
   let average = ci[0];
   let lowerBound = ci[1];
@@ -177,55 +177,53 @@ export const Histogram = (props) => {
 
   let textLabel = Math.round(average * 10) / 10; //label == '%' ? (Math.round(average * 100) + ' ' + label) : Math.round(average * 10) / 10 + ' ' + label
 
+  function HistogramComponent({data}){
+    // const { data, ci, size = { width: 150, height: 40 }, commonScales, hovered } = props;
+
+    return  <><line
+    x1={0}
+    y1={yScale.range()[1]}
+    x2={xScale.range()[1]}
+    y2={yScale.range()[1]}
+    style={{ stroke: "rgb(0,0,0,0.25)", strokeWidth: 1 }}></line>
+  {data.hist.map((d, i) => (
+    <rect
+      className="count"
+      key={"d_" + data.bins[i]}
+      style={{ fill: "rgb(93, 131, 210)" }}
+      x={xScale(data.bins[i]) + barPadding / 2}
+      y={barHeight - yScale(d)}
+      width={barWidth}
+      height={yScale(d)}></rect>
+  ))}
+  <circle
+    className="count"
+    style={{ fill: "#ff5e00", opacity: 1 }}
+    cx={xScale(average)}
+    cy={yScale.range()[1] / 2}
+    r={5}></circle>
+
+  <line
+    className="count"
+    style={{ stroke: "black", strokeWidth: 2, opacity: 0.5 }}
+    x1={xScale(lowerBound)}
+    x2={xScale(upperBound)}
+    y1={yScale.range()[1] / 2}
+    y2={yScale.range()[1] / 2}></line>
+
+  <text
+    style={{ fontSize: "1em", textAnchor: "middle" }}
+    x={xScale(average)}
+    y={40}>
+    {" "}
+    {textLabel}{" "}
+  </text>
+  </>
+  }
   return (
     <svg width={width} height={height}>
       {/* add axis */}
-      <line
-        x1={0}
-        y1={yScale.range()[1]}
-        x2={xScale.range()[1]}
-        y2={yScale.range()[1]}
-        style={{ stroke: "rgb(0,0,0,0.25)", strokeWidth: 1 }}></line>
-      {data.hist.map((d, i) => (
-        <rect
-          className="count"
-          key={"d_" + data.bins[i]}
-          style={{ fill: "rgb(93, 131, 210)" }}
-          x={xScale(data.bins[i]) + barPadding / 2}
-          y={barHeight - yScale(d)}
-          width={barWidth}
-          height={yScale(d)}></rect>
-      ))}
-      <circle
-        className="count"
-        style={{ fill: "#ff5e00", opacity: 1 }}
-        cx={xScale(average)}
-        cy={yScale.range()[1] / 2}
-        r={5}></circle>
-
-      <line
-        className="count"
-        style={{ stroke: "black", strokeWidth: 2, opacity: 0.5 }}
-        x1={xScale(lowerBound)}
-        x2={xScale(average)}
-        y1={yScale.range()[1] / 2}
-        y2={yScale.range()[1] / 2}></line>
-
-      <line
-        className="count"
-        style={{ stroke: "black", strokeWidth: 2, opacity: 0.5 }}
-        x1={xScale(average)}
-        x2={xScale(upperBound)}
-        y1={yScale.range()[1] / 2}
-        y2={yScale.range()[1] / 2}></line>
-
-      <text
-        style={{ fontSize: "1em", textAnchor: "middle" }}
-        x={xScale(average)}
-        y={40}>
-        {" "}
-        {textLabel}{" "}
-      </text>
+     <HistogramComponent data={hoveredRow  || data}></HistogramComponent>
     </svg>
   );
 };
@@ -324,9 +322,6 @@ function BarChart(props) {
 let countScale = d3.scaleLinear().range([0,100]).domain([0,300])
 
 function TableComponent({rows,hoveredRow,setHoveredRow}){  
-  
-console.log('rows', rows)
- 
 
   // console.log(rows)
   return <MuiThemeProvider theme={theme}>
@@ -341,17 +336,17 @@ console.log('rows', rows)
   <TableBody>
     {rows.map((row,i) => {
       // console.log('row',row)
-      return <TableRow key={row.name} onMouseOver={() => setHoveredRow(row)} style={{background: hoveredRow == row ? 'rgb(250,250,250)':'white'}} >
+      return <TableRow key={row.name} onMouseOver={() => setHoveredRow(row)} onMouseOut={() => setHoveredRow()} style={{background: hoveredRow == row ? 'rgb(234,234,234)':'white'}} >
         <TableCell  component="th" scope="row" style={{padding:'10px'}}>
           {row.seq? <ProvenanceIsolatedNodes
             // key={}
             nodes={
-              row.seq
+              row.seqObj
             }></ProvenanceIsolatedNodes> : row.answer}
         </TableCell>
         {row.seq ? <TableCell align="right">
           <svg width={100} height={34}>
-            <rect x={0} y={0} width={countScale(row.count)} height={30} style={{ fill: 'rgb(147 195 209)', 'stroke': 'white', strokeWidth: '8px' }}></rect>
+            <rect x={0} y={0} width={countScale(row.count)} height={30} style={{ fill: 'rgb(147 195 209)'}}></rect>
             <text x={0} y={20} style={{ 'fontWeight': 'bold', 'textAnchor': 'start' }}>{row.count}</text>
           </svg>
         </TableCell> : <></>}
@@ -372,6 +367,7 @@ console.log('rows', rows)
 
 function ConditionCard({condition, conditionName,classes,taskID}){
 
+  // console.log('calling condtion card on ', condition)
   const [hoveredRow,setHoveredRow] = useState()
 
   let freqPattern = condition.patterns[0].topK;
@@ -383,17 +379,10 @@ function ConditionCard({condition, conditionName,classes,taskID}){
     ...new Set(filteredMetrics.map((m) => m.metric)),
   ]; // console.log(frequentActions)
 
-
-  
- let frequentActions = freqPattern; //.slice(0,5);
-//  console.log(frequentActions)
-
 // let frequentActions = freqPattern[i].seq.map(a => ({ event: a, id: a, count: freqPattern[i].count, scale: colorScale(freqPattern[i].count) })) //actions.filter(a => a.taskID == task.taskID && a.condition == condition).splice(0, 5).map(a => ({ event: a.label, id: a.actionID, count: a.count, scale: colorScale(a.count) }))
 
-
-  frequentActions = frequentActions.map((action,i)=>{
-    action.seq = freqPattern[i].seq.map(a=>{
-      return { event: a, id: a, count: action.count}})
+freqPattern.map(action=>{
+   action.seqObj = action.seq.map(a=>({ event: a, id: a, count: action.count}))
     return action}) //actions.filter(a => a.taskID == task.taskID && a.condition == condition).splice(0, 5).map(a => ({ event: a.label, id: a.actionID, count: a.count, scale: colorScale(a.count) }))
 
    
@@ -428,7 +417,7 @@ function ConditionCard({condition, conditionName,classes,taskID}){
             <Grid key={"prov"} item>
             <Box height = {rowHeight} width = {400} mt={"5px"} mb={"6px"} mr={'10px'} boxShadow={1} style={{ overflow:'scroll' }}>
                 
-              {<TableComponent rows={frequentActions} hoveredRow ={hoveredRow} setHoveredRow = {setHoveredRow}></TableComponent>}
+              {<TableComponent rows={freqPattern} hoveredRow ={hoveredRow} setHoveredRow = {setHoveredRow}></TableComponent>}
             </Box>
             <Typography
                   className={classes.pos}
@@ -449,9 +438,12 @@ function ConditionCard({condition, conditionName,classes,taskID}){
                 value.type == "int" ||
                 value.type == "float"
               ) {
+
+                let hoveredStats = hoveredRow ? hoveredRow.stats.find(m=>m.metric == metric ) : undefined;
+                let hoveredCI = hoveredStats ? hoveredStats.ci : undefined;
                 return (
                   <Grid key={metric} item>
-                    {<Histogram data={value} ci={value.ci} />}
+                    {<Histogram data={hoveredStats || value} ci={hoveredCI ||  value.ci} />}
                     <Typography
                       style={{ display: "block" }}
                       color="primary"
