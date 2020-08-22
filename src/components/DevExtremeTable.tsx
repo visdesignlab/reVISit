@@ -215,6 +215,7 @@ const DevExtremeTable = ({
       clonedFilters.push({ columnName: columnName, value: value });
     }
     setFilters(clonedFilters);
+    console.log("new filter", clonedFilters);
   };
   let columnMetaData = {
     participantID: { order: 1 },
