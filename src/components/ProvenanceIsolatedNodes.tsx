@@ -6,7 +6,8 @@ import styles from "./ProvenanceIsolatedNodes.module.css";
 const ProvenanceIsolatedNodes = ({ nodes, handleProvenanceNodeClick }) => {
   // console.log("isolated", nodes);
   return (
-    <div className={styles.wrapper}>
+    //style={{overflowX:'scroll',width:'240px',flexWrap:'inherit'}}
+    <div className={styles.wrapper}> 
       {nodes.map((node, index) => (
         <div key={index} onClick={() => handleProvenanceNodeClick(node)}>
           <IsolatedNode node={node}></IsolatedNode>
