@@ -144,7 +144,7 @@ function scatter(data, metric, scale, label) {
 }
 
 export const Histogram = (props) => {
-  const { data, ci, size = { width: 150, height: 40 }, onHandleBrush, hoveredRow } = props;
+  const { data, ci, size = { width: 100, height: 40 }, onHandleBrush, hoveredRow } = props;
 
   let average = ci[0];
   let lowerBound = ci[1];
@@ -249,6 +249,8 @@ export const Histogram = (props) => {
   </text>
   </>
   }
+
+
   return (
     <svg width={width} height={height}>
       {/* add axis */}
@@ -387,8 +389,33 @@ export const BarChart = (props) => {
 }
 let countScale = d3.scaleLinear().range([0, 100]).domain([0, 300]);
 
-function TableComponent({rows,hoveredRow,setHoveredRow}){  
+function Stimulus({taskID,conditionName,classes}){
+  // console.log('am rerendering')
+  return  <><Box mt={"5px"} mb={"6px"} mr={"10px"} boxShadow={1}>
+  <CardMedia
+    style={{ display: "inline-block" }}
+    className={classes.media}
+    component="img"
+    image={require("../static/taskImages/" +
+      taskID +
+      "_" +
+      conditionName +
+      ".png")}
+    // image="https://placekitten.com/g/100/100"
+    title="Task 1 AM"
+  />
+</Box>
+<Typography
+  className={classes.pos}
+  variant="overline"
+  color="primary">
+  Stimulus
+</Typography>
+</>
+}
 
+function TableComponent({rows,hoveredRow,setHoveredRow}){  
+// console.log('rendering table',hoveredRow) 
   // console.log(rows)
   return (
     <MuiThemeProvider theme={theme}>
@@ -404,7 +431,7 @@ function TableComponent({rows,hoveredRow,setHoveredRow}){
             {rows.map((row, i) => {
               // console.log('row',row)
               return (
-              <TableRow key={row.name} onMouseOver={() =>{setHoveredRow(row)}} onMouseOut={() => setHoveredRow()} style={{background: hoveredRow == row ? 'rgb(234,234,234)':'white'}} >
+              <TableRow key={row.id} onMouseEnter={() =>{setHoveredRow(row)}} onMouseLeave={() => setHoveredRow()} style={{background: hoveredRow == row? 'rgb(234,234,234)':'white'}} >
                   <TableCell
                     component="th"
                     scope="row"
@@ -452,111 +479,99 @@ function TableComponent({rows,hoveredRow,setHoveredRow}){
   );
 }
 
+function HistComponent({filteredMetrics,hoveredRow,metric}){
+
+  // let hoveredStats = undefined; 
+  // let hoveredCI = undefined;
+  let value = filteredMetrics.find(
+    (m) => m.metric == metric
+  );
+  if (
+    value.type == "int" ||
+    value.type == "float"
+  ) {
+
+    let hoveredStats = hoveredRow ? hoveredRow.stats.find(m=>m.metric == metric ) : undefined;
+    let hoveredCI = hoveredStats ? hoveredStats.ci : undefined;
+    return (
+      <Grid key={metric+ '_hist'} item>
+        {<Histogram key={metric+ '_histCompoment'} data={hoveredStats || value} ci={hoveredCI ||  value.ci} />}
+        <Typography
+          style={{ display: "block" }}
+          color="primary"
+          variant="overline">
+          {metric}
+        </Typography>
+      </Grid>
+    );
+  }
+  if (value.type == "text") {
+    return (
+      <Grid key={metric+'_bar'} item>
+        <BarChart data={value}></BarChart>
+        <Typography
+          style={{ display: "block" }}
+          color="primary"
+          variant="overline">
+          {metric}
+        </Typography>
+      </Grid>
+    );
+  }
+  return <></>;
+
+}
+
 function ConditionCard({ condition, conditionName, classes, taskID }) {
   const [hoveredRow, setHoveredRow] = useState();
 
-  let freqPattern = condition.patterns[0].topK;
+  let freqPattern, filteredMetrics, metricValues;
 
-  // let frequentActions = condition.actions.map(a => ({ event: a.label, id: a.actionID, count: a.count, scale: colorScale(a.count) })) //actions.filter(a => a.taskID == task.taskID && a.condition == condition).splice(0, 5).map(a => ({ event: a.label, id: a.actionID, count: a.count, scale: colorScale(a.count) }))
-  let filteredMetrics = condition.stats; //metrics.filter(m => m.group.taskID == task.taskID && m.group.condition == condition);
+  //only compute when the condition changes
+  // useEffect(() => {
+    // console.log('calling use effect')
+    freqPattern = condition.patterns[0].topK;
+    filteredMetrics = condition.stats;
 
-  let metricValues = [...new Set(filteredMetrics.map((m) => m.metric))]; // console.log(frequentActions)
+    metricValues = [...new Set(filteredMetrics.map((m) => m.metric))]; 
 
-// let frequentActions = freqPattern[i].seq.map(a => ({ event: a, id: a, count: freqPattern[i].count, scale: colorScale(freqPattern[i].count) })) //actions.filter(a => a.taskID == task.taskID && a.condition == condition).splice(0, 5).map(a => ({ event: a.label, id: a.actionID, count: a.count, scale: colorScale(a.count) }))
+    freqPattern.map((action,i) => {
+      action.id = i;
+      action.seqObj = action.seq.map(a => ({ name: a, id: a, count: action.count }))
+      return action
+    }) 
 
-freqPattern.map(action=>{
-   action.seqObj = action.seq.map(a=>({ name: a, id: a, count: action.count}))
-    return action}) //actions.filter(a => a.taskID == task.taskID && a.condition == condition).splice(0, 5).map(a => ({ event: a.label, id: a.actionID, count: a.count, scale: colorScale(a.count) }))
+  // }, [condition]);
 
-   
-
-  return (
+  // console.log(metricValues)
+  return (!metricValues ? <></> :
     <React.Fragment key={"taskcard_" + conditionName}>
       <Typography className={classes.condition} variant="overline">
         {conditionName}
       </Typography>
-
       <Grid container className={classes.root} spacing={2}>
         <Grid item xs={12}>
           <Grid container justify="flex-start" spacing={2}>
             <Grid key={"cat"} item>
-              <Box mt={"5px"} mb={"6px"} mr={"10px"} boxShadow={1}>
-                <CardMedia
-                  style={{ display: "inline-block" }}
-                  className={classes.media}
-                  component="img"
-                  image={require("../static/taskImages/" +
-                    taskID +
-                    "_" +
-                    conditionName +
-                    ".png")}
-                  // image="https://placekitten.com/g/100/100"
-                  title="Task 1 AM"
-                />
+              <Stimulus taskID={taskID} classes={classes} conditionName={conditionName}></Stimulus>
+            </Grid>
+            <Grid key={"prov"} item>
+              <Box height={rowHeight} width={400} mt={"5px"} mb={"6px"} mr={'10px'} boxShadow={1} style={{ overflow: 'scroll' }}>
+                {<TableComponent rows={freqPattern} hoveredRow={hoveredRow} setHoveredRow={setHoveredRow}></TableComponent>}
               </Box>
               <Typography
                 className={classes.pos}
                 variant="overline"
                 color="primary">
-                Stimulus
-              </Typography>
-            </Grid>
-
-            <Grid key={"prov"} item>
-            <Box height = {rowHeight} width = {400} mt={"5px"} mb={"6px"} mr={'10px'} boxShadow={1} style={{ overflow:'scroll' }}>
-                
-              {<TableComponent rows={freqPattern} hoveredRow ={hoveredRow} setHoveredRow = {setHoveredRow}></TableComponent>}
-            </Box>
-            <Typography
-                  className={classes.pos}
-                  variant="overline"
-                  color="primary">
-                  Actions
+                Actions
               </Typography>
             </Grid>
             <Grid key={'performanceMetrics'} item xs>
-            <Grid key={'performanceMetrics'} item style={{display:'block'}}>
-
-              <Box  height = {rowHeight/2.5} p={"20px"} mt={"5px"} mb={"6px"} mr={'10px'}  style={{ overflow:'scroll', display:'inline-flex' }} boxShadow={1}>
-            {metricValues.map((metric) => {
-              let value = filteredMetrics.find(
-                (m) => m.metric == metric
-              );
-              if (
-                value.type == "int" ||
-                value.type == "float"
-              ) {
-
-                let hoveredStats = hoveredRow ? hoveredRow.stats.find(m=>m.metric == metric ) : undefined;
-                let hoveredCI = hoveredStats ? hoveredStats.ci : undefined;
-                return (
-                  <Grid key={metric} item>
-                    {<Histogram data={hoveredStats || value} ci={hoveredCI ||  value.ci} />}
-                    <Typography
-                      style={{ display: "block" }}
-                      color="primary"
-                      variant="overline">
-                      {metric}
-                    </Typography>
-                  </Grid>
-                );
-              }
-              if (value.type == "text") {
-                return (
-                  <Grid key={metric} item>
-                    <BarChart data={value}></BarChart>
-                    <Typography
-                      style={{ display: "block" }}
-                      color="primary"
-                      variant="overline">
-                      {metric}
-                    </Typography>
-                  </Grid>
-                );
-              }
-              return <></>;
-            })}
-             
+              <Grid key={'performanceMetrics'} item style={{ display: 'block' }}>
+                <Box height={rowHeight / 2.5} p={"20px"} mt={"5px"} mb={"6px"} mr={'10px'} style={{ overflow: 'scroll', display: 'inline-flex' }} boxShadow={1}>
+                  {metricValues.map((metric) => {
+                    return <HistComponent filteredMetrics = {filteredMetrics} hoveredRow={hoveredRow} metric={metric}></HistComponent>
+                  })}
                 </Box>
                 <Typography
                   className={classes.pos}
@@ -653,10 +668,6 @@ export default function TaskCard() {
                   style={{ display: "inline-block", marginLeft: "10px" }}>
                   {task.prompt + "  [" + task.answer + "]"}
                 </Typography>
-                {/* <Typography className={classes.pos} variant="caption" color="textSecondary" style={{display:'block'}}>
-                       {task.answer}
-                    </Typography> */}
-                {/* </Tooltip> */}
                 <Divider />
 
                 {Object.keys(task.conditions).map((key) => {
@@ -679,163 +690,4 @@ export default function TaskCard() {
       })}
     </>
   );
-}
-
-// const classes = useStyles();
-// const bull = <span className={classes.bullet}>•</span>;
-
-// const { data } = useContext(ProvenanceDataContext);
-
-// // })
-// let colorScale = d3.scaleLinear()
-//     .domain([0, 800])
-//     .range([0.3, 1])
-
-//     // console.log(data)
-// //Only render when all API calls have returned
-// let ready = data;
-// return (ready == undefined ? <></> : <>
-//     {
-//         data.tasks.map(task => {
-//             let taskTooltip =
-//                 <Typography>
-//                     {task.prompt}
-//                 </Typography>
-//             return (<Box m={2} key={'box_' + task.taskID} style={{ display: 'inline-block' }} >
-//                 {/* style={{ 'width': 600 }}  */}
-//                 <Card className={classes.root} key={task.taskID}  >
-//                     <CardContent>
-//                         <Typography variant="h5" component="h2">
-//                             {task.name}
-//                         </Typography>
-//                         <Tooltip title={taskTooltip}>
-//                             <Typography className={classes.pos} color="textSecondary"  >
-//                                 {task.prompt.slice(0, 60)}
-//                             </Typography>
-//                         </Tooltip>
-//                         <Divider />
-
-//                         {Object.keys(task.conditions).map(key => {
-//                             let condition = task.conditions[key];
-//                             //old way with /actions endpoint.
-//                             let frequentActions = condition.actions.map(a => ({ event: a.label, id: a.actionID, count: a.count, scale: colorScale(a.count) })) //actions.filter(a => a.taskID == task.taskID && a.condition == condition).splice(0, 5).map(a => ({ event: a.label, id: a.actionID, count: a.count, scale: colorScale(a.count) }))
-//                             // let obj = actions.find(a => a.group.taskID == task.taskID && a.group.condition == condition).count
-//                             // let frequentActions = Object.entries(obj).sort((a, b) => a[1] > b[1] ? -1 : 1).splice(0, 5).map(a => ({ event: a[0], id: a[0], count: a[1], scale: colorScale(a[1]) }))
-//                             let filteredMetrics = condition.stats //metrics.filter(m => m.group.taskID == task.taskID && m.group.condition == condition);
-//                             let metricValues = [... new Set(filteredMetrics.map(m => m.metric))];// console.log(frequentActions)
-
-//                             return <>
-//                                 <Typography variant='overline'>
-//                                     {key}
-//                                 </Typography>
-
-//                                 <Grid container className={classes.root} spacing={2}>
-//                                     <Grid item xs={12}>
-//                                         <Grid container justify="flex-start" spacing={2}>
-//                                             <Grid key={'prov'} item>
-//                                                 <>
-//                                                     <Box mt={'5px'} mb={'6px'} >
-//                                                         <ProvenanceIsolatedNodes key={task.taskID} nodes={frequentActions}></ProvenanceIsolatedNodes>
-//                                                     </Box>
-//                                                     <Typography className={classes.pos} variant='overline' color="primary"  >
-//                                                         Actions
-//                                                     </Typography>
-//                                                 </>
-//                                             </Grid>
-//                                             <Box mt={'15px'}>
-//                                                 <Grid key={'then'} item>
-//                                                     <TrendingFlatIcon />
-//                                                 </Grid>
-
-//                                             </Box>
-//                                             {metricValues.map(metric => {
-//                                                 let value = filteredMetrics.find(m => m.metric == metric)
-//                                                 if (value.type == 'int' || value.type == 'float') {
-//                                                     return <Grid key={metric} item>
-//                                                         {histogram(value, value.ci)}
-//                                                         <Typography style={{ display: 'block' }} color="primary" variant='overline'  >
-//                                                             {metric}
-//                                                         </Typography>
-//                                                     </Grid>
-//                                                 }
-//                                                 if (value.type == 'text') {
-//                                                     return <Grid key={metric} item>
-//                                                         {barChart(value)}
-//                                                         <Typography style={{ display: 'block' }} color="primary" variant='overline'  >
-//                                                             {metric}
-//                                                         </Typography>
-//                                                     </Grid>
-//                                                 }
-//                                                 return <></>
-
-//                                             })}
-//                                         </Grid>
-//                                     </Grid>
-//                                 </Grid>
-//                                 <Divider />
-//                             </>
-
-//                         }
-//                         )}
-//                         <div>
-
-//                         </div>
-
-//                     </CardContent>
-//                     <CardActions>
-//                         <Button size="small">Explore</Button>
-//                     </CardActions>
-//                 </Card>
-//             </Box>)
-//         }
-
-//         )
-//     }
-
-{
-  /* <Box m={2} style={{ display: 'inline-block' }} >
-<Card className={classes.root} key={'participantOverview'}  >
-    <CardContent>
-        <Typography variant="h5" component="h2">
-            Participant Overview
-    </Typography>
-        <Tooltip title={'Participant Overview'}>
-            <Typography className={classes.pos} color="textSecondary"  >
-                Average Demographics
-        </Typography>
-        </Tooltip>
-        <Divider />
-        <Box mt={2} >
-            <Grid container className={classes.root} spacing={2}>
-                <Grid item xs={12}>
-                    <Grid container justify="flex-start" spacing={2}>
-                        {participants.map(value => {
-                            if (value.type == 'int' || value.type == 'float') {
-                                return <Grid key={value.metric} item>
-                                    <Typography style={{ display: 'block' }} color="primary" variant='overline'  >
-                                        {value.metric}
-                                    </Typography>
-                                    {histogram(value, value.ci, { width: 200, height: 100 })}
-
-                                </Grid>
-                            }
-                            if (value.type == 'text') {
-                                return <Grid key={value.metric} item>
-                                    <Typography style={{ display: 'block' }} color="primary" variant='overline'  >
-                                        {value.metric}
-                                    </Typography>
-                                    {barChart(value, { width: 200, height: 100 })}
-
-                                </Grid>
-                            }
-                            return <></>
-
-                        })}
-                    </Grid>
-                </Grid>
-            </Grid>
-        </Box>
-    </CardContent>
-</Card>
-</Box> */
 }
