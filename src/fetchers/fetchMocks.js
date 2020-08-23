@@ -1,7 +1,4 @@
-/*import {
-    postData
-} from "./fetchingUtilities";*/
-
+import mockAllData from "./mockData.json";
 let local = true;
 let host = local ? "http://127.0.0.1:5000" : "http://18.222.101.54";
 
@@ -13,8 +10,15 @@ export async function performPrefixSpan(data) {
 }
 
 export async function getDataFromServer() {
-  let res = await postData(host + "/data");
-  return res;
+  //let res = await postData(host + "/data");
+  console.log("dywootto", mockAllData);
+  try {
+    console.log(mockAPICall(host + "/data", mockAllData));
+    let res = await mockAPICall(host + "/data", mockAllData);
+    return res;
+  } catch (err) {
+    console.log("dywootto res", err);
+  }
 }
 export async function getSchema(tableID) {
   let res = await getData(`${host}/table/${tableID}/schema`);
@@ -71,3 +75,36 @@ export async function completePromise(uri, requestOptions) {
   return response;
 }
 //let res = await mockAPICall("www.example.com", { work: "yeah" }); you can mock out api calls using this
+
+export async function mockAPICall(
+  url,
+  returnData,
+  options = {
+    shouldError: false,
+    timeout: 2000,
+  }
+) {
+  console.log("in mockAPI");
+
+  const { shouldError, timeout } = options;
+  console.log("in mockAPI");
+  return await new Promise((resolution, rejection) => {
+    console.log("dywootto in promiser");
+    setTimeout(() => {
+      if (shouldError) {
+        rejection({
+          url,
+          success: false,
+          error: `mockAPICall error`,
+        });
+      } else {
+        console.log("dywootto in res", returnData, url);
+        resolution({
+          url,
+          success: true,
+          data: returnData,
+        });
+      }
+    }, timeout);
+  });
+}
