@@ -13,12 +13,17 @@ import TrendingFlatIcon from "@material-ui/icons/TrendingFlat";
 import Divider from "@material-ui/core/Divider";
 import { createMuiTheme, MuiThemeProvider } from "@material-ui/core/styles";
 
+import Fab from '@material-ui/core/Fab';
+
+
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
 import TableContainer from "@material-ui/core/TableContainer";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
+
+import SortIcon from '@material-ui/icons/Sort';
 
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
@@ -37,6 +42,7 @@ import ProvenanceIsolatedNodes from "../components/ProvenanceIsolatedNodes";
 import Grid, { GridSpacing } from "@material-ui/core/Grid";
 import { pathToFileURL } from "url";
 import { keys } from "mobx";
+import { Sort } from "@material-ui/icons";
 
 let rowHeight = 300;
 let figureWidth = 572;
@@ -144,7 +150,33 @@ function scatter(data, metric, scale, label) {
 }
 
 export const Histogram = (props) => {
+
   const { data, ci, size = { width: 100, height: 40 }, onHandleBrush, hoveredRow } = props;
+
+  let[hovered,setHovered]=useState(false)
+
+  let menu = function () {
+    return <><rect
+      x={0}
+      y={0}
+      width={width}
+      height={height}
+      rx={5}
+      fill={'white'}
+      opacity={.5}></rect>
+
+
+      <g transform={`translate(0,0)`}>{<SortIcon width={
+      16
+    }
+      height={
+        16
+      }/>}
+      <text x={20} y={10}>Sort</text>
+      </g>
+      
+      </>
+  }
 
   let average = ci[0];
   let lowerBound = ci[1];
@@ -169,42 +201,17 @@ export const Histogram = (props) => {
   let barWidth = xScale(data.bins[1]) - xScale(data.bins[0]) - barPadding;
 
   let textLabel = Math.round(average * 10) / 10; //label == '%' ? (Math.round(average * 100) + ' ' + label) : Math.round(average * 10) / 10 + ' ' + label
-  let histogramBars = data.hist.map((d, i) => (
-    <rect
-      className="count"
-      key={"d_" + data.bins[i]}
-      style={{ fill: "rgb(93, 131, 210)" }}
-      x={xScale(data.bins[i]) + barPadding / 2}
-      y={barHeight - yScale(d)}
-      width={barWidth}
-      height={yScale(d)}></rect>
-  ));
+  // let histogramBars = data.hist.map((d, i) => (
+  //   <rect
+  //     className="count"
+  //     key={"d_" + data.bins[i]}
+  //     style={{ fill: "rgb(93, 131, 210)" }}
+  //     x={xScale(data.bins[i]) + barPadding / 2}
+  //     y={barHeight - yScale(d)}
+  //     width={barWidth}
+  //     height={yScale(d)}></rect>
+  // ));
 
-  function setFilterBounds(inputs) {
-    console.log("outputs", inputs);
-    if (inputs?.length !== 2) {
-      inputs = xScale.range();
-    }
-    // scale inversion
-    const min = xScale.invert(inputs[0]);
-    // set bounds
-    const max = xScale.invert(inputs[1]);
-    // pass max and min to on histogrma brush
-    onHandleBrush(min, max);
-  }
-
-  // if filtering enabled, wrap bars in a separate brush component
-  if (onHandleBrush) {
-    histogramBars = (
-      <Brush
-        width={width}
-        height={barHeight}
-        scale={xScale}
-        onChange={setFilterBounds}>
-        {histogramBars}
-      </Brush>
-    );
-  }
 
   function HistogramComponent({data}){
     // const { data, ci, size = { width: 150, height: 40 }, commonScales, hovered } = props;
@@ -219,7 +226,7 @@ export const Histogram = (props) => {
     <rect
       className="count"
       key={"d_" + data.bins[i]}
-      style={{ fill: "rgb(93, 131, 210)" }}
+      style={{ fill:"rgb(93, 131, 210)" }}
       x={xScale(data.bins[i]) + barPadding / 2}
       y={barHeight - yScale(d)}
       width={barWidth}
@@ -251,48 +258,17 @@ export const Histogram = (props) => {
   }
 
 
-  return (
-    <svg width={width} height={height}>
+  return (<>
+    <svg width={width} height={height} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
+      <HistogramComponent data={hoveredRow || data}></HistogramComponent>
       {/* add axis */}
-     <HistogramComponent data={hoveredRow  || data}></HistogramComponent>
+      {hovered ? menu() : <></>}
     </svg>
+  </>
+
   );
 };
 
-const Brush = (props) => {
-  const { width, scale, height, onChange } = props;
-  const brushRef = useRef(null);
-
-  useEffect(() => {
-    const node = brushRef.current;
-
-    const dayBrush = d3
-      .brushX()
-      .extent([
-        [0, 0],
-        [width, height],
-      ])
-      .on("end", brushed);
-
-    d3.select(node)
-      .selectAll("g.brush")
-      .data([0])
-      .enter()
-      .append("g")
-      .attr("class", "brush");
-
-    d3.select(node).select("g.brush").call(dayBrush);
-
-    function brushed() {
-      onChange(d3.event.selection);
-    }
-  });
-  return (
-    <g ref={brushRef} height={height} width={width}>
-      {props.children}
-    </g>
-  );
-};
 
 export const BarChart = (props) => {
   const { data, size = { width: 130, height: 40 } } = props;
@@ -387,7 +363,7 @@ export const BarChart = (props) => {
                                 )}
                                 </> */
 }
-let countScale = d3.scaleLinear().range([0, 100]).domain([0, 300]);
+let countScale = d3.scaleLinear().range([0, 75]).domain([0, 137]);
 
 function Stimulus({taskID,conditionName,classes}){
   // console.log('am rerendering')
@@ -414,6 +390,79 @@ function Stimulus({taskID,conditionName,classes}){
 </>
 }
 
+function SequenceCount({row,hoveredRow}){
+  let total = 137;
+  let height =25;
+  let iconWidth = 3;
+  let padding = 1;
+  let numIconsPerCol = Math.floor(height/(iconWidth+padding))
+  let numCols = Math.ceil(total/numIconsPerCol)
+  let width = numCols*(iconWidth+padding) 
+
+  let textWidth = 25
+
+  let xScale = d3.scaleLinear().range([0,iconWidth+padding]).domain([0,1])
+  let yScale = d3.scaleLinear().range([0,height]).domain([0,numIconsPerCol])
+
+  let currentParticipants = row.matchingSequences.map(s=>s.participantID)
+  let hoveredParticipants = hoveredRow ? hoveredRow.matchingSequences.map(s=>s.participantID) : []
+
+  let intersection = currentParticipants.filter(x => hoveredParticipants.includes(x));
+  
+
+  // width = countScale.range()[1]
+
+  return  <svg width={width+textWidth} height={height}>
+  {Array.from(Array(total).keys()).map(key=>{
+    return <rect
+    x={xScale(Math.floor(key/numIconsPerCol))}
+    y={yScale(key%numIconsPerCol)+padding}
+    width={iconWidth}
+    height={iconWidth}
+    style={{
+      // opacity: key < intersection.length ? 1 : .2,
+      fill: key < intersection.length ? '#9100e6' : key < row.count ? "rgb(93, 131, 210)" :  'rgb(220, 220, 220)'  //rgb(147 195 209)
+    }}></rect>
+  })} 
+  
+  <text
+    x={xScale(numCols)+padding}
+    y={yScale(numIconsPerCol/2)}
+    style={{ fontWeight: "bold", alignmentBaseline:'middle', textAnchor: "start" ,'fill':'rgb(93, 131, 210)' }}>
+    {row.count}
+  </text>
+  
+  
+ 
+  {/* <rect
+    x={0}
+    y={0}
+    width={countScale(137)}
+    height={20}
+    style={{
+      fill: "rgb(220, 220, 220)"
+    }}></rect>
+
+<rect
+    x={0}
+    y={0}
+    width={countScale(row.count)}
+    height={20}
+    style={{
+      fill: "rgb(93, 131, 210)"
+    }}></rect>
+
+<text
+    x={countScale(137)+padding}
+    y={10}
+    style={{ fontWeight: "bold", alignmentBaseline:'middle', textAnchor: "start" ,'fill':'rgb(93, 131, 210)' }}>
+    {row.count}
+  </text> */}
+  
+  
+</svg>
+}
+
 function TableComponent({rows,hoveredRow,setHoveredRow}){  
 // console.log('rendering table',hoveredRow) 
   // console.log(rows)
@@ -435,7 +484,7 @@ function TableComponent({rows,hoveredRow,setHoveredRow}){
                   <TableCell
                     component="th"
                     scope="row"
-                    style={{ padding: "10px" }}>
+                    style={{ padding: "10px"}}>
                     {row.seq ? (
                       <ProvenanceIsolatedNodes
                         // key={}
@@ -445,23 +494,8 @@ function TableComponent({rows,hoveredRow,setHoveredRow}){
                     )}
                   </TableCell>
                   {row.seq ? (
-                    <TableCell align="right">
-                      <svg width={100} height={34}>
-                        <rect
-                          x={0}
-                          y={0}
-                          width={countScale(row.count)}
-                          height={30}
-                          style={{
-                            fill: "rgb(147 195 209)"
-                          }}></rect>
-                        <text
-                          x={0}
-                          y={20}
-                          style={{ fontWeight: "bold", textAnchor: "start" }}>
-                          {row.count}
-                        </text>
-                      </svg>
+                    <TableCell align="left">
+                     <SequenceCount row = {row} hoveredRow = {hoveredRow}></SequenceCount>
                     </TableCell>
                   ) : (
                     <></>
@@ -556,7 +590,7 @@ function ConditionCard({ condition, conditionName, classes, taskID }) {
               <Stimulus taskID={taskID} classes={classes} conditionName={conditionName}></Stimulus>
             </Grid>
             <Grid key={"prov"} item>
-              <Box height={rowHeight} width={400} mt={"5px"} mb={"6px"} mr={'10px'} boxShadow={1} style={{ overflow: 'scroll' }}>
+              <Box height={rowHeight} width={600} mt={"5px"} mb={"6px"} mr={'10px'} boxShadow={1} style={{ overflow: 'scroll' }}>
                 {<TableComponent rows={freqPattern} hoveredRow={hoveredRow} setHoveredRow={setHoveredRow}></TableComponent>}
               </Box>
               <Typography
@@ -624,11 +658,61 @@ function ConditionCard({ condition, conditionName, classes, taskID }) {
   );
 }
 
-export default function TaskCard() {
+function TaskCard({task,classes}){
+
+  let[hidden,setHidden]=useState(false)
+
+  return <Box
+  m={2}
+  key={"box_" + task.taskID}
+  // style={{ display: "inline-block" }}
+>
+  {/* style={{ 'width': 600 }}  */}
+  <Card className={classes.root} key={task.taskID}>
+    <CardContent>
+      <Typography
+        variant="h5"
+        component="h2"
+        onClick={()=>{setHidden(!hidden)}}
+        style={{ cursor:'pointer', display: "inline-block" }}>
+        {task.name}
+      </Typography>
+      {/* <Tooltip title={taskTooltip}> */}
+      <Typography
+        className={classes.pos}
+        color="textSecondary"
+        style={{ display: "inline-block", marginLeft: "10px" }}>
+        {task.prompt + "  [" + task.answer + "]"}
+      </Typography>
+      <Divider />
+
+      {hidden ? <></> : Object.keys(task.conditions).map((key) => {
+        let condition = task.conditions[key];
+        return (
+          <ConditionCard
+            condition={condition}
+            conditionName={key}
+            taskID={task.taskID}
+            classes={classes}></ConditionCard>
+        );
+      })}
+    </CardContent>
+    <CardActions>
+      <Button size="small">Explore</Button>
+    </CardActions>
+  </Card>
+</Box>
+
+}
+
+export default function TaskContainer() {
   const classes = useStyles();
   const bull = <span className={classes.bullet}>•</span>;
 
   const { data } = useContext(ProvenanceDataContext);
+
+  let[hidden,setHidden]=useState(false)
+
 
   // })
   let colorScale = d3
@@ -645,48 +729,8 @@ export default function TaskCard() {
   ) : (
     <>
       {data.tasks.map((task) => {
-        let taskTooltip = <Typography>{task.prompt}</Typography>;
-        return (
-          <Box
-            m={2}
-            key={"box_" + task.taskID}
-            // style={{ display: "inline-block" }}
-          >
-            {/* style={{ 'width': 600 }}  */}
-            <Card className={classes.root} key={task.taskID}>
-              <CardContent>
-                <Typography
-                  variant="h5"
-                  component="h2"
-                  style={{ display: "inline-block" }}>
-                  {task.name}
-                </Typography>
-                {/* <Tooltip title={taskTooltip}> */}
-                <Typography
-                  className={classes.pos}
-                  color="textSecondary"
-                  style={{ display: "inline-block", marginLeft: "10px" }}>
-                  {task.prompt + "  [" + task.answer + "]"}
-                </Typography>
-                <Divider />
-
-                {Object.keys(task.conditions).map((key) => {
-                  let condition = task.conditions[key];
-                  return (
-                    <ConditionCard
-                      condition={condition}
-                      conditionName={key}
-                      taskID={task.taskID}
-                      classes={classes}></ConditionCard>
-                  );
-                })}
-              </CardContent>
-              <CardActions>
-                <Button size="small">Explore</Button>
-              </CardActions>
-            </Card>
-          </Box>
-        );
+        // let taskTooltip = <Typography>{task.prompt}</Typography>;
+        return (<TaskCard task={task} classes={classes}></TaskCard>);
       })}
     </>
   );

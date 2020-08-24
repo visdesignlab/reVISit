@@ -10,10 +10,12 @@ export async function performPrefixSpan(data) {
 }
 
 export async function getDataFromServer() {
-  //let res = await postData(host + "/data");
+  // let res = await postData(host + "/data");
   console.log("dywootto", mockAllData);
   try {
     console.log(mockAPICall(host + "/data", mockAllData));
+      // let res = await postData(host + "/data");
+
     let res = await mockAPICall(host + "/data", mockAllData);
     return res;
   } catch (err) {
