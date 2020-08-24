@@ -41,6 +41,9 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   ];
 
   let [data, setData] = useState();
+  const [metrics,setMetrics] = React.useState()
+
+
 
   function handleProvenanceNodeClick(id) {
     console.log("dywootto handle provenance node click", id);
@@ -68,51 +71,13 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   /*[{"_id":"startedProvenance","actionID":"startedProvenance","category":"Study\r","condition":"nodeLink","elapsedTime":0,"id":1,"label":"Start Task","participantID":"545d6768fdf99b7f9fca24e3","target":null,"taskID":"S-task01","time":"Wed, 28 Aug 2019 00:51:18 GMT","type":"action"},{"_id":"Hard Selected A Node","actionID":"Hard Selected a Node","category":"Answer\r","condition":"nodeLink","elapsedTime":0.283333,"id":2,"label":"Select","participantID":"545d6768fdf99b7f9fca24e3","target":null,"taskID":"S-task01","time":"Wed, 28 Aug 2019 00:51:35 GMT","type":"action"},{"_id":"Hard Unselected A Node","actionID":"Hard Unselected a Node","category":"Answer\r","condition":"nodeLink","elapsedTime":0.316667,"id":3,"label":"Unselect","participantID":"545d6768fdf99b7f9fca24e3","target":null,"taskID":"S-task01","time":"Wed, 28 Aug 2019 00:51:37 GMT","type":"action"},{"_id":"Hard Selected A Node","actionID":"Hard Selected a Node","category":"Answer\r","condition":"nodeLink","elapsedTime":0.45,"id":2,"label":"Select","participantID":"545d6768fdf99b7f9fca24e3","target":null,"taskID":"S-task01","time":"Wed, 28 Aug 2019 00:51:45 GMT","type":"action"},{"_id":"Finished Task","actionID":"Finished Task","category":"Study\r","condition":"nodeLink","elapsedTime":0.666667,"id":4,"label":"Finish Task","participantID":"545d6768fdf99b7f9fca24e3","target":null,"taskID":"S-task01","time":"Wed, 28 Aug 2019 00:51:58 GMT","type":"action"}]*/
 
   useEffect(() => {
-    console.log("data from server", dataFromServer);
+    console.log("data from server",dataFromServer);
     setData(dataFromServer);
+    if (dataFromServer) {
+      setMetrics(dataFromServer.metrics)
+    }
   }, [dataFromServer]);
 
-  // // get initial data from server;
-  // let [isLoading, isError, dataFromServer] = useFetchAPIData(async () => {
-  //   let sequences = {};
-  //   if (actionSummary){
-  //     actionSummary.map(e => { sequences[e.actionID] = { sequences: e.sequences } });
-  //   return await performPrefixSpan(sequences);
-  //   }
-  // }, [actionSummary]);
-
-  // const [isLoading, isError, dataFromServer] = useFetchAPIData(async () => {
-  //   let sequences = {};
-  //   // TODO NEED TO GATHER SEQUENCES IN ONE PLACE
-  //   actionSummary.map(e => { sequences[e.actionID] = { sequences: e.sequences } });
-  //   // return await performPrefixSpan(sequences);
-  //   return ''
-
-  // }, [actionSummary]);
-
-  // useEffect(() => {
-
-  //   //convert sequences back to names;
-  //   if (dataFromServer) {
-  //     Object.keys(dataFromServer).map(event => {
-  //       let eventObj = dataFromServer[event]['results']
-  //       let conditions = Object.keys(eventObj);
-  //       conditions.map(c => {
-  //         eventObj[c] = eventObj[c].map(arr => {
-  //           let [count, seq] = arr;
-  //           seq = seq.map(s => {
-  //             let event = events.find(e => e.id == s);
-  //             return { id: event.name, event: event.name }
-  //           })
-  //           return { count: arr[0], seq }
-  //         })
-  //       })
-  //     })
-  //     console.log('setting pattens', dataFromServer)
-  //     setPatterns(dataFromServer)
-  //   }
-
-  // }, [dataFromServer])
 
   //State
   function timeout(ms) {
@@ -131,6 +96,8 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   );*/
 
   const [currentTaskData, setCurrentTaskData] = React.useState([]);
+
+
   let [
     isTaskLoading,
     isTaskError,
@@ -156,37 +123,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     setCurrentTaskData(taskDataFromServer);
   }, [taskDataFromServer]);
 
-  // console.log(isTaskLoading, isTaskError, taskDataFromServer);
 
-  /*let currentTaskData = React.useMemo(() => {
-    let internalTaskData = [];
-
-    selectedTaskIds.map((selectedTaskId) => {
-      allProvenanceData.forEach((participant) => {
-        const newObj = Object.assign(
-          { id: participant.id },
-          participant.data[selectedTaskId]
-        );
-
-        if (participant.data[selectedTaskId]) {
-          // //add type to provenance objects and remove hidden event types;
-          // newObj.provenance = newObj.provenance
-          //   .map(e => {
-          //     let event = events.find(ev => ev.name == e.event);
-          //     e.type = event.type
-          //     return e;
-          //   })
-          //   .filter(e => {
-          //     let event = events.find(ev => ev.name == e.event);
-          //     return event.visible
-          //   })
-          internalTaskData.push(newObj);
-        }
-      });
-    });
-
-    return internalTaskData;
-  }, [allProvenanceData, selectedTaskIds]);*/
 
   function handleChangeSelectedTaskId(event) {
     setSelectedTaskIds([event.target.value]);
@@ -200,6 +137,8 @@ export const ProvenanceDataContextProvider = ({ children }) => {
         handleChangeSelectedTaskId,
         selectedTaskIds,
         data,
+        metrics,
+        setTaskSort,
         handleTagCreation,
         handleProvenanceNodeClick,
       }}>

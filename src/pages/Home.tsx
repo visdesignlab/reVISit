@@ -101,240 +101,168 @@ function scale(width, maxValue) {
 const accScale = scale(40, 1);
 const timeScale = scale(40, 3.59);
 
-function rectangle(d, scale, label) {
-  return (
-    <svg width={130} height={25} key={d.key}>
-      <rect
-        className="count"
-        style={{ fill: "grey", opacity: 0.5 }}
-        x={0}
-        width={scale(d)}
-        height={25}></rect>
-      <text style={{ fontSize: "1.5em" }} x={scale(d)} y={0}>
-        {" "}
-        {d + " " + label}{" "}
-      </text>
-    </svg>
-  );
-}
-
-function scatter(data, metric, scale, label) {
-  let average = data.average[metric];
-  return (
-    <svg width={100} height={40}>
-      {data.values.map((d) => (
-        <circle
-          className="count"
-          style={{ fill: "rgb(93, 131, 210)", opacity: 0.1 }}
-          cx={scale(d.answer.accuracy)}
-          cy={10}
-          r={5}></circle>
-      ))}
-      <rect
-        className="count"
-        style={{ fill: "#ff5e00", opacity: 1 }}
-        x={scale(average)}
-        width={3}
-        height={25}></rect>
-      <text
-        style={{ fontSize: "1em", textAnchor: "start" }}
-        x={scale(average)}
-        y={40}>
-        {" "}
-        {Math.round(average * 100)}{" "}
-      </text>
-      )
-      {/* <text style={{ fontSize: '1.5em', 'text-anchor': 'start' }} x={scale(1.4)} y={20}> {data.average.accuracy + ' ' + label} </text> */}
-    </svg>
-  );
-}
-
-export const Histogram = (props) => {
-
-  const { data, ci, size = { width: 100, height: 40 }, onHandleBrush, hoveredRow } = props;
-
-  let[hovered,setHovered]=useState(false)
-
-  let menu = function () {
-    return <><rect
-      x={0}
-      y={0}
-      width={width}
-      height={height}
-      rx={5}
-      fill={'white'}
-      opacity={.5}></rect>
 
 
-      <g transform={`translate(0,0)`}>{<SortIcon width={
-      16
-    }
-      height={
-        16
-      }/>}
-      <text x={20} y={10}>Sort</text>
-      </g>
-      
-      </>
-  }
-
-  let average = ci[0];
-  let lowerBound = ci[1];
-  let upperBound = ci[2];
-
-  let width = size.width;
-  let height = size.height;
-
-  let barHeight = 20;
-  let barPadding = 2;
-  //compute scale for data;
-  let xDomain = d3.extent(data.bins);
-  let yDomain = d3.extent(data.hist);
-
-  let xScale = d3
-    .scaleLinear()
-    .domain(xDomain)
-    .range([10, width - 40]);
-
-  let yScale = d3.scaleLinear().domain(yDomain).range([0, barHeight]);
-
-  let barWidth = xScale(data.bins[1]) - xScale(data.bins[0]) - barPadding;
-
-  let textLabel = Math.round(average * 10) / 10; //label == '%' ? (Math.round(average * 100) + ' ' + label) : Math.round(average * 10) / 10 + ' ' + label
-  // let histogramBars = data.hist.map((d, i) => (
-  //   <rect
-  //     className="count"
-  //     key={"d_" + data.bins[i]}
-  //     style={{ fill: "rgb(93, 131, 210)" }}
-  //     x={xScale(data.bins[i]) + barPadding / 2}
-  //     y={barHeight - yScale(d)}
-  //     width={barWidth}
-  //     height={yScale(d)}></rect>
-  // ));
-
-
-  function HistogramComponent({data}){
-    // const { data, ci, size = { width: 150, height: 40 }, commonScales, hovered } = props;
-
-    return  <><line
-    x1={0}
-    y1={yScale.range()[1]}
-    x2={xScale.range()[1]}
-    y2={yScale.range()[1]}
-    style={{ stroke: "rgb(0,0,0,0.25)", strokeWidth: 1 }}></line>
-  {data.hist.map((d, i) => (
-    <rect
-      className="count"
-      key={"d_" + data.bins[i]}
-      style={{ fill:"rgb(93, 131, 210)" }}
-      x={xScale(data.bins[i]) + barPadding / 2}
-      y={barHeight - yScale(d)}
-      width={barWidth}
-      height={yScale(d)}></rect>
-  ))}
-  <circle
-    className="count"
-    style={{ fill: "#ff5e00", opacity: 1 }}
-    cx={xScale(average)}
-    cy={yScale.range()[1] / 2}
-    r={5}></circle>
-
-  <line
-    className="count"
-    style={{ stroke: "black", strokeWidth: 2, opacity: 0.5 }}
-    x1={xScale(lowerBound)}
-    x2={xScale(upperBound)}
-    y1={yScale.range()[1] / 2}
-    y2={yScale.range()[1] / 2}></line>
-
-  <text
-    style={{ fontSize: "1em", textAnchor: "middle" }}
-    x={xScale(average)}
-    y={40}>
-    {" "}
-    {textLabel}{" "}
-  </text>
-  </>
-  }
-
-
-  return (<>
-    <svg width={width} height={height} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
-      <HistogramComponent data={hoveredRow || data}></HistogramComponent>
-      {/* add axis */}
-      {hovered ? menu() : <></>}
-    </svg>
-  </>
-
-  );
-};
 
 
 export const BarChart = (props) => {
-  const { data, size = { width: 130, height: 40 } } = props;
-  let barHeight = 20;
-  let width = size.width;
-  let height = size.height;
+  const { allData, hoveredRow, hoveredRowColor, metric, vert = false, size = { width: 150, height: 200 } } = props;
+
+  let data =  allData.find(
+    (m) => m.metric == metric
+  );
+  if (
+    data.type == "text" ||
+    data.type == "longtext"
+  ){
+  let width = vert ? size.width : 900;
+  let height = vert ? size.height : 80;
+
+
+  let maxBarHeight = vert ? 20 : height-10;
+
+
+  let varsToPlot = Object.entries(data.count).sort((a,b)=>a[1]>b[1] ? -1 : 1).slice(0,20)
+
+  
 
   //compute scale for data;
-  let xDomain = Object.keys(data.count);
-  let yDomain = d3.extent(Object.values(data.count));
+  let yDomain = varsToPlot.map(v=>v[0]);
+  let xDomain = d3.extent(varsToPlot.map(v=>v[1]));
 
-  let xScale = d3
-    .scaleBand()
+  let xScale = d3.scaleLinear().domain(xDomain).range([0, maxBarHeight]);
+   
+
+  let yScale =  d3.scaleBand()
+  .domain(yDomain)
+  .range([0, height])
+  .padding(0.65);
+
+  let barWidth = yScale.bandwidth();
+
+  let hoveredStats = hoveredRow ? hoveredRow.stats.find(m=>m.metric == metric ) : undefined
+  let hoveredVarsToPlot = hoveredStats ? Object.entries(hoveredStats.count).sort((a,b)=>a[1]>b[1] ? -1 : 1).slice(0,20) : []
+
+
+  if (!vert){
+    xDomain = varsToPlot.map(v=>v[0]);
+    yDomain = [0,d3.extent(varsToPlot.map(v=>v[1]))[1]];
+
+    yScale = d3.scaleLinear().domain(yDomain).range([15, maxBarHeight]);
+    
+
+    xScale =  d3.scaleBand()
     .domain(xDomain)
-    .range([0, width - 40])
-    .padding(0.4);
+    .range([0, width])
+    .padding(0.5);
 
-  let yScale = d3.scaleLinear().domain(yDomain).range([0, barHeight]);
+    barWidth = xScale.bandwidth();
+  }
 
-  let barWidth = xScale.bandwidth();
-  return (
-    <svg width={width} height={height}>
+    let nothingToPlot = varsToPlot.length < 1 ;
+    let transform = vert ? 'translate(100px,0px)' :  'translate(10px,20px)'
+  { return nothingToPlot ? null :  <svg width={width+10} height={height+20}>
       {/* add axis */}
+      <g style={{transform: transform}}>
       <line
         x1={0}
-        y1={yScale.range()[1]}
-        x2={xScale.range()[1]}
+        y1={vert ? yScale.range()[0] : yScale.range()[1]}
+        x2={vert ? 0  : xScale.range()[1]}
         y2={yScale.range()[1]}
         style={{ stroke: "rgb(0,0,0,0.25)", strokeWidth: 1 }}></line>
-      {Object.keys(data.count).map((key, i) => {
-        let tooltipText = key + " : " + data.count[key];
+      {varsToPlot.map((entry) => {
+        let key = entry[0];
+        let value = entry[1]
+        let tooltipText = key + " : " + value;
+
+        let x = vert ? xScale(value)+5 : xScale(key)-3;
+        let y = vert ? yScale(key)-barWidth : height - yScale.range()[0] 
         return (
           <>
             <Tooltip title={tooltipText}>
               <rect
                 className="count"
                 key={"d_" + key}
-                style={{ fill: "rgb(93, 131, 210)" }}
-                x={xScale(key)}
-                y={barHeight - yScale(data.count[key])}
-                width={barWidth}
-                height={yScale(data.count[key])}></rect>
+                style={{ opacity: hoveredRowColor ? .5 : 1, fill: "rgb(93, 131, 210)" }}
+                x={vert ? 0 : xScale(key)}
+                y={vert ? yScale(key) : height - yScale.range()[0] - yScale(value)}
+                width={vert ? xScale(value) : barWidth}
+                height={vert ? barWidth : yScale(value)}></rect>
             </Tooltip>
             <Tooltip title={tooltipText}>
               <text
                 style={{
-                  transform:
-                    "translate(" +
-                    xScale(key) +
-                    "px, " +
-                    (barHeight + 5) +
-                    "px) rotate(90deg)",
                   fontSize: "1em",
                   textAnchor: "start",
+                  transform:"translate(" + x + "px," + y + "px) rotate(270deg)"
                 }}
+               
                 x={0}
                 y={0}>
                 {" "}
                 {key}{" "}
               </text>
-            </Tooltip>
+              </Tooltip>
+              {hoveredRowColor ? '' : <text
+              style={{
+                fontSize: "1em",
+                textAnchor: "middle",
+              }}
+              x={ vert ? -5 : xScale(key)+barWidth/2}
+              y={vert ? yScale(key)-barWidth : height - yScale.range()[0] - yScale(value)-2}>
+                {" "}
+                {value}{" "}
+              </text>}
+           
           </>
         );
       })}
+
+    {/* //Only plot hoveredVars that are in the original top 20 to keep the distribution of bars the same */}
+    {hoveredVarsToPlot.filter(d=>xScale(d[0])).map((entry) => {
+        let key = entry[0];
+        let value = entry[1]
+        let tooltipText = key + " : " + value;
+
+        let x = vert ? xScale(value)+5 : xScale(key)-3;
+        let y = vert ? yScale(key)-barWidth : height - yScale.range()[0] 
+        return (
+          <>
+            <Tooltip title={tooltipText}>
+              <rect
+                className="count"
+                key={"d_" + key}
+                style={{ fill: hoveredRowColor }}
+                x={vert ? 0 : xScale(key)}
+                y={vert ? yScale(key) : height - yScale.range()[0] - yScale(value)}
+                width={vert ? xScale(value) : barWidth}
+                height={vert ? barWidth : yScale(value)}></rect>
+            </Tooltip>
+          
+              <text
+              style={{
+                fontSize: "1em",
+                textAnchor: "middle",
+              }}
+              x={ vert ? -5 : xScale(key)+barWidth/2}
+              y={vert ? yScale(key)-barWidth : height - yScale.range()[0] - yScale(value)-2}>
+                {" "}
+                {value}{" "}
+              </text>
+           
+          </>
+        );
+      })}
+      </g>
     </svg>
-  );
+  }
+  ;
+
+  }
+
+  return null
+
+  
 };
 
 {
@@ -390,7 +318,8 @@ function Stimulus({taskID,conditionName,classes}){
 </>
 }
 
-function SequenceCount({row,hoveredRow}){
+//Compoment to draw participant counts for each interaction sequence
+function SequenceCount({row,hoveredRow,hoveredRowColor}){
   let total = 137;
   let height =25;
   let iconWidth = 3;
@@ -414,14 +343,14 @@ function SequenceCount({row,hoveredRow}){
 
   return  <svg width={width+textWidth} height={height}>
   {Array.from(Array(total).keys()).map(key=>{
-    return <rect
+    return <rect key={key}
     x={xScale(Math.floor(key/numIconsPerCol))}
     y={yScale(key%numIconsPerCol)+padding}
     width={iconWidth}
     height={iconWidth}
     style={{
       // opacity: key < intersection.length ? 1 : .2,
-      fill: key < intersection.length ? '#9100e6' : key < row.count ? "rgb(93, 131, 210)" :  'rgb(220, 220, 220)'  //rgb(147 195 209)
+      fill: key < intersection.length ? hoveredRowColor: key < row.count ? "rgb(93, 131, 210)" :  'rgb(220, 220, 220)'  //rgb(147 195 209)
     }}></rect>
   })} 
   
@@ -463,7 +392,8 @@ function SequenceCount({row,hoveredRow}){
 </svg>
 }
 
-function TableComponent({rows,hoveredRow,setHoveredRow}){  
+//Compoment to draw interaction sequence tables
+function TableComponent({rows,hoveredRowColor, hoveredRow=undefined,setHoveredRow=undefined}){  
 // console.log('rendering table',hoveredRow) 
   // console.log(rows)
   return (
@@ -484,18 +414,18 @@ function TableComponent({rows,hoveredRow,setHoveredRow}){
                   <TableCell
                     component="th"
                     scope="row"
-                    style={{ padding: "10px"}}>
+                    style={{ width:'300px', padding: "10px"}}>
                     {row.seq ? (
                       <ProvenanceIsolatedNodes
                         // key={}
-                        nodes={row.seqObj}></ProvenanceIsolatedNodes>
+                        nodes={row.seqObj} selectedItemId = {undefined} handleProvenanceNodeClick={()=>{}}></ProvenanceIsolatedNodes>
                     ) : (
                       row.answer
                     )}
                   </TableCell>
                   {row.seq ? (
                     <TableCell align="left">
-                     <SequenceCount row = {row} hoveredRow = {hoveredRow}></SequenceCount>
+                     <SequenceCount row = {row} hoveredRow = {hoveredRow} hoveredRowColor = {hoveredRowColor}></SequenceCount>
                     </TableCell>
                   ) : (
                     <></>
@@ -513,11 +443,11 @@ function TableComponent({rows,hoveredRow,setHoveredRow}){
   );
 }
 
-function HistComponent({filteredMetrics,hoveredRow,metric}){
-
+// Compoment for single metric histogram
+function Histogram({data,hoveredRow,metric,hoveredRowColor}){
   // let hoveredStats = undefined; 
   // let hoveredCI = undefined;
-  let value = filteredMetrics.find(
+  let value = data.find(
     (m) => m.metric == metric
   );
   if (
@@ -529,7 +459,7 @@ function HistComponent({filteredMetrics,hoveredRow,metric}){
     let hoveredCI = hoveredStats ? hoveredStats.ci : undefined;
     return (
       <Grid key={metric+ '_hist'} item>
-        {<Histogram key={metric+ '_histCompoment'} data={hoveredStats || value} ci={hoveredCI ||  value.ci} />}
+        {<DrawHistogram hoveredRowColor={hoveredRowColor} data={hoveredStats || value} ci={hoveredCI ||  value.ci} />}
         <Typography
           style={{ display: "block" }}
           color="primary"
@@ -539,35 +469,144 @@ function HistComponent({filteredMetrics,hoveredRow,metric}){
       </Grid>
     );
   }
-  if (value.type == "text") {
-    return (
-      <Grid key={metric+'_bar'} item>
-        <BarChart data={value}></BarChart>
-        <Typography
-          style={{ display: "block" }}
-          color="primary"
-          variant="overline">
-          {metric}
-        </Typography>
-      </Grid>
-    );
-  }
+  // if (value.type == "text") {
+  //   return (
+  //     <Grid key={metric+'_bar'} item>
+  //       <BarChart data={value}></BarChart>
+  //       <Typography
+  //         style={{ display: "block" }}
+  //         color="primary"
+  //         variant="overline">
+  //         {metric}
+  //       </Typography>
+  //     </Grid>
+  //   );
+  // }
   return <></>;
 
 }
 
-function ConditionCard({ condition, conditionName, classes, taskID }) {
-  const [hoveredRow, setHoveredRow] = useState();
 
-  let freqPattern, filteredMetrics, metricValues;
+export const DrawHistogram = (props) => {
+
+  const { data, hoveredRowColor, ci, size = { width: 100, height: 40 } } = props;
+
+  let[hovered,setHovered]=useState(false)
+
+  let menu = function () {
+    return <><rect
+      x={0}
+      y={0}
+      width={width}
+      height={height}
+      rx={5}
+      fill={'white'}
+      opacity={.5}></rect>
+
+
+      <g transform={`translate(0,0)`}>{<SortIcon width={
+        16
+      }
+        height={
+          16
+        } />}
+        <text x={20} y={10}>Sort</text>
+      </g>
+
+    </>
+  }
+
+  let average = ci[0];
+  let lowerBound = ci[1];
+  let upperBound = ci[2];
+
+  let width = size.width;
+  let height = size.height;
+
+  let barHeight = 20;
+  let barPadding = 2;
+  //compute scale for data;
+  let xDomain = d3.extent(data.bins);
+  let yDomain = d3.extent(data.hist);
+
+  let xScale = d3
+    .scaleLinear()
+    .domain(xDomain)
+    .range([10, width - 40]);
+
+  let yScale = d3.scaleLinear().domain(yDomain).range([0, barHeight]);
+
+  let barWidth = xScale(data.bins[1]) - xScale(data.bins[0]) - barPadding;
+
+  let textLabel = Math.round(average * 10) / 10; //label == '%' ? (Math.round(average * 100) + ' ' + label) : Math.round(average * 10) / 10 + ' ' + label
+  
+  
+  return (<>
+    <svg width={width} height={height} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
+      <><line
+        x1={0}
+        y1={yScale.range()[1]}
+        x2={xScale.range()[1]}
+        y2={yScale.range()[1]}
+        style={{ stroke: "rgb(0,0,0,0.25)", strokeWidth: 1 }}></line>
+        {data.hist.map((d, i) => (
+          <rect
+            className="count"
+            key={"d_" + data.bins[i]}
+            style={{ fill: hoveredRowColor || "rgb(93, 131, 210)" }}
+            x={xScale(data.bins[i]) + barPadding / 2}
+            y={barHeight - yScale(d)}
+            width={barWidth}
+            height={yScale(d)}></rect>
+        ))}
+        <circle
+          className="count"
+          style={{ fill: "#ff5e00", opacity: 1 }}
+          cx={xScale(average)}
+          cy={yScale.range()[1] / 2}
+          r={5}></circle>
+
+        <line
+          className="count"
+          style={{ stroke: "black", strokeWidth: 2, opacity: 0.5 }}
+          x1={xScale(lowerBound)}
+          x2={xScale(upperBound)}
+          y1={yScale.range()[1] / 2}
+          y2={yScale.range()[1] / 2}></line>
+
+        <text
+          style={{ fontSize: "1em", textAnchor: "middle" }}
+          x={xScale(average)}
+          y={40}>
+          {" "}
+          {textLabel}{" "}
+        </text>
+      </>
+      {hovered ? menu() : <></>}
+    </svg>
+  </>
+
+  );
+};
+
+//Compoment for the card for a single Condition
+function ConditionCard({ condition, conditionName, classes, taskID }) {
+  
+  //Keeps track of which rows in the table are hovered on
+  const [hoveredRow, setHoveredRow] = useState();
+  let[hidden,setHidden]=useState(false)
+
+
+  let hoveredRowColor =  '#f59c3d' // '#9100e6'; 
+  let freqPattern, data, metricValues;
 
   //only compute when the condition changes
   // useEffect(() => {
     // console.log('calling use effect')
     freqPattern = condition.patterns[0].topK;
-    filteredMetrics = condition.stats;
+    data = condition.stats;
 
-    metricValues = [...new Set(filteredMetrics.map((m) => m.metric))]; 
+    metricValues = [...new Set(data.map((m) => m.metric))]; 
 
     freqPattern.map((action,i) => {
       action.id = i;
@@ -579,11 +618,11 @@ function ConditionCard({ condition, conditionName, classes, taskID }) {
 
   // console.log(metricValues)
   return (!metricValues ? <></> :
-    <React.Fragment key={"taskcard_" + conditionName}>
-      <Typography className={classes.condition} variant="overline">
+    <React.Fragment key={"ConditionCard_" + conditionName}>
+      <Typography  onClick={()=>{setHidden(!hidden)}} style={{ cursor:'pointer' }} className={classes.condition} variant="overline">
         {conditionName}
       </Typography>
-      <Grid container className={classes.root} spacing={2}>
+      {hidden ? <></> :<Grid container className={classes.root} spacing={2}>
         <Grid item xs={12}>
           <Grid container justify="flex-start" spacing={2}>
             <Grid key={"cat"} item>
@@ -591,7 +630,7 @@ function ConditionCard({ condition, conditionName, classes, taskID }) {
             </Grid>
             <Grid key={"prov"} item>
               <Box height={rowHeight} width={600} mt={"5px"} mb={"6px"} mr={'10px'} boxShadow={1} style={{ overflow: 'scroll' }}>
-                {<TableComponent rows={freqPattern} hoveredRow={hoveredRow} setHoveredRow={setHoveredRow}></TableComponent>}
+                {<TableComponent rows={freqPattern} hoveredRow={hoveredRow} hoveredRowColor = {hoveredRow ? hoveredRowColor : undefined} setHoveredRow={setHoveredRow}></TableComponent>}
               </Box>
               <Typography
                 className={classes.pos}
@@ -604,7 +643,7 @@ function ConditionCard({ condition, conditionName, classes, taskID }) {
               <Grid key={'performanceMetrics'} item style={{ display: 'block' }}>
                 <Box height={rowHeight / 2.5} p={"20px"} mt={"5px"} mb={"6px"} mr={'10px'} style={{ overflow: 'scroll', display: 'inline-flex' }} boxShadow={1}>
                   {metricValues.map((metric) => {
-                    return <HistComponent filteredMetrics = {filteredMetrics} hoveredRow={hoveredRow} metric={metric}></HistComponent>
+                    return <Histogram data = {data} hoveredRow={hoveredRow} hoveredRowColor = {hoveredRow ? hoveredRowColor : undefined} metric={metric}></Histogram>
                   })}
                 </Box>
                 <Typography
@@ -625,11 +664,10 @@ function ConditionCard({ condition, conditionName, classes, taskID }) {
                   mr={"10px"}
                   boxShadow={1}
                   style={{ overflow: "scroll" }}>
-                  {
-                    <TableComponent
-                      rows={condition.textAnswers}
-                      classes={classes}></TableComponent>
-                  }
+                     {metricValues.map((metric) => {
+                    return <BarChart allData = {data} hoveredRow={hoveredRow} hoveredRowColor = {hoveredRow ? hoveredRowColor : undefined} metric={metric}></BarChart>
+                  })}
+                  {/* <TableComponent rows={condition.textAnswers}></TableComponent> */}
                 </Box>
                 <Typography
                   className={classes.pos}
@@ -639,6 +677,7 @@ function ConditionCard({ condition, conditionName, classes, taskID }) {
                 </Typography>
               </Grid>
             </Grid>
+      
 
             {/* {condition.textAnswers.map(txt=>{
               return <List dense={true}>
@@ -653,6 +692,7 @@ function ConditionCard({ condition, conditionName, classes, taskID }) {
           </Grid>
         </Grid>
       </Grid>
+}
       <Divider />
     </React.Fragment>
   );
@@ -695,11 +735,15 @@ function TaskCard({task,classes}){
             taskID={task.taskID}
             classes={classes}></ConditionCard>
         );
-      })}
+      })
+      
+      }
     </CardContent>
+      {hidden ? <></> :
     <CardActions>
       <Button size="small">Explore</Button>
     </CardActions>
+      }
   </Card>
 </Box>
 
@@ -710,9 +754,6 @@ export default function TaskContainer() {
   const bull = <span className={classes.bullet}>•</span>;
 
   const { data } = useContext(ProvenanceDataContext);
-
-  let[hidden,setHidden]=useState(false)
-
 
   // })
   let colorScale = d3
