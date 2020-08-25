@@ -176,7 +176,7 @@ function generateColumnDefinition(
       handleFilterChange
     );
   } else if (columnSchema.DATA_TYPE === "provenance") {
-    defaultColumnDefinition = new ProvenanceColumn(columnMetaData);
+    defaultColumnDefinition = new ProvenanceColumn(data, columnMetaData);
   } else if (columnSchema.DATA_TYPE === "tag") {
     defaultColumnDefinition = new NotesColumn(columnMetaData);
     /*
@@ -229,6 +229,7 @@ const DevExtremeTable = ({
     },
     notes: { width: 200, order: 6, handleTagCreation: handleTagCreation },
   };
+  console.log("current filters", filters);
 
   React.useEffect(() => {
     /*

@@ -7,7 +7,7 @@ import ProvenanceIsolatedNodes from "./ProvenanceIsolatedNodes";
 
 const columnOverrides = {};
 const filterQuantitativeValues = (filter, value) =>
-  filter.filterMin && value <= filter.filterMax;
+  value >= filter.filterMin && value <= filter.filterMax;
 
 const QuantitativeCell = ({ rowData, name, commonScale }) => {
   let additionalComponents;
@@ -117,6 +117,12 @@ export class QuantitativeColumn {
     this.customSort = (a, b) => a[this.name] - b[this.name];
     this.handleFilterChange = handleFilterChange;
     this.customFilterAndSearch = (filter, value) => {
+      console.log(
+        "in quant filter",
+        filter.value,
+        value,
+        filterQuantitativeValues(filter.value, value)
+      );
       return filterQuantitativeValues(filter.value, value);
     };
     this.cellComponent = (rowData) => {
@@ -210,7 +216,9 @@ export class QuantitativeColumn {
 }
 
 const EventsSummary = (props) => {
-  const { incomingData } = props;
+  console.log("dywootto", props);
+  let { incomingData } = props;
+  incomingData = incomingData?.incomingData;
   if (!incomingData || !incomingData[0]) {
     return <div></div>;
   }
@@ -223,8 +231,9 @@ const EventsSummary = (props) => {
   );
 };
 export class ProvenanceColumn {
-  constructor(metaData) {
+  constructor(data, metaData) {
     this.width = 300;
+    this.data = data;
     this.handleProvenanceNodeClick = metaData.handleProvenanceNodeClick;
   }
   generateColumnObject() {
@@ -238,7 +247,10 @@ export class ProvenanceColumn {
       groupedSummaryComponent: (incomingData) => (
         <EventsSummary incomingData={incomingData}></EventsSummary>
       ),
-      filterComponent: (props) => <div></div>,
+      filterComponent: (props) => (
+        <EventsSummary
+          incomingData={{ incomingData: this.data }}></EventsSummary>
+      ),
     };
   }
 }
