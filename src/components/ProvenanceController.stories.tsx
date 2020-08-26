@@ -1,8 +1,8 @@
 //@ts-nocheck
-import React from "react";
 import { storiesOf } from "@storybook/react";
+import ProvenanceController from "./ProvenanceController";
+import React from "react";
 
-import ProvenanceIsolatedNodes from "./ProvenanceIsolatedNodes";
 import { start } from "repl";
 import {
   withKnobs,
@@ -11,7 +11,6 @@ import {
   number,
   optionsKnob as options,
 } from "@storybook/addon-knobs";
-import * as d3 from "d3";
 const label = "Tasks";
 const nodes1 = [
   { id: "49607", name: "startedProvenance", time: 0 },
@@ -31,7 +30,7 @@ const nodes2 = [
   { id: "56035", name: "answerBox", time: 0.216667 },
   { id: "56036", name: "Finished Task", time: 0.283333 },
 ];
-const node3 = [
+const nodes3 = [
   { id: "37776", name: "startedProvenance", time: 0 },
   { id: "37777", name: "answerBox", time: 0.483333 },
   { id: "37778", name: "answerBox", time: 0.5 },
@@ -110,73 +109,34 @@ const node3 = [
 
 const stories = storiesOf("Provenance Controller", module);
 stories.addDecorator(withKnobs);
-const ProvenanceController = ({ nodes, selectedNode }) => {
-  const [selectedItemId, setSelectedItemIdInternal] = React.useState(
-    selectedNode
-  );
-  const setSelectedItemId = (id) => {
-    if (id === selectedItemId) {
-      setSelectedItemIdInternal(null);
-    } else {
-      setSelectedItemIdInternal(id);
-    }
-  };
-  const commonScale = d3
-    .scaleLinear()
-    .domain(d3.extent(nodes, (node) => node.time))
-    .range([0, 100]);
-  return (
-    <div>
-      <iframe width={300} height={300}></iframe>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateRows: "50px 20px",
-          gridTemplateColumns: "max-content",
-        }}>
-        <div style={{ gridRow: 1 }}>
-          <ProvenanceIsolatedNodes
-            selectedItemId={selectedItemId}
-            nodes={nodes}
-            handleProvenanceNodeClick={(node) =>
-              setSelectedItemId(node.id)
-            }></ProvenanceIsolatedNodes>
-        </div>
-        <div
-          style={{
-            gridRow: 2,
-            width: "100%",
-            height: "100%",
-            background: "whitesmoke",
-            overflow: "hidden",
-          }}>
-          <svg viewBox={"0 0 100 20"} perserveAspectRatio="none">
-            {nodes.map((node) => {
-              console.log("", selectedItemId, node.id);
-              const opacity = node.id === selectedItemId ? 0.5 : 0.1;
-              return (
-                <rect
-                  onClick={() => setSelectedItemId(node.id)}
-                  width={0.75}
-                  x={commonScale(node.time)}
-                  height={20}
-                  opacity={!!selectedItemId ? opacity : null}></rect>
-              );
-            })}
-          </svg>
-        </div>
-      </div>
-    </div>
-  );
+const commonProps = {
+  condition: "nodeLink",
+  taskId: "S-task07",
+  participantId: "5588d7a1fdf99b304ee56840",
 };
 stories.add("small", () => (
-  <ProvenanceController nodes={nodes1}></ProvenanceController>
+  <ProvenanceController
+    {...commonProps}
+    selectedNode={Object.assign(nodes1[0], {
+      dataID: "#c0203065-9927-42f5-88f6-07189cae6cff",
+    })}
+    nodes={nodes1}></ProvenanceController>
 ));
 
 stories.add("smaller", () => (
-  <ProvenanceController nodes={nodes2}></ProvenanceController>
+  <ProvenanceController
+    {...commonProps}
+    selectedNode={Object.assign(nodes2[0], {
+      dataID: "#c0203065-9927-42f5-88f6-07189cae6cff",
+    })}
+    nodes={nodes2}></ProvenanceController>
 ));
 
 stories.add("big", () => (
-  <ProvenanceController nodes={node3}></ProvenanceController>
+  <ProvenanceController
+    {...commonProps}
+    selectedNode={Object.assign(nodes3[0], {
+      dataID: "#c0203065-9927-42f5-88f6-07189cae6cff",
+    })}
+    nodes={nodes3}></ProvenanceController>
 ));
