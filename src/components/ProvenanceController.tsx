@@ -30,7 +30,7 @@ const ProvenanceController = ({
   nodes = nodes.map((node) =>
     Object.assign(node, { dataID: "#c0203065-9927-42f5-88f6-07189cae6cff" })
   );
-
+  const [playInterval, setPlayInterval] = React.useState(null);
   const [hoveredItemId, setHoveredItemId] = React.useState(null);
   const [selectedItemId, setSelectedItemIdInternal] = React.useState(
     selectedNode.id
@@ -49,6 +49,15 @@ const ProvenanceController = ({
       "https://vdl.sci.utah.edu/mvnv-study/?vis=NL&taskNum=7&participantID=5588d7a1fdf99b304ee56840&taskID=S-task07/#c0203065-9927-42f5-88f6-07189cae6cff"
   );
 
+  function handlePlayClick() {
+    // set if not selected
+    setPlayInterval(setInterval(handleForward, 500));
+  }
+  function handlePauseClick() {
+    clearInterval(playInterval);
+    setPlayInterval(null);
+  }
+
   const setSelectedItemId = (id) => {
     // make async call to load data
     if (id === selectedItemId) {
@@ -61,19 +70,22 @@ const ProvenanceController = ({
   console.log("dywootto", hoveredItemId);
 
   function handleForward() {
+    // TODO handle case if
     console.log("in forward", selectedItemId);
 
-    if (!selectedItemId) {
-      setSelectedItemId(nodes[0].id);
-    }
-    const currentIndex = nodes.findIndex((node) => node.id === selectedItemId);
-    console.log("in forward", currentIndex);
+    setSelectedItemId((previousId) => {
+      if (!previousId) {
+        setSelectedItemId(nodes[0].id);
+      }
+      const currentIndex = nodes.findIndex((node) => node.id === previousId);
+      console.log("in forward", currentIndex);
 
-    // if at the end, do nothing
-    if (currentIndex === nodes.length - 1) {
-      return;
-    }
-    setSelectedItemId(nodes[currentIndex + 1].id);
+      // if at the end, do nothing
+      if (currentIndex === nodes.length - 1 || currentIndex === -1) {
+        return nodes[0].id;
+      }
+      return nodes[currentIndex + 1].id;
+    });
   }
   function handleBackward() {
     console.log("in backward", selectedItemId);
@@ -135,12 +147,17 @@ const ProvenanceController = ({
             <IconButton aria-label="delete" onClick={handleBackward}>
               <ArrowBack />
             </IconButton>
-            <IconButton aria-label="delete">
-              <PlayCircleOutline />
-            </IconButton>
-            <IconButton aria-label="delete">
-              <PauseCircleOutline />
-            </IconButton>
+            {playInterval && (
+              <IconButton aria-label="delete" onClick={handlePauseClick}>
+                <PauseCircleOutline />
+              </IconButton>
+            )}
+            {!playInterval && (
+              <IconButton aria-label="delete" onClick={handlePlayClick}>
+                <PlayCircleOutline />
+              </IconButton>
+            )}
+
             <IconButton aria-label="delete" onClick={handleForward}>
               <ArrowForward />
             </IconButton>

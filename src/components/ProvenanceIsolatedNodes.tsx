@@ -56,7 +56,7 @@ const IsolatedNode = ({ node }) => {
     : eventMapping["custom"];
   //add check for custom icons for newly created events;
   const icon = eventMap.icon;
-
+  console.log("in rerender", node);
   // node.event !== "startedProvenance" &&
   //   node.event !== "Finished Task" ?
   return (
