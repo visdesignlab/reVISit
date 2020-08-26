@@ -1,5 +1,5 @@
 //@ts-nocheck
-import React from "react";
+import React, { useMemo } from "react";
 import ProvenanceIsolatedNodes from "./ProvenanceIsolatedNodes";
 import IconButton from "@material-ui/core/IconButton";
 import ArrowForward from "@material-ui/icons/ArrowForward";
@@ -27,19 +27,28 @@ const ProvenanceController = ({
 }) => {
   //  "https://vdl.sci.utah.edu/mvnv-study/?vis=NL&taskNum=7&participantID=5588d7a1fdf99b304ee56840&taskID=S-task07/#c0203065-9927-42f5-88f6-07189cae6cff";
   console.log(nodes, selectedNode, taskId, participantId, condition);
+  nodes = nodes.map((node) =>
+    Object.assign(node, { dataID: "#c0203065-9927-42f5-88f6-07189cae6cff" })
+  );
+
+  const [hoveredItemId, setHoveredItemId] = React.useState(null);
+  const [selectedItemId, setSelectedItemIdInternal] = React.useState(
+    selectedNode.id
+  );
+
   let url = `https://vdl.sci.utah.edu/mvnv-study/?vis=${
     conditionEnums[condition]
   }&taskNum=${parseTaskNumFromId(
     taskId
-  )}&participantID=${participantId}&taskID=${taskId}/${selectedNode.dataID}`;
+  )}&participantID=${participantId}&taskID=${taskId}/${
+    nodes.find((node) => node.id === selectedItemId)?.dataID
+  }`;
   console.log(
     url,
     url ===
       "https://vdl.sci.utah.edu/mvnv-study/?vis=NL&taskNum=7&participantID=5588d7a1fdf99b304ee56840&taskID=S-task07/#c0203065-9927-42f5-88f6-07189cae6cff"
   );
-  const [selectedItemId, setSelectedItemIdInternal] = React.useState(
-    selectedNode
-  );
+
   const setSelectedItemId = (id) => {
     // make async call to load data
     if (id === selectedItemId) {
@@ -48,10 +57,38 @@ const ProvenanceController = ({
       setSelectedItemIdInternal(id);
     }
   };
-  const commonScale = d3
-    .scaleLinear()
-    .domain(d3.extent(nodes, (node) => node.time))
-    .range([0, 100]);
+
+  console.log("dywootto", hoveredItemId);
+
+  function handleForward() {
+    console.log("in forward", selectedItemId);
+
+    if (!selectedItemId) {
+      setSelectedItemId(nodes[0].id);
+    }
+    const currentIndex = nodes.findIndex((node) => node.id === selectedItemId);
+    console.log("in forward", currentIndex);
+
+    // if at the end, do nothing
+    if (currentIndex === nodes.length - 1) {
+      return;
+    }
+    setSelectedItemId(nodes[currentIndex + 1].id);
+  }
+  function handleBackward() {
+    console.log("in backward", selectedItemId);
+    if (!selectedItemId) {
+      setSelectedItemId(nodes[0].id);
+    }
+    const currentIndex = nodes.findIndex((node) => node.id === selectedItemId);
+    console.log("in backward", currentIndex);
+
+    // if at the begining, do nothing
+    if (currentIndex < 1) {
+      return;
+    }
+    setSelectedItemId(nodes[currentIndex - 1].id);
+  }
 
   return (
     <div>
@@ -66,25 +103,19 @@ const ProvenanceController = ({
         }}>
         <div style={{ gridRow: 1, overflow: "scroll" }}>
           <ProvenanceIsolatedNodes
+            hoveredItemId={hoveredItemId}
+            handleHover={(id) => setHoveredItemId(id)}
             selectedItemId={selectedItemId}
             nodes={nodes}
             handleProvenanceNodeClick={(node) =>
               setSelectedItemId(node.id)
             }></ProvenanceIsolatedNodes>
-          <svg viewBox={"0 0 100 20"} perserveAspectRatio="none">
-            {nodes.map((node) => {
-              console.log("", selectedItemId, node.id);
-              const opacity = node.id === selectedItemId ? 0.5 : 0.1;
-              return (
-                <rect
-                  onClick={() => setSelectedItemId(node.id)}
-                  width={0.75}
-                  x={commonScale(node.time)}
-                  height={20}
-                  opacity={!!selectedItemId ? opacity : null}></rect>
-              );
-            })}
-          </svg>
+          <TimeLine
+            hoveredItemId={hoveredItemId}
+            setHoveredItemId={(id) => setHoveredItemId(id)}
+            selectedItemId={selectedItemId}
+            nodes={nodes}
+            setSelectedItemId={(node) => setSelectedItemId(node.id)}></TimeLine>
         </div>
         <div
           style={{
@@ -101,7 +132,7 @@ const ProvenanceController = ({
               display: "flex",
               justifyContent: "center",
             }}>
-            <IconButton aria-label="delete">
+            <IconButton aria-label="delete" onClick={handleBackward}>
               <ArrowBack />
             </IconButton>
             <IconButton aria-label="delete">
@@ -110,7 +141,7 @@ const ProvenanceController = ({
             <IconButton aria-label="delete">
               <PauseCircleOutline />
             </IconButton>
-            <IconButton aria-label="delete">
+            <IconButton aria-label="delete" onClick={handleForward}>
               <ArrowForward />
             </IconButton>
           </div>
@@ -121,3 +152,56 @@ const ProvenanceController = ({
 };
 
 export default ProvenanceController;
+
+const TimeLine = (props) => {
+  const {
+    nodes,
+    setSelectedItemId,
+    setHoveredItemId,
+    selectedItemId,
+    hoveredItemId,
+  } = props;
+  function determineItemOpacity(node, selectedItemId, hoveredItemId) {
+    let opacity;
+    if (selectedItemId && node.id !== selectedItemId) {
+      opacity = 0.1;
+    } else if (hoveredItemId && node.id !== hoveredItemId) {
+      opacity = 0.1;
+    }
+    if (node.id === hoveredItemId || node.id === selectedItemId) {
+      opacity = 1;
+    }
+    return opacity;
+  }
+
+  const commonScale = useMemo(() => {
+    return d3
+      .scaleLinear()
+      .domain(d3.extent(nodes, (node) => node.time))
+      .range([0, 100]);
+  }, [nodes]);
+  return (
+    <svg viewBox={"0 0 100 20"} perserveAspectRatio="none">
+      {nodes.map((node, index) => {
+        console.log("", selectedItemId, node.id);
+        const opacity = determineItemOpacity(
+          node,
+          selectedItemId,
+          hoveredItemId
+        );
+        //const opacity = node.id === selectedItemId ? 0.5 : 0.1;
+        return (
+          <rect
+            key={`item-${index}`}
+            onMouseEnter={() => setHoveredItemId(node.id)}
+            onMouseLeave={() => setHoveredItemId(null)}
+            onClick={() => setSelectedItemId(node.id)}
+            width={0.75}
+            x={commonScale(node.time)}
+            height={20}
+            opacity={opacity}></rect>
+        );
+      })}
+    </svg>
+  );
+};

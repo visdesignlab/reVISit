@@ -7,19 +7,40 @@ import styles from "./ProvenanceIsolatedNodes.module.css";
 const ProvenanceIsolatedNodes = ({
   nodes,
   selectedItemId,
+  hoveredItemId,
+  handleHover,
   handleProvenanceNodeClick,
 }) => {
   // console.log("dywootto", nodes);
+  function determineItemOpacity(node, selectedItemId, hoveredItemId) {
+    let opacity;
+    if (selectedItemId && node.id !== selectedItemId) {
+      opacity = 0.1;
+    } else if (hoveredItemId && node.id !== hoveredItemId) {
+      opacity = 0.1;
+    }
+    if (node.id === hoveredItemId || node.id === selectedItemId) {
+      opacity = 1;
+    }
+    return opacity;
+  }
+
   return (
     <div
       className={styles.wrapper}
       style={{ display: "flex", flexDirection: "row" }}>
       {nodes.map((node, index) => {
-        const opacity = node.id === selectedItemId ? 1 : 0.5;
+        const opacity = determineItemOpacity(
+          node,
+          selectedItemId,
+          hoveredItemId
+        ); //node.id === selectedItemId ? 1 : 0.5;
         return (
           <div
             key={index}
-            style={!!selectedItemId ? { opacity } : null}
+            style={{ opacity }}
+            onMouseEnter={() => handleHover(node.id)}
+            onMouseLeave={() => handleHover(null)}
             onClick={() => handleProvenanceNodeClick(node)}>
             <IsolatedNode node={node}></IsolatedNode>
           </div>
