@@ -65,7 +65,13 @@ const useStyles = makeStyles({
   table: {
     padding: "10px",
   },
-
+  sortable:{
+    cursor:'pointer',
+    backgroundColor:'rgb(240,240,240)'
+  },
+  sorted:{
+    fill:'#5d83d2'
+  },
   media: {
     width: figureWidth,
     height: rowHeight,
@@ -178,7 +184,7 @@ export const BarChart = (props) => {
         let x = vert ? xScale(value)+5 : xScale(key)-3;
         let y = vert ? yScale(key)-barWidth : height - yScale.range()[0] 
         return (
-          <>
+          < React.Fragment key = {key}>
             <Tooltip title={tooltipText}>
               <rect
                 className="count"
@@ -214,7 +220,7 @@ export const BarChart = (props) => {
                 {value}{" "}
               </text>}
            
-          </>
+              </React.Fragment>
         );
       })}
 
@@ -227,7 +233,7 @@ export const BarChart = (props) => {
         let x = vert ? xScale(value)+5 : xScale(key)-3;
         let y = vert ? yScale(key)-barWidth : height - yScale.range()[0] 
         return (
-          <>
+          <React.Fragment key={'hovered' + key}>
             <Tooltip title={tooltipText}>
               <rect
                 className="count"
@@ -250,7 +256,7 @@ export const BarChart = (props) => {
                 {value}{" "}
               </text>
            
-          </>
+              </React.Fragment>
         );
       })}
       </g>
@@ -350,7 +356,7 @@ function SequenceCount({row,hoveredRow,hoveredRowColor}){
     height={iconWidth}
     style={{
       // opacity: key < intersection.length ? 1 : .2,
-      fill: key < intersection.length ? hoveredRowColor: key < row.count ? "rgb(93, 131, 210)" :  'rgb(220, 220, 220)'  //rgb(147 195 209)
+      fill: key < intersection.length ? hoveredRowColor : key < row.count ? "rgb(150, 150, 150)" :  'rgb(220, 220, 220)'  //rgb(147 195 209)
     }}></rect>
   })} 
   
@@ -392,25 +398,55 @@ function SequenceCount({row,hoveredRow,hoveredRowColor}){
 </svg>
 }
 
+function SortIconContainer({sorted,classes}){
+  let size = 20;
+  return <svg width={size} height={size} style={{paddingTop:'5px'}}>
+    <SortIcon className = {sorted ? classes.sorted : ''} style={{transform: "rotate(-180deg)"}}  width={size} height={size} /></svg>
+}
+
 //Compoment to draw interaction sequence tables
 function TableComponent({rows,hoveredRowColor, hoveredRow=undefined,setHoveredRow=undefined}){  
 // console.log('rendering table',hoveredRow) 
   // console.log(rows)
+
+  const classes = useStyles();
+
+
+  let [sort,setSort]=useState({value:'Count',desc:{'Count':true,'Pattern':true}})
+
+  // useEffect()({
+    rows.sort((a,b)=>{
+      let aValue = sort.value == 'Count' ? a.count : a.seq.length;
+      let bValue = sort.value == 'Count' ? b.count : b.seq.length;
+      let rValue = sort.desc[sort.value] ? -1 : 1
+      return aValue > bValue ? rValue : -rValue
+    })
+  // },[])
+  
+  // console.log(rows)
   return (
     <MuiThemeProvider theme={theme}>
-      <TableContainer>
-        <Table aria-label="simple table">
-          {/* <TableHead>
+      <TableContainer style={{ maxHeight:'300px'}}>
+        <Table stickyHeader aria-label="sticky table">
+          <TableHead>
     <TableRow>
-      <TableCell>Pattern</TableCell>
-      <TableCell align="right">Count</TableCell>
+      {[{key:'Pattern',title:'Interaction Pattern'},{key:'Count',title:'Participant Count'}].map(header=>{
+              return <TableCell  key = {header['key']} onClick={ () =>{
+                sort =  { ...sort }; 
+                let sameKey = sort.value == header.key;
+                sort.value  = header.key; 
+                sort.desc[header.key] =  sameKey ? !sort.desc[header.key] : true; 
+                setSort(sort);
+              
+              }}  className={classes.sortable}> {header.title}<SortIconContainer classes = {classes} sorted={sort.value == header.key}></SortIconContainer></TableCell>
+      })}
     </TableRow>
-  </TableHead> */}
+  </TableHead>
           <TableBody>
             {rows.map((row, i) => {
               // console.log('row',row)
               return (
-              <TableRow key={row.id} onMouseEnter={() =>{setHoveredRow(row)}} onMouseLeave={() => setHoveredRow()} style={{background: hoveredRow == row? 'rgb(234,234,234)':'white'}} >
+              <TableRow key={row.id} onMouseEnter={() =>{setHoveredRow(row)}} onMouseLeave={() => setHoveredRow()} style={{background: hoveredRow == row? 'rgb(245,245,245)':'white'}} >
                   <TableCell
                     component="th"
                     scope="row"
@@ -542,8 +578,8 @@ export const DrawHistogram = (props) => {
   
   
   return (<>
-    <svg width={width} height={height} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
-      <><line
+    <svg style={{transform:'translate(-10px,0px)'}} width={width} height={height} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
+      <g transform = {'translate(10,0)'}><line
         x1={0}
         y1={yScale.range()[1]}
         x2={xScale.range()[1]}
@@ -574,15 +610,34 @@ export const DrawHistogram = (props) => {
           y1={yScale.range()[1] / 2}
           y2={yScale.range()[1] / 2}></line>
 
-        <text
+<text
           style={{ fontSize: "1em", textAnchor: "middle" }}
           x={xScale(average)}
           y={40}>
           {" "}
           {textLabel}{" "}
         </text>
-      </>
-      {hovered ? menu() : <></>}
+   
+      
+      {hovered ? <>
+      
+        <text
+          style={{ fill:'rgb(0,0,0,0.25)', fontSize: "1em", textAnchor: "end" }}
+          x={-2}
+          y={23}>
+          {" "}
+          {Math.floor(xScale.domain()[0])}{" "}
+        </text>
+        <text
+          style={{ fill: 'rgb(0,0,0,0.25)' ,fontSize: "1em", textAnchor: "start" }}
+          x={xScale.range()[1]+2}
+          y={23}>
+          {" "}
+          {Math.ceil(xScale.domain()[1])}{" "}
+        </text>
+      
+      </> : null}
+      </g>
     </svg>
   </>
 
@@ -629,7 +684,7 @@ function ConditionCard({ condition, conditionName, classes, taskID }) {
               <Stimulus taskID={taskID} classes={classes} conditionName={conditionName}></Stimulus>
             </Grid>
             <Grid key={"prov"} item>
-              <Box height={rowHeight} width={600} mt={"5px"} mb={"6px"} mr={'10px'} boxShadow={1} style={{ overflow: 'scroll' }}>
+              <Box height={rowHeight} width={600} mt={"5px"} mb={"6px"} mr={'10px'} boxShadow={0} style={{ overflow: 'scroll' }}>
                 {<TableComponent rows={freqPattern} hoveredRow={hoveredRow} hoveredRowColor = {hoveredRow ? hoveredRowColor : undefined} setHoveredRow={setHoveredRow}></TableComponent>}
               </Box>
               <Typography
@@ -643,7 +698,7 @@ function ConditionCard({ condition, conditionName, classes, taskID }) {
               <Grid key={'performanceMetrics'} item style={{ display: 'block' }}>
                 <Box height={rowHeight / 2.5} p={"20px"} mt={"5px"} mb={"6px"} mr={'10px'} style={{ overflow: 'scroll', display: 'inline-flex' }} boxShadow={1}>
                   {metricValues.map((metric) => {
-                    return <Histogram data = {data} hoveredRow={hoveredRow} hoveredRowColor = {hoveredRow ? hoveredRowColor : undefined} metric={metric}></Histogram>
+                    return <Histogram key={metric} data = {data} hoveredRow={hoveredRow} hoveredRowColor = {hoveredRow ? hoveredRowColor : undefined} metric={metric}></Histogram>
                   })}
                 </Box>
                 <Typography
@@ -665,7 +720,7 @@ function ConditionCard({ condition, conditionName, classes, taskID }) {
                   boxShadow={1}
                   style={{ overflow: "scroll" }}>
                      {metricValues.map((metric) => {
-                    return <BarChart allData = {data} hoveredRow={hoveredRow} hoveredRowColor = {hoveredRow ? hoveredRowColor : undefined} metric={metric}></BarChart>
+                    return <BarChart key = {metric} allData = {data} hoveredRow={hoveredRow} hoveredRowColor = {hoveredRow ? hoveredRowColor : undefined} metric={metric}></BarChart>
                   })}
                   {/* <TableComponent rows={condition.textAnswers}></TableComponent> */}
                 </Box>
@@ -673,7 +728,7 @@ function ConditionCard({ condition, conditionName, classes, taskID }) {
                   className={classes.pos}
                   variant="overline"
                   color="primary">
-                  Qualitative Responses
+                  Word Counts for Qualitative Responses
                 </Typography>
               </Grid>
             </Grid>
@@ -726,12 +781,13 @@ function TaskCard({task,classes}){
       </Typography>
       <Divider />
 
-      {hidden ? <></> : Object.keys(task.conditions).map((key) => {
-        let condition = task.conditions[key];
+      {hidden ? <></> : Object.keys(task.conditions).map((cKey) => {
+        let condition = task.conditions[cKey];
         return (
           <ConditionCard
+            key = {task.taskID + cKey}
             condition={condition}
-            conditionName={key}
+            conditionName={cKey}
             taskID={task.taskID}
             classes={classes}></ConditionCard>
         );
@@ -753,7 +809,52 @@ export default function TaskContainer() {
   const classes = useStyles();
   const bull = <span className={classes.bullet}>•</span>;
 
-  const { data } = useContext(ProvenanceDataContext);
+  const { data, homeTaskSort } = useContext(ProvenanceDataContext);
+
+  // console.log('homeTaskSort is ', homeTaskSort)
+ 
+  function getValues(task,conditionFilter,sortKey){
+    let conditions = Object.keys(task.conditions);
+    let values = []
+    conditions.map(c=>{
+      if (conditionFilter[c]){
+        let metricValues = task.conditions[c].stats.find(s=>s.metric == sortKey)
+        values.push(metricValues.ci[1]) //average for that metric
+      }
+    })
+    return values;
+
+  }
+  if (data){
+    // console.log(data.tasks)
+    
+    if (homeTaskSort){
+
+      let sortKey = homeTaskSort.metric;
+      let desc = homeTaskSort.desc
+      let conditionFilter = homeTaskSort.conditions
+
+      
+      data.tasks.sort((a,b)=>{
+        
+        let aValue, bValue; 
+        if (sortKey == 'name'){
+          aValue = a[sortKey]
+          bValue = b[sortKey]
+        } else {
+          let aValues = getValues(a,conditionFilter,sortKey)
+          let bValues = getValues(b,conditionFilter,sortKey)
+          aValue = desc? Math.max(...aValues) : Math.min(...aValues)
+          bValue = desc? Math.max(...bValues) : Math.min(...bValues)
+        }
+
+        let rValue = desc ? -1 : 1
+        return aValue > bValue ? rValue : -rValue
+    })
+
+    console.log('done sorting')
+
+  }}
 
   // })
   let colorScale = d3
@@ -771,7 +872,7 @@ export default function TaskContainer() {
     <>
       {data.tasks.map((task) => {
         // let taskTooltip = <Typography>{task.prompt}</Typography>;
-        return (<TaskCard task={task} classes={classes}></TaskCard>);
+        return (<TaskCard key = {task.name} task={task} classes={classes}></TaskCard>);
       })}
     </>
   );

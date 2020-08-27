@@ -43,6 +43,13 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   let [data, setData] = useState();
   const [metrics,setMetrics] = React.useState()
 
+  let conditions; 
+
+  if (data){
+    conditions = data.conditions;
+  }
+
+  let [homeTaskSort,setHomeTaskSort]=useState()
 
 
   function handleProvenanceNodeClick(id) {
@@ -139,6 +146,9 @@ export const ProvenanceDataContextProvider = ({ children }) => {
         data,
         metrics,
         setTaskSort,
+        homeTaskSort,
+        setHomeTaskSort,
+        conditions,
         handleTagCreation,
         handleProvenanceNodeClick,
       }}>

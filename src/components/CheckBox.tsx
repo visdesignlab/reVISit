@@ -1,20 +1,34 @@
 import React from 'react';
 import Checkbox from '@material-ui/core/Checkbox';
+import Typography from "@material-ui/core/Typography";
 
-export default function MetricMenu() {
+
+export default function CheckBox({condition,visible,checkBoxCallback}) {
   const [checked, setChecked] = React.useState(true);
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setChecked(event.target.checked);
-  };
+  const handleChange = (evt) => {
 
-  return (
-    <div>
+    evt.stopPropagation(); 
+    checkBoxCallback(condition,evt.target.checked)
+    setChecked(evt.target.checked);
+  };
+  return (condition && visible ? <>
       <Checkbox
         checked={checked}
         onChange={handleChange}
-        inputProps={{ 'aria-label': 'primary checkbox' }}
+        color="default"
+        inputProps={{ 'aria-label': 'checkbox with default color' }}
       />
+      <Typography
+                            // style={{ display: "block" }}
+                            color="primary"
+                            variant="overline">
+                            {condition}
+                        </Typography>
+      </> :null)
+    
+    {/* <div>
+      
       <Checkbox
         defaultChecked
         color="primary"
@@ -38,6 +52,6 @@ export default function MetricMenu() {
         size="small"
         inputProps={{ 'aria-label': 'checkbox with small size' }}
       />
-    </div>
-  );
+    </div> */}
+
 }
