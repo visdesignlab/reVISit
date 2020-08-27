@@ -23,6 +23,8 @@ import TableContainer from "@material-ui/core/TableContainer";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 
+import Tagger from "../components/Tagger"
+
 import SortIcon from '@material-ui/icons/Sort';
 
 import List from "@material-ui/core/List";
@@ -670,7 +672,7 @@ function ConditionCard({ condition, conditionName, classes, taskID }) {
     }) 
 
   // }, [condition]);
-
+    // console.log(condition.textAnswers.map(a=>a.answer).flat())
   // console.log(metricValues)
   return (!metricValues ? <></> :
     <React.Fragment key={"ConditionCard_" + conditionName}>
@@ -722,6 +724,7 @@ function ConditionCard({ condition, conditionName, classes, taskID }) {
                      {metricValues.map((metric) => {
                     return <BarChart key = {metric} allData = {data} hoveredRow={hoveredRow} hoveredRowColor = {hoveredRow ? hoveredRowColor : undefined} metric={metric}></BarChart>
                   })}
+                  {<Tagger text = {condition.textAnswers.map(a=>a.answer).flat().join('--')}></Tagger>}
                   {/* <TableComponent rows={condition.textAnswers}></TableComponent> */}
                 </Box>
                 <Typography
