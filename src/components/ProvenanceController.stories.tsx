@@ -12,7 +12,7 @@ import {
   optionsKnob as options,
 } from "@storybook/addon-knobs";
 const label = "Tasks";
-const nodes1 = [
+let nodes1 = [
   { id: "49607", name: "startedProvenance", time: 0 },
   { id: "49608", name: "sort", time: 0.133333 },
   { id: "49609", name: "sort", time: 0.15 },
@@ -24,13 +24,13 @@ const nodes1 = [
   { id: "49615", name: "answerBox", time: 0.716667 },
   { id: "49616", name: "Finished Task", time: 0.733333 },
 ];
-const nodes2 = [
+let nodes2 = [
   { id: "56033", name: "startedProvenance", time: 0 },
   { id: "56034", name: "sort", time: 0.0666667 },
   { id: "56035", name: "answerBox", time: 0.216667 },
   { id: "56036", name: "Finished Task", time: 0.283333 },
 ];
-const nodes3 = [
+let nodes3 = [
   { id: "37776", name: "startedProvenance", time: 0 },
   { id: "37777", name: "answerBox", time: 0.483333 },
   { id: "37778", name: "answerBox", time: 0.5 },
@@ -107,36 +107,61 @@ const nodes3 = [
   { id: "37849", name: "Finished Task", time: 2.05 },
 ];
 
+function addIdsToNodes(nodes) {
+  return nodes.map((node, index) => {
+    let dataObject;
+    if (index % 10 === 0) {
+      dataObject = { dataID: "3c9ea11f-2a0b-46ee-9dc0-835d12561281" };
+    } else if (index % 10 === 1) {
+      dataObject = { dataID: "e3798172-df56-4124-8326-435b81ccb7a5" };
+    } else if (index % 10 === 2) {
+      dataObject = { dataID: "02a5a389-bc6b-4747-a1fb-f722158c66c6" };
+    } else if (index % 10 === 3) {
+      dataObject = { dataID: "698c9c66-63d5-4447-a4e6-7ba05e4aa5e9" };
+    } else if (index % 10 === 4) {
+      dataObject = { dataID: "74ed9ecf-e77b-4f45-8831-db220f5e2057" };
+    } else if (index % 10 === 5) {
+      dataObject = { dataID: "29c7a143-eac6-405e-ae66-e650754bb525" };
+    } else if (index % 10 === 6) {
+      dataObject = { dataID: "c78a8578-a5fc-411b-bb20-a6ebf9702273" };
+    } else if (index % 10 === 7) {
+      dataObject = { dataID: "f822c69d-1a7f-460a-80d5-58d24082fcfa" };
+    } else if (index % 10 === 8) {
+      dataObject = { dataID: "ff77ab34-ace1-498e-9367-beb4b72c9ea6" };
+    } else {
+      dataObject = { dataID: "1de36df0-5bf8-48a8-ad37-17641ada498f" };
+    }
+    return Object.assign(node, dataObject);
+  });
+}
+nodes1 = addIdsToNodes(nodes1);
+nodes2 = addIdsToNodes(nodes2);
+nodes3 = addIdsToNodes(nodes3);
+
 const stories = storiesOf("Provenance Controller", module);
 stories.addDecorator(withKnobs);
 const commonProps = {
   condition: "nodeLink",
-  taskId: "S-task07",
-  participantId: "5588d7a1fdf99b304ee56840",
+  taskId: "S-task13",
+  participantId: "545d6768fdf99b7f9fca24e3",
 };
 stories.add("small", () => (
   <ProvenanceController
     {...commonProps}
-    selectedNode={Object.assign(nodes1[0], {
-      dataID: "#c0203065-9927-42f5-88f6-07189cae6cff",
-    })}
+    selectedNode={nodes1[0]}
     nodes={nodes1}></ProvenanceController>
 ));
 
 stories.add("smaller", () => (
   <ProvenanceController
     {...commonProps}
-    selectedNode={Object.assign(nodes2[0], {
-      dataID: "#c0203065-9927-42f5-88f6-07189cae6cff",
-    })}
+    selectedNode={nodes2[0]}
     nodes={nodes2}></ProvenanceController>
 ));
 
 stories.add("big", () => (
   <ProvenanceController
     {...commonProps}
-    selectedNode={Object.assign(nodes3[0], {
-      dataID: "#c0203065-9927-42f5-88f6-07189cae6cff",
-    })}
+    selectedNode={nodes3[0]}
     nodes={nodes3}></ProvenanceController>
 ));

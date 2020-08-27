@@ -27,9 +27,7 @@ const ProvenanceController = ({
 }) => {
   //  "https://vdl.sci.utah.edu/mvnv-study/?vis=NL&taskNum=7&participantID=5588d7a1fdf99b304ee56840&taskID=S-task07/#c0203065-9927-42f5-88f6-07189cae6cff";
   console.log(nodes, selectedNode, taskId, participantId, condition);
-  nodes = nodes.map((node) =>
-    Object.assign(node, { dataID: "#c0203065-9927-42f5-88f6-07189cae6cff" })
-  );
+
   const [playInterval, setPlayInterval] = React.useState(null);
   const [hoveredItemId, setHoveredItemId] = React.useState(null);
   const [selectedItemId, setSelectedItemIdInternal] = React.useState(
@@ -40,7 +38,7 @@ const ProvenanceController = ({
     conditionEnums[condition]
   }&taskNum=${parseTaskNumFromId(
     taskId
-  )}&participantID=${participantId}&taskID=${taskId}/${
+  )}&participantID=${participantId}&taskID=${taskId}/#${
     nodes.find((node) => node.id === selectedItemId)?.dataID
   }`;
   console.log(
@@ -51,7 +49,7 @@ const ProvenanceController = ({
 
   function handlePlayClick() {
     // set if not selected
-    setPlayInterval(setInterval(handleForward, 500));
+    setPlayInterval(setInterval(handleForward, 1000));
   }
   function handlePauseClick() {
     clearInterval(playInterval);
@@ -104,7 +102,7 @@ const ProvenanceController = ({
 
   return (
     <div>
-      <div style={{ height: 1000 }}>
+      <div style={{ height: 900 }}>
         <iframe width={"100%"} height={"100%"} src={url}></iframe>
       </div>
       <div
@@ -200,7 +198,6 @@ const TimeLine = (props) => {
   return (
     <svg viewBox={"0 0 100 20"} perserveAspectRatio="none">
       {nodes.map((node, index) => {
-        console.log("", selectedItemId, node.id);
         const opacity = determineItemOpacity(
           node,
           selectedItemId,
