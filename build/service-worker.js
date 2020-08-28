@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "/ExperiVis/precache-manifest.25f0fd735b59994a6253ee29f5c4ea78.js"
+  "/ExperiVis/precache-manifest.b9174126b89f04421c0eb6f04b809610.js"
 );
 
 self.addEventListener('message', (event) => {

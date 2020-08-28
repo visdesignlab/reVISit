@@ -85,10 +85,20 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   ];
 
   let [data, setData] = useState();
-  const [metrics, setMetrics] = React.useState();
   const [currentlyVisitedNodes, setCurrentlyVisitedNodes] = React.useState(
     null
   );
+  // const [metrics,setMetrics] = React.useState()
+
+  let conditions;
+  let metrics;
+
+  if (data) {
+    conditions = data.conditions;
+    metrics = data.metrics;
+  }
+
+  let [homeTaskSort, setHomeTaskSort] = useState();
 
   function handleProvenanceNodeClick(id) {
     console.log("dywootto handle provenance node click", id);
@@ -125,9 +135,6 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   useEffect(() => {
     console.log("data from server", dataFromServer);
     setData(dataFromServer);
-    if (dataFromServer) {
-      setMetrics(dataFromServer.metrics);
-    }
   }, [dataFromServer]);
 
   //State
@@ -187,6 +194,9 @@ export const ProvenanceDataContextProvider = ({ children }) => {
         data,
         metrics,
         setTaskSort,
+        homeTaskSort,
+        setHomeTaskSort,
+        conditions,
         handleTagCreation,
         handleProvenanceNodeClick,
         currentlyVisitedNodes,
