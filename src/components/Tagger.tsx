@@ -10,46 +10,77 @@ const initialState = {
   mouseY: null,
 };
 
-export default function Tagger({text=undefined}) {
+export default function Tagger({text=undefined, tagDivId}) {
   const [state, setState] = React.useState<{
     mouseX: null | number;
     mouseY: null | number;
   }>(initialState);
 
-  const [tags,setTags] = useState('')
+  const [tags,setTags] = useState([])
+  const [remove,setRemove]=useState()
 
    text = text ||  "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam ipsum purus, bibendum sit  amet vulputate eget, porta semper ligula. Donec bibendum vulputate erat, ac fringilla mi   finibus nec. Donec ac dolor sed dolor porttitor blandit vel vel purus. Fusce vel malesuada   ligula. Nam quis vehicula ante, eu finibus est. Proin ullamcorper fermentum orci, quis   finibus massa. Nunc lobortis, massa ut rutrum ultrices, metus metus finibus ex, sit amet   facilisis neque enim sed neque. Quisque accumsan metus vel maximus consequat. Suspendisse  lacinia tellus a libero volutpat maximus"
 
 //    console.log('text is ', text)
   const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
     event.preventDefault();
-    setState({
-      mouseX: event.clientX - 2,
-      mouseY: event.clientY - 4,
-    });
+    // console.log(window.getSelection().toString().length,remove)
+    if (window.getSelection().toString().length > 0 || remove){
+        setState({
+            mouseX: event.clientX - 2,
+            mouseY: event.clientY - 4,
+          });
+    }
+   
   };
+
+  //on mouse up select that input box. 
 
   const handleClose = () => {
       let tag = window.getSelection().toString()
+      setRemove(false)
     //   console.log(text.split(tag))
+    if (tag.length>0){
+        let currentTags =[...tags]
+        currentTags.push(tag)
+        setTags(currentTags) 
+    }
 
-    setTags(tag)
+
     setState(initialState);
   };
 
   const removeTag = () => {
-    let tag = window.getSelection().toString()
-  //   console.log(text.split(tag))
+    let tag = remove
+    let currentTags =[...tags]
+    let newTags = currentTags.filter(t=>t!=tag)
 
-  setTags('')
-  setState(initialState);
+    setRemove(undefined)
+    setTags(newTags)
+   
+    setState(initialState);
 };
+    let taggedText = text;
+    // console.log(typeof(text))
+  tags.map(t=>{
+    taggedText = taggedText.replace(t,'<tag>>' + t + '<tag>')
+  })
 
   return (
-    <div onContextMenu={handleClick} style={{ cursor: 'context-menu' }}>
-         {tags.length > 0? <Typography> {text.split(tags).map((t, i) => {
-              return <><span>{t}</span><Tooltip title={'Interesting Pattern'}><span style={{backgroundColor: "rgb(255 153 0 / 24%)"}}>{tags}</span></Tooltip></>
-          })} </Typography> : 
+    <div onMouseUp={handleClick}>
+         {tags.length > 0 ? <Typography>  {taggedText.split('<tag>').map((t, i) => {
+             if (t[0] == '>'){
+                 t = t.substring(1)
+                 return  <Tooltip title={'Interesting Pattern'}><span onClick={()=>setRemove(t)} style={{cursor:'pointer', backgroundColor: "rgb(255 153 0 / 24%)"}}>{t}</span></Tooltip>  
+             } else {
+                return  <span>{t}</span>
+             }
+              
+          })} 
+             {/* {text.split(tags).map((t, i) => {
+              return <><span>{t}</span><Tooltip title={'Interesting Pattern'}><span onClick={()=>setRemove(true)} style={{backgroundColor: "rgb(255 153 0 / 24%)"}}>{tags}</span></Tooltip></>
+          })}  */}
+          </Typography> : 
           <Typography>{text}</Typography>}
       <Menu
         keepMounted
@@ -62,8 +93,8 @@ export default function Tagger({text=undefined}) {
             : undefined
         }
       >
-        <MenuItem onClick={removeTag}>Remove Tag</MenuItem>
-        <MenuItem onClick={handleClose}>Tag</MenuItem>
+        {remove ? <MenuItem onClick={removeTag}>Remove Tag</MenuItem> : <MenuItem onClick={handleClose}>Tag</MenuItem>}
+        
       </Menu>
     </div>
   );

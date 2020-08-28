@@ -41,12 +41,14 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   ];
 
   let [data, setData] = useState();
-  const [metrics,setMetrics] = React.useState()
+  // const [metrics,setMetrics] = React.useState()
 
   let conditions; 
+  let metrics;
 
   if (data){
     conditions = data.conditions;
+    metrics = data.metrics;
   }
 
   let [homeTaskSort,setHomeTaskSort]=useState()
@@ -80,9 +82,6 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   useEffect(() => {
     console.log("data from server",dataFromServer);
     setData(dataFromServer);
-    if (dataFromServer) {
-      setMetrics(dataFromServer.metrics)
-    }
   }, [dataFromServer]);
 
 
