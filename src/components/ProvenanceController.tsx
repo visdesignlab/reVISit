@@ -111,7 +111,8 @@ const ProvenanceController = ({
           gridTemplateRows: "50px 20px 30px",
           gridTemplateColumns: "min(max-content,1000)",
         }}>
-        <div style={{ gridRow: 1, overflow: "scroll" }}>
+        <div
+          style={{ gridRow: 1, overflow: "scroll", background: "whitesmoke" }}>
           <ProvenanceIsolatedNodes
             hoveredItemId={hoveredItemId}
             handleHover={(id) => setHoveredItemId(id)}
@@ -141,6 +142,7 @@ const ProvenanceController = ({
               margin: "0 auto",
               display: "flex",
               justifyContent: "center",
+              background: "whitesmoke",
             }}>
             <IconButton aria-label="delete" onClick={handleBackward}>
               <ArrowBack />
@@ -209,7 +211,7 @@ const TimeLine = (props) => {
             key={`item-${index}`}
             onMouseEnter={() => setHoveredItemId(node.id)}
             onMouseLeave={() => setHoveredItemId(null)}
-            onClick={() => setSelectedItemId(node.id)}
+            onClick={() => setSelectedItemId(node)}
             width={0.75}
             x={commonScale(node.time)}
             height={20}

@@ -8,8 +8,8 @@ const ProvenanceIsolatedNodes = ({
   nodes,
   selectedItemId,
   hoveredItemId,
-  handleHover,
-  handleProvenanceNodeClick,
+  handleHover = console.log,
+  handleProvenanceNodeClick = console.log,
 }) => {
   // console.log("dywootto", nodes);
   function determineItemOpacity(node, selectedItemId, hoveredItemId) {

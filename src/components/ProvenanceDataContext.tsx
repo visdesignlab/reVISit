@@ -14,6 +14,50 @@ import { useFetchAPIData } from "../hooks/hooks";
 import { ConsoleSqlOutlined } from "@ant-design/icons";
 
 import eventData from "../common/data/provenance_events.json";
+function addIdsToNodes(nodes) {
+  return nodes.map((node, index) => {
+    let dataObject;
+    if (index % 10 === 0) {
+      dataObject = { dataID: "3c9ea11f-2a0b-46ee-9dc0-835d12561281" };
+    } else if (index % 10 === 1) {
+      dataObject = { dataID: "e3798172-df56-4124-8326-435b81ccb7a5" };
+    } else if (index % 10 === 2) {
+      dataObject = { dataID: "02a5a389-bc6b-4747-a1fb-f722158c66c6" };
+    } else if (index % 10 === 3) {
+      dataObject = { dataID: "698c9c66-63d5-4447-a4e6-7ba05e4aa5e9" };
+    } else if (index % 10 === 4) {
+      dataObject = { dataID: "74ed9ecf-e77b-4f45-8831-db220f5e2057" };
+    } else if (index % 10 === 5) {
+      dataObject = { dataID: "29c7a143-eac6-405e-ae66-e650754bb525" };
+    } else if (index % 10 === 6) {
+      dataObject = { dataID: "c78a8578-a5fc-411b-bb20-a6ebf9702273" };
+    } else if (index % 10 === 7) {
+      dataObject = { dataID: "f822c69d-1a7f-460a-80d5-58d24082fcfa" };
+    } else if (index % 10 === 8) {
+      dataObject = { dataID: "ff77ab34-ace1-498e-9367-beb4b72c9ea6" };
+    } else {
+      dataObject = { dataID: "1de36df0-5bf8-48a8-ad37-17641ada498f" };
+    }
+    return Object.assign(node, dataObject);
+  });
+}
+let nodes1 = [
+  { id: "49607", name: "startedProvenance", time: 0 },
+  { id: "49608", name: "sort", time: 0.133333 },
+  { id: "49609", name: "sort", time: 0.15 },
+  { id: "49610", name: "sort", time: 0.183333 },
+  { id: "49611", name: "sort", time: 0.2 },
+  { id: "49612", name: "sort", time: 0.216667 },
+  { id: "49613", name: "sort", time: 0.233333 },
+  { id: "49614", name: "search", time: 0.566667 },
+  { id: "49615", name: "answerBox", time: 0.716667 },
+  { id: "49616", name: "Finished Task", time: 0.733333 },
+];
+const commonProps = {
+  condition: "nodeLink",
+  taskId: "S-task13",
+  participantId: "545d6768fdf99b7f9fca24e3",
+};
 
 const ProvenanceDataContext = React.createContext({});
 
@@ -41,9 +85,10 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   ];
 
   let [data, setData] = useState();
-  const [metrics,setMetrics] = React.useState()
-
-
+  const [metrics, setMetrics] = React.useState();
+  const [currentlyVisitedNodes, setCurrentlyVisitedNodes] = React.useState(
+    null
+  );
 
   function handleProvenanceNodeClick(id) {
     console.log("dywootto handle provenance node click", id);
@@ -52,16 +97,23 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     const taskId = selectedTaskIds[0];
     const participantId = "545d6768fdf99b7f9fca24e3";
     const taskNumber = 1;
+    const currentlyVisitedProvInfo = {
+      data: addIdsToNodes(nodes1),
+      props: commonProps,
+    };
+    console.log("about to set visited", currentlyVisitedProvInfo);
+    setCurrentlyVisitedNodes(currentlyVisitedProvInfo);
+
     // select all of that provenance graph.
-    const promise = mysql_api(`/actions/${participantId}/${taskId}`);
+    //const promise = mysql_api(`/actions/${participantId}/${taskId}`);
 
-    promise.then((resolved) => {
-      console.log("resolvedclick", resolved);
-      alert(`queried (skinny) provenance from db ${resolved.data}`);
+    //promise.then((resolved) => {
+    //  console.log("resolvedclick", resolved);
+    //alert(`queried (skinny) provenance from db ${resolved.data}`);
 
-      // rehydrate provenance graph
-      // render vis using that provenance graph
-    });
+    // rehydrate provenance graph
+    // render vis using that provenance graph
+    //});
   }
   // get initial data from server;
   let [isLoading, isError, dataFromServer] = useFetchAPIData(async () => {
@@ -71,13 +123,12 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   /*[{"_id":"startedProvenance","actionID":"startedProvenance","category":"Study\r","condition":"nodeLink","elapsedTime":0,"id":1,"label":"Start Task","participantID":"545d6768fdf99b7f9fca24e3","target":null,"taskID":"S-task01","time":"Wed, 28 Aug 2019 00:51:18 GMT","type":"action"},{"_id":"Hard Selected A Node","actionID":"Hard Selected a Node","category":"Answer\r","condition":"nodeLink","elapsedTime":0.283333,"id":2,"label":"Select","participantID":"545d6768fdf99b7f9fca24e3","target":null,"taskID":"S-task01","time":"Wed, 28 Aug 2019 00:51:35 GMT","type":"action"},{"_id":"Hard Unselected A Node","actionID":"Hard Unselected a Node","category":"Answer\r","condition":"nodeLink","elapsedTime":0.316667,"id":3,"label":"Unselect","participantID":"545d6768fdf99b7f9fca24e3","target":null,"taskID":"S-task01","time":"Wed, 28 Aug 2019 00:51:37 GMT","type":"action"},{"_id":"Hard Selected A Node","actionID":"Hard Selected a Node","category":"Answer\r","condition":"nodeLink","elapsedTime":0.45,"id":2,"label":"Select","participantID":"545d6768fdf99b7f9fca24e3","target":null,"taskID":"S-task01","time":"Wed, 28 Aug 2019 00:51:45 GMT","type":"action"},{"_id":"Finished Task","actionID":"Finished Task","category":"Study\r","condition":"nodeLink","elapsedTime":0.666667,"id":4,"label":"Finish Task","participantID":"545d6768fdf99b7f9fca24e3","target":null,"taskID":"S-task01","time":"Wed, 28 Aug 2019 00:51:58 GMT","type":"action"}]*/
 
   useEffect(() => {
-    console.log("data from server",dataFromServer);
+    console.log("data from server", dataFromServer);
     setData(dataFromServer);
     if (dataFromServer) {
-      setMetrics(dataFromServer.metrics)
+      setMetrics(dataFromServer.metrics);
     }
   }, [dataFromServer]);
-
 
   //State
   function timeout(ms) {
@@ -96,7 +147,6 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   );*/
 
   const [currentTaskData, setCurrentTaskData] = React.useState([]);
-
 
   let [
     isTaskLoading,
@@ -123,8 +173,6 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     setCurrentTaskData(taskDataFromServer);
   }, [taskDataFromServer]);
 
-
-
   function handleChangeSelectedTaskId(event) {
     setSelectedTaskIds([event.target.value]);
   }
@@ -141,6 +189,8 @@ export const ProvenanceDataContextProvider = ({ children }) => {
         setTaskSort,
         handleTagCreation,
         handleProvenanceNodeClick,
+        currentlyVisitedNodes,
+        setCurrentlyVisitedNodes,
       }}>
       {children}
     </ProvenanceDataContext.Provider>
