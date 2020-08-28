@@ -24,6 +24,7 @@ export default function Tagger({text=undefined, tagDivId}) {
 //    console.log('text is ', text)
   const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
     event.preventDefault();
+    console.log(window.getSelection().toString())
     // console.log(window.getSelection().toString().length,remove)
     if (window.getSelection().toString().length > 0 || remove){
         setState({
@@ -38,7 +39,7 @@ export default function Tagger({text=undefined, tagDivId}) {
 
   const handleClose = () => {
       let tag = window.getSelection().toString()
-      setRemove(false)
+      setRemove(undefined)
     //   console.log(text.split(tag))
     if (tag.length>0){
         let currentTags =[...tags]
@@ -71,7 +72,7 @@ export default function Tagger({text=undefined, tagDivId}) {
          {tags.length > 0 ? <Typography>  {taggedText.split('<tag>').map((t, i) => {
              if (t[0] == '>'){
                  t = t.substring(1)
-                 return  <Tooltip title={'Interesting Pattern'}><span onClick={()=>setRemove(t)} style={{cursor:'pointer', backgroundColor: "rgb(255 153 0 / 24%)"}}>{t}</span></Tooltip>  
+                 return  <Tooltip title={'Interesting Pattern'}><span onMouseDown={()=>setRemove(t)} style={{cursor:'pointer', backgroundColor: "rgb(255 153 0 / 24%)"}}>{t}</span></Tooltip>  
              } else {
                 return  <span>{t}</span>
              }
