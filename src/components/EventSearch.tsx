@@ -203,7 +203,7 @@ const EventSearch = ({
   const [shoppingBagItems, setShoppingBagItems] = React.useState([]);
   useEffect(() => {
     if (onFilter) {
-      onFilter(shoppingBagItems);
+      onFilter(shoppingBagItems.length > 0 ? shoppingBagItems : null);
     }
   }, [shoppingBagItems]);
   console.log(shoppingBagItems);

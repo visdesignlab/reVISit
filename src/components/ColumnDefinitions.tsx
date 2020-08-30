@@ -4,6 +4,7 @@ import * as d3 from "d3";
 import eventMapping from "./eventMapping";
 import TagWrapper from "./reactTagWrapper";
 import ProvenanceIsolatedNodes from "./ProvenanceIsolatedNodes";
+import EventSearch from "./EventSearch";
 
 const columnOverrides = {};
 const filterQuantitativeValues = (filter, value) =>
@@ -215,6 +216,14 @@ export class QuantitativeColumn {
   }
 }
 
+function hasSubArrayStrict(master, sub) {
+  return master.join(",").indexOf(sub.join(",")) > -1;
+}
+
+function hasSubArrayNonStrict(master, sub) {
+  return sub.every(((i) => (v) => (i = master.indexOf(v, i) + 1))(0));
+}
+
 const EventsSummary = (props) => {
   console.log("dywootto", props);
   let { incomingData } = props;
@@ -224,24 +233,41 @@ const EventsSummary = (props) => {
   }
   console.log("events summary", incomingData);
 
-  return (
-    <ProvenanceIsolatedNodes
-      nodes={incomingData[0].sequence}
-      handleProvenanceNodeClick={console.log}></ProvenanceIsolatedNodes>
-  );
+  return <EventSearch onFilter={props.onFilter}></EventSearch>;
 };
+/*<ProvenanceIsolatedNodes
+      nodes={incomingData[0].sequence}
+      handleProvenanceNodeClick={console.log}></ProvenanceIsolatedNodes> */
+function filterEvents(filterValue, rowValue) {
+  console.log("in filter events", filterValue, rowValue);
+
+  if (!filterValue || !rowValue) {
+    return true;
+  }
+  return hasSubArrayStrict(
+    rowValue.map((val) => val.name),
+    filterValue.map((val) => val.label)
+  ); //rowValue.length >= 5;
+}
 export class ProvenanceColumn {
-  constructor(data, metaData) {
+  constructor(data, metaData, handleFilterChange) {
+    this.name = "provenance";
     this.width = 300;
     this.data = data;
     this.handleProvenanceNodeClick = metaData.handleProvenanceNodeClick;
+    this.handleFilterChange = handleFilterChange;
+    this.customFilterAndSearch = (filter, value, row) => {
+      console.log("provenance,", filter, row);
+      return filterEvents(filter.value, row.sequence);
+    };
   }
   generateColumnObject() {
     return {
       title: "Events Used",
-      name: "provenance",
+      name: this.name,
       width: this.width,
       customSort: (a, b) => a.sequence.length - b.sequence.length,
+      customFilterAndSearch: this.customFilterAndSearch,
       render: (renderData) =>
         renderProvenanceNodeCell(renderData, this.handleProvenanceNodeClick),
       groupedSummaryComponent: (incomingData) => (
@@ -249,7 +275,10 @@ export class ProvenanceColumn {
       ),
       filterComponent: (props) => (
         <EventsSummary
-          incomingData={{ incomingData: this.data }}></EventsSummary>
+          incomingData={{ incomingData: this.data }}
+          onFilter={(filter, value, row) => {
+            return this.handleFilterChange(this.name, filter);
+          }}></EventsSummary>
       ),
     };
   }

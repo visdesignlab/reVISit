@@ -176,7 +176,11 @@ function generateColumnDefinition(
       handleFilterChange
     );
   } else if (columnSchema.DATA_TYPE === "provenance") {
-    defaultColumnDefinition = new ProvenanceColumn(data, columnMetaData);
+    defaultColumnDefinition = new ProvenanceColumn(
+      data,
+      columnMetaData,
+      handleFilterChange
+    );
   } else if (columnSchema.DATA_TYPE === "tag") {
     defaultColumnDefinition = new NotesColumn(columnMetaData);
     /*
