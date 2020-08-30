@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useEffect } from "react";
 import styles from "./EventSearch.module.css";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { Divider } from "antd";
 import Popover from "@material-ui/core/Popover";
 import Button from "@material-ui/core/Button";
+import Category from "@material-ui/icons/Category";
+import IconButton from "@material-ui/core/IconButton";
 
 import { IsolatedNode } from "./ProvenanceIsolatedNodes";
 function uuidv4() {
@@ -69,20 +71,28 @@ function ActionList(props) {
               return (
                 <React.Fragment key={item.id}>
                   {shouldRenderClone ? (
-                    <div className="react-beatiful-dnd-copy">{item.label}</div>
+                    <div className="react-beatiful-dnd-copy">
+                      {" "}
+                      <IsolatedNode node={{ name: item.label }} />
+                    </div>
                   ) : (
                     <Draggable draggableId={item.id} index={index}>
-                      {(provided, snapshot) => (
-                        <React.Fragment>
-                          <div
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                            className={snapshot.isDragging ? "dragging" : ""}>
-                            <IsolatedNode node={{ name: item.label }} />
-                          </div>
-                        </React.Fragment>
-                      )}
+                      {(provided, snapshot) => {
+                        return (
+                          <React.Fragment>
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              {...provided.dragHandleProps}
+                              className={snapshot.isDragging ? "dragging" : ""}>
+                              <IsolatedNode
+                                key={`node-${item.id}`}
+                                node={{ name: item.label }}
+                              />
+                            </div>
+                          </React.Fragment>
+                        );
+                      }}
                     </Draggable>
                   )}
                 </React.Fragment>
@@ -112,13 +122,10 @@ function Shop(props) {
 
   return (
     <React.Fragment>
-      <Button
-        aria-describedby={id}
-        variant="contained"
-        color="primary"
-        onClick={handleClick}>
-        Open Popover
-      </Button>
+      <IconButton aria-label="Open Event List" onClick={handleClick}>
+        <Category />
+      </IconButton>
+
       <Popover
         id={id}
         open={open}
@@ -175,7 +182,8 @@ function ShoppingBag(props) {
 const reorder = (list, startIndex, endIndex) => {
   const [removed] = list.splice(startIndex, 1);
   list.splice(endIndex, 0, removed);
-  return list;
+
+  return [...list];
 };
 
 const copy = (source, destination, droppableSource, droppableDestination) => {
@@ -184,29 +192,36 @@ const copy = (source, destination, droppableSource, droppableDestination) => {
     ...item,
     id: `copy${uuidv4()}`,
   });
-  return destination;
+  return [...destination];
 };
 
-export default () => {
+const EventSearch = ({
+  onFilter = (val) => {
+    console.log(val);
+  },
+}) => {
   const [shoppingBagItems, setShoppingBagItems] = React.useState([]);
+  useEffect(() => {
+    if (onFilter) {
+      onFilter(shoppingBagItems);
+    }
+  }, [shoppingBagItems]);
+  console.log(shoppingBagItems);
   const onDragEnd = React.useCallback(
     (result) => {
       const { source, destination } = result;
 
+      // if dragged out of any box, delete it
       if (!destination) {
-        console.log("in null destination", result, source.index);
-        // remove item
-        const copy = [...shoppingBagItems];
-        copy.splice(source.index, source.index + 1);
-        console.log(
-          "in null destination",
-          result,
-          source.index,
-          copy,
-          shoppingBagItems
-        );
+        console.log("in delete node", source.index);
+        setShoppingBagItems((state) => {
+          const copy = [...state];
+          console.log("copy", copy);
+          copy.splice(source.index, 1);
+          console.log("copy", copy);
 
-        setShoppingBagItems(copy);
+          return copy;
+        });
         return;
       }
 
@@ -225,8 +240,9 @@ export default () => {
           break;
       }
     },
-    [setShoppingBagItems]
+    [shoppingBagItems]
   );
+
   return (
     <div className={styles.searchContainer}>
       <DragDropContext onDragEnd={onDragEnd}>
@@ -240,6 +256,7 @@ export default () => {
     </div>
   );
 };
+export default EventSearch;
 /*const ActionNode = ({ actionName }) => {
   return <div>{actionName[0]}</div>;
 };
