@@ -7,6 +7,7 @@ import ArrowBack from "@material-ui/icons/ArrowBack";
 import PlayCircleOutline from "@material-ui/icons/PlayCircleOutline";
 import PauseCircleOutline from "@material-ui/icons/PauseCircleOutline";
 import * as d3 from "d3";
+import { AutoSizer, List } from "react-virtualized";
 
 const conditionEnums = Object.freeze({
   adjMatrix: "AM",
@@ -107,6 +108,7 @@ const ProvenanceController = ({
       </div>
       <div
         style={{
+          width: "fit-content",
           display: "grid",
           gridTemplateRows: "50px 20px 30px",
           gridTemplateColumns: "min(max-content,1000)",
@@ -121,12 +123,19 @@ const ProvenanceController = ({
             handleProvenanceNodeClick={(node) =>
               setSelectedItemId(node.id)
             }></ProvenanceIsolatedNodes>
-          <TimeLine
-            hoveredItemId={hoveredItemId}
-            setHoveredItemId={(id) => setHoveredItemId(id)}
-            selectedItemId={selectedItemId}
-            nodes={nodes}
-            setSelectedItemId={(node) => setSelectedItemId(node.id)}></TimeLine>
+          <AutoSizer>
+            {({ height, width }) => (
+              <TimeLine
+                width={width}
+                hoveredItemId={hoveredItemId}
+                setHoveredItemId={(id) => setHoveredItemId(id)}
+                selectedItemId={selectedItemId}
+                nodes={nodes}
+                setSelectedItemId={(node) =>
+                  setSelectedItemId(node.id)
+                }></TimeLine>
+            )}
+          </AutoSizer>
         </div>
         <div
           style={{
@@ -172,12 +181,14 @@ export default ProvenanceController;
 
 const TimeLine = (props) => {
   const {
+    width,
     nodes,
     setSelectedItemId,
     setHoveredItemId,
     selectedItemId,
     hoveredItemId,
   } = props;
+  console.log("dywootto width", width);
   function determineItemOpacity(node, selectedItemId, hoveredItemId) {
     let opacity;
     if (selectedItemId && node.id !== selectedItemId) {
@@ -195,10 +206,12 @@ const TimeLine = (props) => {
     return d3
       .scaleLinear()
       .domain(d3.extent(nodes, (node) => node.time))
-      .range([0, 100]);
-  }, [nodes]);
+      .range([5, width - 5]);
+  }, [nodes, width]);
+  console.log("commonScale", commonScale.range());
+
   return (
-    <svg viewBox={"0 0 100 20"} perserveAspectRatio="none">
+    <svg width={width} height={35}>
       {nodes.map((node, index) => {
         const opacity = determineItemOpacity(
           node,

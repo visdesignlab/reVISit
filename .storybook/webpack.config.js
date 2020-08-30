@@ -16,6 +16,26 @@ module.exports = ({ config }) => {
       { loader: require.resolve("react-docgen-typescript-loader") },
     ],
   });
+
+  config.module.rules.find(
+    (rule) => rule.test.toString() === "/\\.css$/"
+  ).exclude = /\.module\.css$/;
+
+  config.module.rules.push({
+    test: /\.module\.css$/,
+    use: [
+      "style-loader",
+      "css-modules-typescript-loader",
+      {
+        loader: "css-loader",
+        options: {
+          modules: true,
+        },
+      },
+    ],
+  });
   config.resolve.extensions.push(".ts", ".tsx");
+  config.resolve.extensions.push(".css");
+
   return config;
 };

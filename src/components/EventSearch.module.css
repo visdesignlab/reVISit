@@ -1,0 +1,25 @@
+.searchContainer {
+  display: grid;
+}
+.searchBar {
+  padding: 10px;
+  background-color: aliceblue;
+  display: flex;
+  padding: grid;
+  overflow: auto;
+}
+.searchOptions {
+  background: lightgrey;
+  /*display: flex;
+  padding: grid;*/
+  overflow: auto;
+}
+
+.outerSearchBar {
+  grid-column: 1;
+  grid-row: 1;
+}
+.outerSearchOptions {
+  grid-column: 2;
+  grid-row: 1;
+}

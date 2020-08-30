@@ -50,7 +50,7 @@ const ProvenanceIsolatedNodes = ({
   );
 };
 
-const IsolatedNode = ({ node }) => {
+export const IsolatedNode = ({ node }) => {
   let eventMap = eventMapping[node.name]
     ? eventMapping[node.name]
     : eventMapping["custom"];

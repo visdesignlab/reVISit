@@ -160,6 +160,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     isTaskError,
     taskDataFromServer,
   ] = useFetchAPIData(async () => {
+    console.log('dywootto getTaskData',selectedTaskIds);
     const response = await getTaskDataFromServer(selectedTaskIds[0]);
     response.data = response.data.map((datum) => {
       // console.log(datum.sequence);

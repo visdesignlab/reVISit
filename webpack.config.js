@@ -37,6 +37,7 @@ module.exports = {
       {
         test: /\.scss$/,
         use: [
+          { loader: "postcss-loader" },
           {
             loader: "style-loader",
           }, // to inject the result into the DOM as a style block
