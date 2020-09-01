@@ -42,6 +42,7 @@ import {
   CategoricalColumn,
   ProvenanceColumn,
   NotesColumn,
+  LongTextColumn,
 } from "./ColumnDefinitions.tsx";
 import {
   CodeSandboxCircleFilled,
@@ -165,11 +166,15 @@ function generateColumnDefinition(
       columnMetaData,
       handleFilterChange
     );
-  } else if (
-    columnSchema.DATA_TYPE === "longtext" ||
-    columnSchema.DATA_TYPE === "text"
-  ) {
+  } else if (columnSchema.DATA_TYPE === "text") {
     defaultColumnDefinition = new CategoricalColumn(
+      data,
+      columnSchema.COLUMN_NAME,
+      columnMetaData,
+      handleFilterChange
+    );
+  } else if (columnSchema.DATA_TYPE === "longtext") {
+    defaultColumnDefinition = new LongTextColumn(
       data,
       columnSchema.COLUMN_NAME,
       columnMetaData,
@@ -204,6 +209,7 @@ const DevExtremeTable = ({
   tableSchema,
   handleTagCreation,
 }) => {
+  console.log("new provenance data", provenanceData);
   const [filters, setFilters] = React.useState([]);
   const handleFilter = (columnName, value) => {
     const currentFilterIndex = filters.findIndex(
@@ -291,6 +297,10 @@ const DevExtremeTable = ({
   };
 
   const [rows, setRows] = useState(provenanceData);
+  // when task ID changes, use new data
+  useEffect(() => {
+    setRows(provenanceData);
+  }, [provenanceData]);
   const [grouping, setGroupingInternal] = useState([]);
   const setGrouping = (newGrouping) => {
     // if an item is recently grouped on, remove any filters for it.

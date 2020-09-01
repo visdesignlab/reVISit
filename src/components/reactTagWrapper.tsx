@@ -2,7 +2,7 @@ import React from "react";
 import ReactTags from "react-tag-autocomplete";
 import "./reacttags.css";
 
-const TagWrapper = ({ tags, onTagChange, isMaster }) => {
+const TagWrapper = ({ tags, onTagChange, isMaster, id }) => {
   function handleAddTag(tag) {
     onTagChange("Add", tag);
   }
@@ -12,15 +12,17 @@ const TagWrapper = ({ tags, onTagChange, isMaster }) => {
     const tag = allTags.splice(i, 1);
     onTagChange("Delete", tag);
   }
-
+  console.log("dywootto", id);
   return (
-    <ReactTags
-      autofocus={false}
-      tags={tags}
-      allowNew={true}
-      handleDelete={handleDeleteTag}
-      handleAddition={handleAddTag}
-    />
+    <div id={id}>
+      <ReactTags
+        autofocus={false}
+        tags={tags}
+        allowNew={true}
+        handleDelete={handleDeleteTag}
+        handleAddition={handleAddTag}
+      />
+    </div>
   );
 };
 export default TagWrapper;

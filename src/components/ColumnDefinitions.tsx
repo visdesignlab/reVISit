@@ -5,6 +5,7 @@ import eventMapping from "./eventMapping";
 import TagWrapper from "./reactTagWrapper";
 import ProvenanceIsolatedNodes from "./ProvenanceIsolatedNodes";
 import EventSearch from "./EventSearch";
+import Tagger from "./Tagger";
 
 const columnOverrides = {};
 const filterQuantitativeValues = (filter, value) =>
@@ -55,8 +56,10 @@ export class NotesColumn {
         if (!Array.isArray(rowData.tags)) {
           rowData.tags = [];
         }
+        console.log("generatedRow", rowData, generateRowId(rowData));
         return (
           <TagWrapper
+            id={generateRowId(rowData)}
             tags={rowData.tags}
             onTagChange={(action, tag) => {
               if (action === "Add") {
@@ -79,6 +82,37 @@ export class NotesColumn {
             }}></TagWrapper>
         );
       },
+    };
+  }
+}
+function generateRowId(rowData) {
+  return `row${rowData["id"]}`;
+}
+export class LongTextColumn {
+  constructor(data, name, metaData) {
+    this.name = name;
+    this.data = data;
+    this.width = metaData.width ? metaData.width : 300;
+    this.order = metaData.order;
+    this.hideByDefault = metaData.hideByDefault;
+  }
+
+  generateColumnObject() {
+    return {
+      title: this.name,
+      name: this.name,
+      render: (rowData) => {
+        return (
+          <div style={{ "white-space": "normal" }}>
+            <Tagger
+              text={rowData[this.name]}
+              tagDivId={`${generateRowId(rowData)}`}></Tagger>
+          </div>
+        );
+      },
+      width: this.width,
+      hideByDefault: this.hideByDefault,
+      order: this.order,
     };
   }
 }
@@ -288,8 +322,10 @@ function renderNotesCell(rowData) {
   if (!Array.isArray(rowData.tags)) {
     rowData.tags = [];
   }
+  console.log("generated tag", rowData);
   return (
     <TagWrapper
+      id={generateRowId(rowData)}
       tags={rowData.tags}
       onTagChange={(action, tag) => {
         // check if rowData is selected;
