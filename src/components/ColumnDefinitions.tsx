@@ -106,7 +106,8 @@ export class LongTextColumn {
           <div style={{ "white-space": "normal" }}>
             <Tagger
               text={rowData[this.name]}
-              tagDivId={`${generateRowId(rowData)}`}></Tagger>
+              tagDivId={`${generateRowId(rowData)}`}
+              rowData={rowData}></Tagger>
           </div>
         );
       },

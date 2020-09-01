@@ -102,19 +102,19 @@ const ProvenanceController = ({
   }
 
   return (
-    <div>
-      <div style={{ height: 900 }}>
+    <div style={{ backgroundColor: "white" }}>
+      <div style={{ height: 825 }}>
         <iframe width={"100%"} height={"100%"} src={url}></iframe>
       </div>
       <div
         style={{
+          margin: "0 auto",
           width: "fit-content",
           display: "grid",
-          gridTemplateRows: "50px 20px 30px",
+          gridTemplateRows: "50px 50px",
           gridTemplateColumns: "min(max-content,1000)",
         }}>
-        <div
-          style={{ gridRow: 1, overflow: "scroll", background: "whitesmoke" }}>
+        <div style={{ gridRow: 1, overflow: "scroll" }}>
           <ProvenanceIsolatedNodes
             hoveredItemId={hoveredItemId}
             handleHover={(id) => setHoveredItemId(id)}
@@ -137,21 +137,12 @@ const ProvenanceController = ({
             )}
           </AutoSizer>
         </div>
-        <div
-          style={{
-            gridRow: 2,
-            width: "100%",
-            height: "100%",
-            background: "whitesmoke",
-            overflow: "scroll",
-          }}></div>
-        <div style={{ gridRow: 3, width: "100%", height: "100%" }}>
+        <div style={{ gridRow: 2, width: "100%", height: "100%" }}>
           <div
             style={{
               margin: "0 auto",
               display: "flex",
               justifyContent: "center",
-              background: "whitesmoke",
             }}>
             <IconButton aria-label="delete" onClick={handleBackward}>
               <ArrowBack />

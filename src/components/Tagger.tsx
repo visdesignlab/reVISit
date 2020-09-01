@@ -9,7 +9,7 @@ const initialState = {
   mouseY: null,
 };
 
-export default function Tagger({ text = undefined, tagDivId }) {
+export default function Tagger({ text = undefined, tagDivId, rowData }) {
   const [state, setState] = React.useState<{
     mouseX: null | number;
     mouseY: null | number;
@@ -83,6 +83,7 @@ export default function Tagger({ text = undefined, tagDivId }) {
           {taggedText.split("<tag>").map((t, i) => {
             if (t[0] == ">") {
               t = t.substring(1);
+              console.log(rowData.tags, i);
               return (
                 <Tooltip title={"Interesting Pattern"}>
                   <span
