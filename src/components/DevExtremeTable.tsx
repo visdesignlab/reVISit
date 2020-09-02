@@ -470,7 +470,13 @@ const DevExtremeTable = ({
           (group) => group.columnName === columnName
         );
         const group = grouping[groupIndex];
-        console.log("On provenance group", props, group.groupMetaData);
+        console.log(
+          "On provenance group",
+          props,
+          grouping,
+          columnName,
+          group.groupMetaData
+        );
 
         if (props.row.value === true) {
           // grab values from filters
