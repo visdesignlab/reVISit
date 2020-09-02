@@ -2,7 +2,7 @@
   "name": "provenance-analyzer",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://vdl.sci.utah.edu/ExperiVis/",
+  "homepage": "https://vdl.sci.utah.edu/reVISit/",
   "dependencies": {
     "@ant-design/icons": "^4.2.1",
     "@devexpress/dx-core": "^2.7.0",
