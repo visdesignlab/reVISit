@@ -285,15 +285,15 @@ function filterEvents(filterValue, rowValue) {
   ); //rowValue.length >= 5;
 }
 export class ProvenanceColumn {
-  constructor(data, metaData, handleFilterChange) {
-    this.name = "provenance";
+  constructor(data, name, metaData, handleFilterChange) {
+    this.name = name;
     this.width = 300;
     this.data = data;
     this.handleProvenanceNodeClick = metaData.handleProvenanceNodeClick;
     this.handleFilterChange = handleFilterChange;
-    this.customFilterAndSearch = (filter, value, row) => {
-      console.log("provenance,", filter, row);
-      return filterEvents(filter.value, row.sequence);
+    this.customFilterAndSearch = (filter, value) => {
+      console.log("provenance,", filter, value);
+      return filterEvents(filter.value, value);
     };
   }
   generateColumnObject() {
@@ -308,6 +308,7 @@ export class ProvenanceColumn {
       groupedSummaryComponent: (incomingData) => (
         <EventsSummary incomingData={incomingData}></EventsSummary>
       ),
+      type: "provenance",
       filterComponent: (props) => (
         <EventsSummary
           incomingData={{ incomingData: this.data }}

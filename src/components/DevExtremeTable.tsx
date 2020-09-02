@@ -183,6 +183,7 @@ function generateColumnDefinition(
   } else if (columnSchema.DATA_TYPE === "provenance") {
     defaultColumnDefinition = new ProvenanceColumn(
       data,
+      "sequence",
       columnMetaData,
       handleFilterChange
     );
@@ -305,10 +306,13 @@ const DevExtremeTable = ({
   const setGrouping = (newGrouping) => {
     // if an item is recently grouped on, remove any filters for it.
     let newlyAddedGroups = differenceFilter(newGrouping, grouping)?.[0];
+    console.log("dywootto", newlyAddedGroups);
     if (newlyAddedGroups) {
       let currentFilter = filters.find(
         (filterItem) => newlyAddedGroups.columnName === filterItem.columnName
       );
+      console.log("dywootto", currentFilter);
+
       if (!currentFilter) {
         currentFilter = { value: { filterMin: 0.5, filterMax: 1.5 } };
       }
@@ -323,7 +327,8 @@ const DevExtremeTable = ({
     setGroupingInternal(newGrouping);
     //setFilters(clonedFilters);
   };
-  const quantitativePredicate = (value, column, filterValue) => {
+  const groupingPredicate = (value, column, filterValue) => {
+    console.log("grouping pred", value, column, filterValue);
     // find filter value
     const isRowInTrueGroup = column.customFilterAndSearch(
       { value: filterValue },
@@ -338,7 +343,7 @@ const DevExtremeTable = ({
     () => {
       return columns.map((column) => {
         // if quantitative column, group with filter value
-        if (column.type && column.type === "quantitative") {
+        if (column.type === "quantitative") {
           const group = grouping.find(
             (group) => group.columnName === column.name
           );
@@ -349,7 +354,18 @@ const DevExtremeTable = ({
           return {
             columnName: column.name,
             criteria: (value) =>
-              quantitativePredicate(value, column, groupingValue),
+              groupingPredicate(value, column, groupingValue),
+          };
+        } else if (column.type === "provenance") {
+          const group = grouping.find(
+            (group) => group.columnName === column.name
+          );
+          let groupingValue = group ? group.groupMetaData : null;
+
+          return {
+            columnName: column.name,
+            criteria: (value) =>
+              groupingPredicate(value, column, groupingValue),
           };
         }
         return { columnName: column.name };
@@ -424,6 +440,7 @@ const DevExtremeTable = ({
     const columnName = props.row.groupedBy;
     const columnInfo = columns.find((column) => column.name == columnName);
     if (columnInfo) {
+      console.log(columnInfo);
       if (columnInfo.type === "quantitative") {
         const group = grouping.find((group) => group.columnName === columnName);
         if (props.row.value === true) {
@@ -437,6 +454,19 @@ const DevExtremeTable = ({
             group.groupMetaData.filterMin,
             2
           )}, ${toFixedTrunc(group.groupMetaData.filterMax, 2)}]`;
+        }
+      } else if (columnInfo.type === "provenance") {
+        const group = grouping.find((group) => group.columnName === columnName);
+
+        console.log("On provenance group", props, group.groupMetaData);
+
+        if (props.row.value === true) {
+          // grab values from filters
+          groupedRowHeader = `Grouped on provenance sequence:${group.groupMetaData
+            .map((node) => node.label)
+            .join(",")}`;
+        } else {
+          groupedRowHeader = `Grouped on not containing provenance sequence`;
         }
       } else {
         groupedRowHeader = `${columnName} is ${props.row.value}`;
