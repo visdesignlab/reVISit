@@ -87,8 +87,16 @@ export const CategoricalFilter = (props) => {
   );
 };
 
-export const Histogram = ({ data, xScale, buckets, yScale, height }) => {
+export const Histogram = ({
+  hovered,
+  data,
+  xScale,
+  buckets,
+  yScale,
+  height,
+}) => {
   console.log("hist props", data, xScale, buckets, yScale, height);
+  console.log("HOVERED", hovered);
   const binWidth = 10;
   const [min, max] = xScale.domain();
   const currentBinCounter = d3
@@ -132,7 +140,46 @@ export const Histogram = ({ data, xScale, buckets, yScale, height }) => {
     </g>
   );
 
-  return bars;
+  return (
+    <g>
+      {bars}
+      <g className={"sample group dywootto"}></g>
+      {hovered && (
+        <>
+          <text
+            style={{
+              fill: "rgb(0,0,0,0.25)",
+              fontSize: "1em",
+              textAnchor: "end",
+              stroke: "#fff",
+              "paint-order": "stroke",
+
+              "stroke-width": "1px",
+            }}
+            x={10}
+            y={23}>
+            {" "}
+            {Math.round(xScale.domain()[0])}{" "}
+          </text>
+          <text
+            style={{
+              fill: "rgb(0,0,0,0.25)",
+              fontSize: "1em",
+              textAnchor: "start",
+              stroke: "#fff",
+              "paint-order": "stroke",
+
+              "stroke-width": "1px",
+            }}
+            x={xScale.range()[1] - 10}
+            y={23}>
+            {" "}
+            {Math.round(xScale.domain()[1])}{" "}
+          </text>
+        </>
+      )}
+    </g>
+  );
 };
 
 const Brush = (props) => {
@@ -191,6 +238,7 @@ const BrushableHistogram = ({
   setMaximum,
 }) => {
   const width = xScale.range()[1];
+  const [hovered, setHovered] = React.useState(false);
 
   function setFilterBounds(inputs) {
     if (inputs?.length !== 2) {
@@ -203,15 +251,20 @@ const BrushableHistogram = ({
   }
 
   return (
-    <Brush width={width} height={height} onChange={setFilterBounds}>
-      <Histogram
-        data={data}
-        width={width}
-        height={height}
-        yScale={yScale}
-        xScale={xScale}
-        buckets={buckets}></Histogram>
-    </Brush>
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}>
+      <Brush width={width} height={height} onChange={setFilterBounds}>
+        <Histogram
+          hovered={hovered}
+          data={data}
+          width={width}
+          height={height}
+          yScale={yScale}
+          xScale={xScale}
+          buckets={buckets}></Histogram>
+      </Brush>
+    </div>
   );
 };
 
