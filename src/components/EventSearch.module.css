@@ -13,6 +13,8 @@
   /*display: flex;
   padding: grid;*/
   overflow: auto;
+  display: inline-flex;
+  flex-flow: wrap;
 }
 
 .outerSearchBar {

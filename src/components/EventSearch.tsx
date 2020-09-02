@@ -17,8 +17,6 @@ function uuidv4() {
 }
 
 const actions = [
-  "Hard Selected A Node",
-  "Hard Unselected A Node",
   "Finished Task",
   "Select Node",
   "Searched for Node",
@@ -33,8 +31,11 @@ const actions = [
   "rowLabel",
   "cleared all selected nodes",
   "clear",
+  "Hard Unselected a Node",
+  "Hard Selected a Node",
 ];
 const COLLECTION = actions.map((actionName) => {
+  console.log(actionName);
   return { id: uuidv4(), label: actionName };
 });
 
@@ -139,7 +140,7 @@ function Shop(props) {
           vertical: "top",
           horizontal: "center",
         }}>
-        <div style={{ overflow: "auto", width: "300px", height: "300px" }}>
+        <div style={{ overflow: "auto", width: "300px", height: "100px" }}>
           <ActionList
             droppableId="SHOP"
             className={styles.searchOptions}
