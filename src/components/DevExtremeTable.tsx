@@ -306,6 +306,7 @@ const DevExtremeTable = ({
   const setGrouping = (newGrouping) => {
     // if an item is recently grouped on, remove any filters for it.
     let newlyAddedGroups = differenceFilter(newGrouping, grouping)?.[0];
+
     console.log("dywootto", newlyAddedGroups);
     if (newlyAddedGroups) {
       let currentFilter = filters.find(
@@ -443,31 +444,45 @@ const DevExtremeTable = ({
     if (columnInfo) {
       console.log(columnInfo);
       if (columnInfo.type === "quantitative") {
-        const group = grouping.find((group) => group.columnName === columnName);
+        const groupIndex = grouping.findIndex(
+          (group) => group.columnName === columnName
+        );
+        const group = grouping[groupIndex];
+
         if (props.row.value === true) {
           // grab values from filters
-          groupedRowHeader = `Grouped on: ${columnName} [${toFixedTrunc(
+          groupedRowHeader = `${"---".repeat(
+            groupIndex
+          )} Grouped on: ${columnName} [${toFixedTrunc(
             group.groupMetaData.filterMin,
             2
           )},${toFixedTrunc(group.groupMetaData.filterMax, 2)}]`;
         } else {
-          groupedRowHeader = `Grouped on: ${columnName} is outside of range [${toFixedTrunc(
+          groupedRowHeader = `${"---".repeat(
+            groupIndex
+          )} Grouped on: ${columnName} is outside of range [${toFixedTrunc(
             group.groupMetaData.filterMin,
             2
           )}, ${toFixedTrunc(group.groupMetaData.filterMax, 2)}]`;
         }
       } else if (columnInfo.type === "provenance") {
-        const group = grouping.find((group) => group.columnName === columnName);
-
+        const groupIndex = grouping.findIndex(
+          (group) => group.columnName === columnName
+        );
+        const group = grouping[groupIndex];
         console.log("On provenance group", props, group.groupMetaData);
 
         if (props.row.value === true) {
           // grab values from filters
-          groupedRowHeader = `Grouped on provenance sequence:${group.groupMetaData
+          groupedRowHeader = `${"---".repeat(
+            groupIndex
+          )} Grouped on provenance sequence:${group.groupMetaData
             .map((node) => node.label)
             .join(",")}`;
         } else {
-          groupedRowHeader = `Grouped on not containing provenance sequence`;
+          groupedRowHeader = `${"---".repeat(
+            groupIndex
+          )} Grouped on not containing provenance sequence`;
         }
       } else {
         groupedRowHeader = `${columnName} is ${props.row.value}`;
@@ -530,10 +545,14 @@ const DevExtremeTable = ({
               provenanceData={provenanceData}
               {...props}></GroupCellContent>
           )}
+          contentComponent={() => {
+            return <div></div>;
+          }}
           showColumnsWhenGrouped
           stubCellComponent={(stubProps) => {
             let shouldHideStub = false;
-            // if this stub prop matches last grouping
+            // if this stub prop matches last grouping, hide it
+            // this is used to fix a bug where the inner most grouped row is off by one td
 
             if (grouping.length > 0) {
               const groupedByRow = stubProps.tableRow.row.groupedBy;
@@ -541,13 +560,8 @@ const DevExtremeTable = ({
                 grouping[grouping.length - 1].columnName === groupedByRow;
             }
             return (
-              <td
-                className="FAKETD"
-                style={shouldHideStub ? { display: "none" } : null}></td>
+              <td style={shouldHideStub ? { display: "none" } : null}></td>
             );
-          }}
-          inlineSummaryComponent={() => {
-            return <div>temp div testing</div>;
           }}
         />
         <Toolbar />
