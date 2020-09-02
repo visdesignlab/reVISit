@@ -6,6 +6,7 @@ import Popover from "@material-ui/core/Popover";
 import Button from "@material-ui/core/Button";
 import Category from "@material-ui/icons/Category";
 import IconButton from "@material-ui/core/IconButton";
+import Delete from "@material-ui/icons/Delete";
 
 import { IsolatedNode } from "./ProvenanceIsolatedNodes";
 function uuidv4() {
@@ -154,8 +155,7 @@ function Shop(props) {
 
 function ShoppingBag(props) {
   return (
-    <div
-      style={{ width: "100%", height: "100%", backgroundColor: "whitesmoke" }}>
+    <div style={{ width: "100%", height: "100%" }}>
       <Droppable droppableId="BAG" direction={"horizontal"}>
         {(provided, snapshot) => (
           <div ref={provided.innerRef} className={styles.searchBar}>
@@ -253,8 +253,25 @@ const EventSearch = ({
         <div className={styles.outerSearchOptions}>
           <Shop items={COLLECTION} />
         </div>
+        <div className={styles.outerSearchDiscard}>
+          <Discard />
+        </div>
       </DragDropContext>
     </div>
+  );
+};
+const Discard = (props) => {
+  return (
+    <Droppable droppableId={"DISCARD"} isDropDisabled={true}>
+      {(provided, snapshot) => (
+        <div ref={provided.innerRef} className={props.className}>
+          <IconButton>
+            {" "}
+            <Delete></Delete>
+          </IconButton>
+        </div>
+      )}
+    </Droppable>
   );
 };
 export default EventSearch;

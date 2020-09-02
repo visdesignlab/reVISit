@@ -1,15 +1,21 @@
 .searchContainer {
   display: grid;
+  grid-template-columns: 200px 30px 30px;
 }
 .searchBar {
-  padding: 10px;
+  padding: 5px;
+  margin-top: auto;
+  margin-bottom: auto;
+  height: 38px;
   background-color: aliceblue;
   display: flex;
   padding: grid;
   overflow: auto;
+  align-content: space-evenly;
 }
 .searchOptions {
   background: lightgrey;
+
   /*display: flex;
   padding: grid;*/
   overflow: auto;
@@ -23,5 +29,9 @@
 }
 .outerSearchOptions {
   grid-column: 2;
+  grid-row: 1;
+}
+.outerSearchDiscard {
+  grid-column: 3;
   grid-row: 1;
 }
