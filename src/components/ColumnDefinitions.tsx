@@ -212,23 +212,25 @@ export class QuantitativeColumn {
       customFilterAndSearch: this.customFilterAndSearch,
       groupedSummaryComponent: ({ incomingData }) => {
         return (
-          <GroupDataResolver incomingData={incomingData}>
-            {({ partitionedData }) => {
-              if (partitionedData.length === 0) {
-                return <div></div>;
-              }
-              return (
-                <QuantitativeFilter
-                  xScale={this.xScale}
-                  yScale={this.yScale}
-                  buckets={this.buckets}
-                  height={this.height}
-                  data={partitionedData.map(
-                    (datum) => datum[this.name]
-                  )}></QuantitativeFilter>
-              );
-            }}
-          </GroupDataResolver>
+          <div style={{ pointerEvents: "all", opacity: 0.7 }}>
+            <GroupDataResolver incomingData={incomingData}>
+              {({ partitionedData }) => {
+                if (partitionedData.length === 0) {
+                  return <div></div>;
+                }
+                return (
+                  <QuantitativeFilter
+                    xScale={this.xScale}
+                    yScale={this.yScale}
+                    buckets={this.buckets}
+                    height={this.height}
+                    data={partitionedData.map(
+                      (datum) => datum[this.name]
+                    )}></QuantitativeFilter>
+                );
+              }}
+            </GroupDataResolver>
+          </div>
         );
       },
       filterComponent: (props) => {
@@ -284,6 +286,19 @@ function filterEvents(filterValue, rowValue) {
     filterValue.map((val) => val.label)
   ); //rowValue.length >= 5;
 }
+const GroupedContainer = (props) => {
+  if (
+    typeof props.children === "undefined" ||
+    typeof props.children !== "function"
+  ) {
+    return <div></div>;
+  }
+  return (
+    <div style={{ pointerEvents: "none", opacity: 0.7 }}>
+      {props.children()}
+    </div>
+  );
+};
 export class ProvenanceColumn {
   constructor(data, name, metaData, handleFilterChange) {
     this.name = name;
@@ -305,9 +320,11 @@ export class ProvenanceColumn {
       customFilterAndSearch: this.customFilterAndSearch,
       render: (renderData) =>
         renderProvenanceNodeCell(renderData, this.handleProvenanceNodeClick),
-      groupedSummaryComponent: (incomingData) => (
-        <EventsSummary incomingData={incomingData}></EventsSummary>
-      ),
+      /*groupedSummaryComponent: (incomingData) => (
+        <GroupedContainer>
+          <EventsSummary incomingData={incomingData}></EventsSummary>
+        </GroupedContainer>
+      ),*/
       type: "provenance",
       filterComponent: (props) => (
         <EventsSummary

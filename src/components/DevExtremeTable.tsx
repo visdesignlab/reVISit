@@ -436,6 +436,7 @@ const DevExtremeTable = ({
     return rows;
   };
   const TempRowComponent = (props) => {
+    const [hidden, setHidden] = useState(false);
     let groupedRowHeader = `Grouped Row`;
     const columnName = props.row.groupedBy;
     const columnInfo = columns.find((column) => column.name == columnName);
@@ -475,7 +476,7 @@ const DevExtremeTable = ({
     return (
       <React.Fragment>
         <tr className={styles.groupHeaderRow}>
-          <td colSpan={42}>
+          <td colSpan={42} onClick={() => setHidden(!hidden)}>
             <Typography
               className={styles.groupHeaderContent}
               variant={"overline"}>
@@ -483,7 +484,9 @@ const DevExtremeTable = ({
             </Typography>
           </td>
         </tr>
-        <TableGroupRow.Row {...props}>{props.children}</TableGroupRow.Row>
+        {!hidden && (
+          <TableGroupRow.Row {...props}>{props.children}</TableGroupRow.Row>
+        )}
       </React.Fragment>
     );
   };
