@@ -20,10 +20,10 @@ export const ActionLegend = (props) => {
     ProvenanceDataContext
   );
   function handleSaveActionConfiguration(newConfiguration) {
-    const configurationIndex = actionConfigurations.findIndex(
+    const configurationIndex = actionConfigurationsList.findIndex(
       (config) => config.id === newConfiguration.id
     );
-    let configCopy = [...actionConfigurations];
+    let configCopy = [...actionConfigurationsList];
     configCopy[configurationIndex] = newConfiguration;
     setActionConfigurationsList(configCopy);
     setActionItemBeingEdited(null);
@@ -33,7 +33,7 @@ export const ActionLegend = (props) => {
       <ActionLegendPresentational
         actionsConfigurations={actionConfigurationsList}
         handleActionItemEdit={setActionItemBeingEdited}
-        collapsed></ActionLegendPresentational>
+        collapsed={props.collapsed}></ActionLegendPresentational>
       {actionItemBeingEdited && (
         <Modal
           open={!!actionItemBeingEdited}
@@ -78,8 +78,7 @@ const EditActionForm = ({
     console.error(`action configuration is missing an id.`);
     return <div></div>;
   }
-  function handleConfigurationPropertyChange(key, valueEvent) {
-    const newValue = valueEvent.target.value;
+  function handleConfigurationPropertyChange(key, newValue) {
     console.log(key, newValue);
     let clonedConfiguration = JSON.parse(JSON.stringify(volatileConfiguration));
     let newConfiguration = {};
@@ -102,7 +101,7 @@ const EditActionForm = ({
         <TextField
           value={volatileConfiguration["id"]}
           onChange={(newValue) =>
-            handleConfigurationPropertyChange("id", newValue)
+            handleConfigurationPropertyChange("id", newValue.target.value)
           }
           disabled
           id="standard-basic"
@@ -113,7 +112,7 @@ const EditActionForm = ({
         <TextField
           value={volatileConfiguration["name"]}
           onChange={(newValue) =>
-            handleConfigurationPropertyChange("name", newValue)
+            handleConfigurationPropertyChange("name", newValue.target.value)
           }
           id="standard-basic"
           label={"name"}
@@ -127,10 +126,10 @@ const EditActionForm = ({
           Action Color
         </label>
         <ColorPicker
-          defaultValue={volatileConfiguration["color"]}
-          onChange={(newValue) =>
-            handleConfigurationPropertyChange("color", newValue)
-          }></ColorPicker>
+          value={volatileConfiguration["color"]}
+          onChange={(newValue) => {
+            handleConfigurationPropertyChange("color", newValue);
+          }}></ColorPicker>
       </div>
       <div style={{ order: 2, margin: "auto" }}>
         <button
@@ -160,7 +159,7 @@ const ActionLegendPresentational = ({
         return (
           <ListItem>
             <ActionItemNode
-              collapsed
+              collapsed={collapsed}
               actionConfiguration={actionConfiguration}
               handleActionItemEdit={handleActionItemEdit}></ActionItemNode>
           </ListItem>

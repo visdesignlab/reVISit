@@ -10,7 +10,19 @@ import Start from "@material-ui/icons/Star";
 import PlayArrowIcon from "@material-ui/icons/PlayArrow";
 import StopIcon from "@material-ui/icons/Stop";
 import CheckBoxOutlineBlankIcon from "@material-ui/icons/CheckBoxOutlineBlank";
-
+export const iconMapping = {
+  Add,
+  PanTool,
+  Sort,
+  FiberManualRecordIcon,
+  RadioButtonUncheckedIcon,
+  Search,
+  Clear,
+  Start,
+  PlayArrowIcon,
+  StopIcon,
+  CheckBoxOutlineBlankIcon,
+};
 const colors = [
   "#c6e0d6",
   "#8fcab4",
@@ -145,11 +157,6 @@ export const eventMapping = {
 };
 
 export const eventMappingList = [
-  {
-    name: "Custom",
-    color: "#d1d1d1",
-    icon: "CheckBoxOutlineBlankIcon",
-  },
   {
     icon: "PlayArrowIcon",
     color: "#d1d1d1",

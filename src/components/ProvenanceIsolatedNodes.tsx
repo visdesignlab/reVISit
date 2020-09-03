@@ -4,7 +4,8 @@ import Tooltip from "@material-ui/core/Tooltip";
 import Fade from "@material-ui/core/Fade";
 import styles from "./ProvenanceIsolatedNodes.module.css";
 import ProvenanceDataContext from "./ProvenanceDataContext";
-
+import Icon from "@material-ui/core/Icon";
+import { iconMapping } from "./eventMapping";
 const ProvenanceIsolatedNodes = ({
   nodes,
   selectedItemId,
@@ -58,8 +59,11 @@ export const IsolatedNode = ({ node }) => {
     ? eventMapping[node.name]
     : eventMapping["custom"];
   //add check for custom icons for newly created events;
-  const icon = eventMap.icon;
-  console.log("in rerender", node, eventMapping[node.name], eventMapping);
+  let ProvenanceIcon = iconMapping[eventMap.icon];
+  if (!ProvenanceIcon) {
+    ProvenanceIcon = () => <g></g>;
+  }
+  console.log("in rerender", iconMapping, eventMap.icon, ProvenanceIcon);
   // node.event !== "startedProvenance" &&
   //   node.event !== "Finished Task" ?
   return (
@@ -87,7 +91,9 @@ export const IsolatedNode = ({ node }) => {
           rx={5}
           fill={eventMap.color}
           opacity={node.scale || 1}></rect>
-        <g transform={`translate(7,5)`}>{icon}</g>
+        <g transform={`translate(7,5)`}>
+          {<ProvenanceIcon width={16} height={16} />}
+        </g>
       </svg>
     </Tooltip>
   );

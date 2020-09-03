@@ -67,9 +67,11 @@ function compileActionListToHashTable(list) {
 export const ProvenanceDataContextProvider = ({ children }) => {
   // console.trace('calling provenanceDataContextProvider')
   const [selectedTaskIds, setSelectedTaskIds] = React.useState(["S-task01"]);
-  const [actionConfigurations, setActionConfigurations] = useState();
   const [actionConfigurationsList, setActionConfigurationsList] = useState(
     eventMappingList
+  );
+  const [actionConfigurations, setActionConfigurations] = useState(
+    compileActionListToHashTable(eventMappingList)
   );
 
   useEffect(() => {
