@@ -1,8 +1,13 @@
 import React from "react";
-import { createStyles, makeStyles, useTheme, Theme } from '@material-ui/core/styles';
-import clsx from 'clsx';
+import {
+  createStyles,
+  makeStyles,
+  useTheme,
+  Theme,
+} from "@material-ui/core/styles";
+import clsx from "clsx";
 
-import Box from '@material-ui/core/Box';
+import Box from "@material-ui/core/Box";
 
 import styles from "./SidePane.module.css";
 import Drawer from "@material-ui/core/Drawer";
@@ -25,22 +30,21 @@ import InputLabel from "@material-ui/core/InputLabel";
 import MenuItem from "@material-ui/core/MenuItem";
 import FormControl from "@material-ui/core/FormControl";
 import Select from "@material-ui/core/Select";
-import ComputerIcon from '@material-ui/icons/Computer';
-import IconButton from '@material-ui/core/IconButton';
-import MenuIcon from '@material-ui/icons/Menu';
-import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
-import ChevronRightIcon from '@material-ui/icons/ChevronRight';
-import HomeIcon from '@material-ui/icons/Home';
-
-import SortMenu from './components/sortMenu'
-
+import ComputerIcon from "@material-ui/icons/Computer";
+import IconButton from "@material-ui/core/IconButton";
+import MenuIcon from "@material-ui/icons/Menu";
+import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
+import ChevronRightIcon from "@material-ui/icons/ChevronRight";
+import HomeIcon from "@material-ui/icons/Home";
+import { ActionLegend } from "./components/ActionLegend";
+import SortMenu from "./components/sortMenu";
 
 const drawerWidth = 240;
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
-      display: 'flex',
+      display: "flex",
     },
     typography: {
       // In Chinese and Japanese the characters are usually larger,
@@ -48,9 +52,9 @@ const useStyles = makeStyles((theme: Theme) =>
       fontSize: 18,
     },
     appBar: {
-      "background-color": '#ababab',
+      "background-color": "#ababab",
       zIndex: theme.zIndex.drawer + 1,
-      transition: theme.transitions.create(['width', 'margin'], {
+      transition: theme.transitions.create(["width", "margin"], {
         easing: theme.transitions.easing.sharp,
         duration: theme.transitions.duration.leavingScreen,
       }),
@@ -58,7 +62,7 @@ const useStyles = makeStyles((theme: Theme) =>
     appBarShift: {
       marginLeft: drawerWidth,
       width: `calc(100% - ${drawerWidth}px)`,
-      transition: theme.transitions.create(['width', 'margin'], {
+      transition: theme.transitions.create(["width", "margin"], {
         easing: theme.transitions.easing.sharp,
         duration: theme.transitions.duration.enteringScreen,
       }),
@@ -67,36 +71,36 @@ const useStyles = makeStyles((theme: Theme) =>
       marginRight: 36,
     },
     hide: {
-      display: 'none',
+      display: "none",
     },
 
     drawer: {
       width: drawerWidth,
       flexShrink: 0,
-      whiteSpace: 'nowrap',
+      whiteSpace: "nowrap",
     },
     drawerOpen: {
       width: drawerWidth,
-      transition: theme.transitions.create('width', {
+      transition: theme.transitions.create("width", {
         easing: theme.transitions.easing.sharp,
         duration: theme.transitions.duration.enteringScreen,
       }),
     },
     drawerClose: {
-      transition: theme.transitions.create('width', {
+      transition: theme.transitions.create("width", {
         easing: theme.transitions.easing.sharp,
         duration: theme.transitions.duration.leavingScreen,
       }),
-      overflowX: 'hidden',
+      overflowX: "hidden",
       width: theme.spacing(7) + 1,
-      [theme.breakpoints.up('sm')]: {
+      [theme.breakpoints.up("sm")]: {
         width: theme.spacing(9) + 1,
       },
     },
     toolbar: {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'flex-end',
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "flex-end",
       padding: theme.spacing(0, 1),
       // necessary for content to be below app bar
       ...theme.mixins.toolbar,
@@ -105,15 +109,14 @@ const useStyles = makeStyles((theme: Theme) =>
       flexGrow: 1,
       padding: theme.spacing(3),
     },
-  }),
+  })
 );
 
-
-const SidePane = ({ }) => {
+const SidePane = ({}) => {
   const {
     taskStructure,
     handleChangeSelectedTaskId,
-    selectedTaskIds
+    selectedTaskIds,
   } = React.useContext(ProvenanceDataContext);
 
   const classes = useStyles();
@@ -128,15 +131,14 @@ const SidePane = ({ }) => {
     setOpen(false);
   };
 
-
   const HomeLink = React.forwardRef<
     HTMLAnchorElement,
     Omit<LinkProps, "innerRef" | "to">
   >((props, ref) => <Link innerRef={ref as any} to="/Home" {...props} />);
   const StudyLink = React.forwardRef<
-  HTMLAnchorElement,
-  Omit<LinkProps, "innerRef" | "to">
->((props, ref) => <Link innerRef={ref as any} to="/Study" {...props} />);
+    HTMLAnchorElement,
+    Omit<LinkProps, "innerRef" | "to">
+  >((props, ref) => <Link innerRef={ref as any} to="/Study" {...props} />);
   const Upload = React.forwardRef<
     HTMLAnchorElement,
     Omit<LinkProps, "innerRef" | "to">
@@ -154,128 +156,136 @@ const SidePane = ({ }) => {
     Omit<LinkProps, "innerRef" | "to">
   >((props, ref) => <Link innerRef={ref as any} to="/Export" {...props} />);
 
-
-  let taskInfo = taskStructure.find(t => t.key == selectedTaskIds[0]);
-
+  let taskInfo = taskStructure.find((t) => t.key == selectedTaskIds[0]);
 
   let location = useLocation();
   function appBarWidget() {
-    if (location.pathname.includes('Home')) {
-      return <SortMenu></SortMenu>
+    if (location.pathname.includes("Home")) {
+      return <SortMenu></SortMenu>;
     } else {
-      return <>
-        <FormControl className={styles.SelectedTaskInput}>
-          <Select
-            labelId="demo-simple-select-label"
-            id="demo-simple-select"
-            value={selectedTaskIds[0]}
-            onChange={handleChangeSelectedTaskId}
-            label="name">
-            {taskStructure.map((value) => {
-              return (
-                <MenuItem key={value.key} value={value.key}>
-                  {value.name}
-                </MenuItem>
-              );
-            })}
-          </Select>
-        </FormControl>
-        <Box ml={3} >
-          <Typography variant="button" noWrap dangerouslySetInnerHTML={{ __html: taskInfo.prompt }} >
-          </Typography>
-        </Box>
-      </>
+      return (
+        <>
+          <FormControl className={styles.SelectedTaskInput}>
+            <Select
+              labelId="demo-simple-select-label"
+              id="demo-simple-select"
+              value={selectedTaskIds[0]}
+              onChange={handleChangeSelectedTaskId}
+              label="name">
+              {taskStructure.map((value) => {
+                return (
+                  <MenuItem key={value.key} value={value.key}>
+                    {value.name}
+                  </MenuItem>
+                );
+              })}
+            </Select>
+          </FormControl>
+          <Box ml={3}>
+            <Typography
+              variant="button"
+              noWrap
+              dangerouslySetInnerHTML={{
+                __html: taskInfo.prompt,
+              }}></Typography>
+          </Box>
+        </>
+      );
     }
   }
 
   function makeIcon(item) {
     let isCurrent = location.pathname.includes(item.id);
-    const Icon = item.icon
-    return isCurrent ? <Icon style={{ color: 'rgb(93, 131, 210)' }}> </Icon> : <Icon></Icon>
+    const Icon = item.icon;
+    return isCurrent ? (
+      <Icon style={{ color: "rgb(93, 131, 210)" }}> </Icon>
+    ) : (
+      <Icon></Icon>
+    );
   }
 
-  return (<div className={classes.root}>
-    <CssBaseline />
-    <AppBar
-      position="fixed"
-      className={clsx(classes.appBar, {
-        [classes.appBarShift]: open,
-      })}
-    >
-      <Toolbar>
-        <IconButton
-          color="inherit"
-          aria-label="open drawer"
-          onClick={handleDrawerOpen}
-          edge="start"
-          className={clsx(classes.menuButton, {
-            [classes.hide]: open,
-          })}
-        >
-          <MenuIcon />
-        </IconButton>
+  return (
+    <div className={classes.root}>
+      <CssBaseline />
+      <AppBar
+        position="fixed"
+        className={clsx(classes.appBar, {
+          [classes.appBarShift]: open,
+        })}>
+        <Toolbar>
+          <IconButton
+            color="inherit"
+            aria-label="open drawer"
+            onClick={handleDrawerOpen}
+            edge="start"
+            className={clsx(classes.menuButton, {
+              [classes.hide]: open,
+            })}>
+            <MenuIcon />
+          </IconButton>
 
-        {appBarWidget()}
-        {/* {taskInfo.prompt} */}
-
-
-
-      </Toolbar>
-    </AppBar>
-    <Drawer
-      variant="permanent"
-      className={clsx(classes.drawer, {
-        [classes.drawerOpen]: open,
-        [classes.drawerClose]: !open,
-      })}
-      classes={{
-        paper: clsx({
+          {appBarWidget()}
+          {/* {taskInfo.prompt} */}
+        </Toolbar>
+      </AppBar>
+      <Drawer
+        variant="permanent"
+        className={clsx(classes.drawer, {
           [classes.drawerOpen]: open,
           [classes.drawerClose]: !open,
-        }),
-      }}
-    >
-      <div className={classes.toolbar}>
-        <IconButton onClick={handleDrawerClose}>
-          {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
-        </IconButton>
-
-      </div>
-      <Divider />
-      <List>
-        {/* <ListItem component={HomeLink}>
-          <img className={styles.logo} src={"./Experi.png"}></img>
-        </ListItem> */}
-        {[
-          { text: "Home", id: "Home", link: HomeLink, icon: HomeIcon },
-          { text: "Study", id: "Study", link: StudyLink, icon: ComputerIcon },
-          { text: "Upload", id: "Upload", link: Upload, icon: CloudUpload },
-          { text: "Provenance Prep ", id: "Overview", link: Overview, icon: BarChart },
-          {
-            text: "Provenance Analysis",
-            link: Table,
-            id: "Table",
-            icon: TableChart,
-          },
-          { text: "Export", link: Export, icon: GetApp },
-        ].map((item, index) => {
-          return (
-            //added key={index} to get rid of unique key error
-            <React.Fragment key={index}>
-              <ListItem button component={item.link}>
-                <ListItemIcon>{makeIcon(item)}</ListItemIcon>
-                <ListItemText primary={item.text} />
-              </ListItem>
-            </React.Fragment>
-          );
         })}
-      </List>
+        classes={{
+          paper: clsx({
+            [classes.drawerOpen]: open,
+            [classes.drawerClose]: !open,
+          }),
+        }}>
+        <div className={classes.toolbar}>
+          <IconButton onClick={handleDrawerClose}>
+            {theme.direction === "rtl" ? (
+              <ChevronRightIcon />
+            ) : (
+              <ChevronLeftIcon />
+            )}
+          </IconButton>
+        </div>
+        <Divider />
+        <List>
+          {[
+            { text: "Home", id: "Home", link: HomeLink, icon: HomeIcon },
+            { text: "Study", id: "Study", link: StudyLink, icon: ComputerIcon },
+            { text: "Upload", id: "Upload", link: Upload, icon: CloudUpload },
+            {
+              text: "Provenance Prep ",
+              id: "Overview",
+              link: Overview,
+              icon: BarChart,
+            },
+            {
+              text: "Provenance Analysis",
+              link: Table,
+              id: "Table",
+              icon: TableChart,
+            },
+            { text: "Export", link: Export, icon: GetApp },
+          ].map((item, index) => {
+            return (
+              //added key={index} to get rid of unique key error
+              <React.Fragment key={index}>
+                <ListItem button component={item.link}>
+                  <ListItemIcon>{makeIcon(item)}</ListItemIcon>
+                  <ListItemText primary={item.text} />
+                </ListItem>
+              </React.Fragment>
+            );
+          })}
+        </List>
 
-      <Divider />
-    </Drawer>
-
-  </div>)
-
+        <Divider />
+        <ActionLegend collapsed={!open}></ActionLegend>
+      </Drawer>
+    </div>
+  );
 };
 
 export default SidePane;

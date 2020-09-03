@@ -27,7 +27,7 @@ const selectColor = colors[3];
 const searchColor = colors[4];
 const clearColor = colors[5];
 
-const eventMapping = {
+export const eventMapping = {
   custom: {
     name: "CustomIcon",
     color: "#d1d1d1",
@@ -144,4 +144,115 @@ const eventMapping = {
   // }
 };
 
-export default eventMapping;
+export const eventMappingList = [
+  {
+    name: "Custom",
+    color: "#d1d1d1",
+    icon: "CheckBoxOutlineBlankIcon",
+  },
+  {
+    icon: "PlayArrowIcon",
+    color: "#d1d1d1",
+    id: "startedProvenance",
+    name: "Began Task",
+  },
+
+  {
+    icon: "StopIcon",
+    color: "#d1d1d1",
+    id: "Finished Task",
+    name: "Finished Task",
+  },
+
+  {
+    icon: "Add",
+    color: answerSelectColor,
+    id: "answerBox",
+    name: "Answer Select",
+  },
+  {
+    icon: "Add",
+    color: answerSelectColor,
+    id: "Hard Selected a Node",
+    name: "Answer Select",
+  },
+  {
+    icon: "PanTool",
+    color: dragColor,
+    name: "Dragged Node",
+    id: "Dragged Node",
+  },
+  {
+    icon: "Sort",
+    color: sortColor,
+    id: "sort",
+    name: "Sort",
+  },
+  {
+    icon: "FiberManualRecordIcon",
+    color: selectColor,
+    id: "attrRow",
+    name: "Selected a Node",
+  },
+  {
+    icon: "RadioButtonUncheckedIcon",
+    color: answerSelectColor,
+    id: "Hard Unselected a Node",
+    name: "Unselected Answer",
+  },
+  {
+    icon: "FiberManualRecordIcon",
+    color: selectColor,
+    id: "Select Node",
+    name: "Selected Node",
+  },
+  {
+    icon: "FiberManualRecordIcon",
+    color: selectColor,
+    id: "rowLabel",
+    name: "Selected Node",
+  },
+  {
+    icon: "FiberManualRecordIcon",
+    color: selectColor,
+    id: "colLabel",
+    name: "Neighbor Highlight",
+  },
+  {
+    icon: "Search",
+    color: searchColor,
+    id: "search",
+    name: "Search",
+  },
+  {
+    icon: "Search",
+    color: searchColor,
+    id: "Searched for Node",
+    name: "Search",
+  },
+  {
+    icon: "FiberManualRecordIcon",
+    color: selectColor,
+    id: "cell",
+    name: "Cell Select",
+  },
+
+  {
+    icon: "RadioButtonUncheckedIcon",
+    color: selectColor,
+    id: "Unselect Node",
+    name: "Unselected Node",
+  },
+  {
+    icon: "Clear",
+    color: clearColor,
+    id: "clear",
+    name: "Clear Selections",
+  },
+  {
+    icon: "Clear",
+    color: clearColor,
+    id: "cleared all selected nodes",
+    name: "Clear Selections",
+  },
+];

@@ -1,9 +1,10 @@
 //@ts-nocheck
-import React from "react";
-import eventMapping from "./eventMapping.js";
+import React, { useContext } from "react";
 import Tooltip from "@material-ui/core/Tooltip";
 import Fade from "@material-ui/core/Fade";
 import styles from "./ProvenanceIsolatedNodes.module.css";
+import ProvenanceDataContext from "./ProvenanceDataContext";
+
 const ProvenanceIsolatedNodes = ({
   nodes,
   selectedItemId,
@@ -51,6 +52,8 @@ const ProvenanceIsolatedNodes = ({
 };
 
 export const IsolatedNode = ({ node }) => {
+  const { actionConfigurations } = useContext(ProvenanceDataContext);
+  const eventMapping = actionConfigurations;
   let eventMap = eventMapping[node.name]
     ? eventMapping[node.name]
     : eventMapping["custom"];

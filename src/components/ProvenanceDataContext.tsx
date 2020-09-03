@@ -1,19 +1,14 @@
+//@ts-nocheck
 import React, { useState, useEffect, useMemo } from "react";
-import PropTypes from "prop-types";
-import initProvData from "../common/data/provenance_summary.json";
-import prefixSpanSampleData from "../common/data/prefix_span_sample_data.json";
 import * as d3 from "d3";
 import _ from "lodash";
 import {
-  performPrefixSpan,
   getDataFromServer,
   getTaskDataFromServer,
-  mysql_api,
 } from "../fetchers/fetchMocks.js";
 import { useFetchAPIData } from "../hooks/hooks";
-import { ConsoleSqlOutlined } from "@ant-design/icons";
+import { eventMappingList } from "./eventMapping";
 
-import eventData from "../common/data/provenance_events.json";
 function addIdsToNodes(nodes) {
   return nodes.map((node, index) => {
     let dataObject;
@@ -60,10 +55,28 @@ const commonProps = {
 };
 
 const ProvenanceDataContext = React.createContext({});
-
+function compileActionListToHashTable(list) {
+  let newActionObject = {};
+  list.forEach((item) => {
+    let newObject = {};
+    newObject[item.id] = item;
+    Object.assign(newActionObject, newObject);
+  });
+  return newActionObject;
+}
 export const ProvenanceDataContextProvider = ({ children }) => {
   // console.trace('calling provenanceDataContextProvider')
   const [selectedTaskIds, setSelectedTaskIds] = React.useState(["S-task01"]);
+  const [actionConfigurations, setActionConfigurations] = useState();
+  const [actionConfigurationsList, setActionConfigurationsList] = useState(
+    eventMappingList
+  );
+
+  useEffect(() => {
+    setActionConfigurations(
+      compileActionListToHashTable(actionConfigurationsList)
+    );
+  }, [actionConfigurationsList]);
 
   const taskStructure = [
     { name: "Task 1", key: "S-task01", prompt: "", actions: {}, stats: {} },
@@ -160,7 +173,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     isTaskError,
     taskDataFromServer,
   ] = useFetchAPIData(async () => {
-    console.log('dywootto getTaskData',selectedTaskIds);
+    console.log("dywootto getTaskData", selectedTaskIds);
     const response = await getTaskDataFromServer(selectedTaskIds[0]);
     response.data = response.data.map((datum) => {
       // console.log(datum.sequence);
@@ -202,6 +215,9 @@ export const ProvenanceDataContextProvider = ({ children }) => {
         handleProvenanceNodeClick,
         currentlyVisitedNodes,
         setCurrentlyVisitedNodes,
+        actionConfigurations,
+        setActionConfigurationsList,
+        actionConfigurationsList,
       }}>
       {children}
     </ProvenanceDataContext.Provider>

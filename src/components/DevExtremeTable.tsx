@@ -30,7 +30,6 @@ import {
 import ProvenanceGraph from "./ProvenanceGraph";
 import * as d3 from "d3";
 import TagsInput from "react-tagsinput";
-import eventMapping from "./eventMapping";
 import TagStyles from "./tagstyles.module.css";
 import TagWrapper from "./reactTagWrapper";
 import { QuantitativeFilter, CategoricalFilter } from "./TableFilters";
@@ -624,108 +623,6 @@ function filterCategoricalValue(filter, value, accesssor) {
     }
   }
   return false;
-}
-
-function renderProvenanceNodeColumn(
-  currentProvenanceData,
-  eventColumnWidth,
-  handleProvenanceNodeClick
-) {
-  const eventWidth = 500;
-  const eventNodes = currentProvenanceData
-    .map((graph) => {
-      return graph.provenance.map((node) => node.event);
-    })
-    .flat()
-    .filter((item) => item !== "startedProvenance" && item !== "Finished Task");
-
-  let eventScale = generateCategoricalScale(eventNodes, eventWidth);
-
-  // Create mapping of event types to labels
-  const allObj = {};
-
-  Object.keys(eventMapping).forEach((eventKey) => {
-    allObj[eventKey] = eventMapping[eventKey].icon;
-  });
-
-  const ProvenanceSummary = ({ incomingData }) => {
-    const [partitionedData, setPartitionedData] = useState([]);
-    useEffect(() => {
-      if (incomingData && incomingData.length > 0) {
-        setPartitionedData(incomingData);
-      }
-    }, incomingData);
-
-    const partitionedNodes = partitionedData
-      .map((graph) => {
-        return graph.provenance.map((node) => node.event);
-      })
-      .flat()
-      .filter(
-        (item) => item !== "startedProvenance" && item !== "Finished Task"
-      );
-    if (partitionedNodes.length === 0) {
-      return <div></div>;
-    }
-    return (
-      <CategoricalFilter
-        width={eventWidth}
-        scale={eventScale}
-        labels={allObj}
-        data={partitionedNodes}></CategoricalFilter>
-    );
-  };
-
-  return {
-    title: "Events Used",
-    name: "provenance",
-    width: eventWidth,
-    cellStyle: {
-      maxWidth: eventWidth,
-      padding: "4px 16px",
-    },
-    customSort: (a, b) => a.provenance.length - b.provenance.length,
-    render: (renderData) =>
-      renderProvenanceNodeCell(renderData, handleProvenanceNodeClick),
-    customFilterAndSearch: (filter, value, row) => {
-      return filterCategoricalValue(filter, value, (node) => node.event);
-    },
-    groupedSummaryComponent: ({ incomingData }) => {
-      return (
-        <GroupDataResolver incomingData={incomingData}>
-          {({ partitionedData }) => {
-            const partitionedNodes = partitionedData
-              .map((graph) => {
-                return graph.provenance.map((node) => node.event);
-              })
-              .flat()
-              .filter(
-                (item) =>
-                  item !== "startedProvenance" && item !== "Finished Task"
-              );
-            if (partitionedNodes.length === 0) {
-              return <div></div>;
-            }
-            return (
-              <CategoricalFilter
-                width={eventWidth}
-                scale={eventScale}
-                labels={allObj}
-                data={partitionedNodes}></CategoricalFilter>
-            );
-          }}
-        </GroupDataResolver>
-      );
-    },
-    filterComponent: (props) => (
-      <CategoricalFilter
-        {...props}
-        width={eventWidth}
-        scale={eventScale}
-        labels={allObj}
-        data={eventNodes}></CategoricalFilter>
-    ),
-  };
 }
 
 const GroupDataResolver = (props) => {
