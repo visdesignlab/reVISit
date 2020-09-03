@@ -13,6 +13,7 @@ import ColorPicker from "material-ui-color-picker";
 import TextField from "@material-ui/core/TextField";
 import { IsolatedNode } from "./ProvenanceIsolatedNodes";
 import ProvenanceDataContext from "./ProvenanceDataContext";
+import Button from "@material-ui/core/Button";
 
 export const ActionLegend = (props) => {
   const [actionItemBeingEdited, setActionItemBeingEdited] = useState(null);
@@ -120,30 +121,33 @@ const EditActionForm = ({
       </div>
       <div style={{ order: 2, margin: "auto" }}>
         <label
+          for={"colorPicker"}
           className={
-            "MuiFormLabel-root MuiInputLabel-root MuiInputLabel-formControl MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
+            "MuiFormLabel-root MuiInputLabel-root MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
           }>
           Action Color
         </label>
         <ColorPicker
+          name={"colorPicker"}
+          id={"colorPicker"}
+          defaultValue={volatileConfiguration["color"]}
           value={volatileConfiguration["color"]}
           onChange={(newValue) => {
             handleConfigurationPropertyChange("color", newValue);
           }}></ColorPicker>
       </div>
       <div style={{ order: 2, margin: "auto" }}>
-        <button
-          type="submit"
+        <Button
+          color="primary"
           onClick={() =>
             handleActionConfigurationChange(volatileConfiguration)
           }>
           Submit
-        </button>
-        <button
-          type="button"
+        </Button>
+        <Button
           onClick={() => handleActionConfigurationChange(actionConfiguration)}>
           Cancel
-        </button>
+        </Button>
       </div>
     </div>
   );
