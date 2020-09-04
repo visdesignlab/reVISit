@@ -13,8 +13,7 @@ import TrendingFlatIcon from "@material-ui/icons/TrendingFlat";
 import Divider from "@material-ui/core/Divider";
 import { createMuiTheme, MuiThemeProvider } from "@material-ui/core/styles";
 
-import Fab from '@material-ui/core/Fab';
-
+import Fab from "@material-ui/core/Fab";
 
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
@@ -23,9 +22,9 @@ import TableContainer from "@material-ui/core/TableContainer";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 
-import Tagger from "../components/Tagger"
+import Tagger from "../components/Tagger";
 
-import SortIcon from '@material-ui/icons/Sort';
+import SortIcon from "@material-ui/icons/Sort";
 
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
@@ -67,12 +66,12 @@ const useStyles = makeStyles({
   table: {
     padding: "10px",
   },
-  sortable:{
-    cursor:'pointer',
-    backgroundColor:'rgb(240,240,240)'
+  sortable: {
+    cursor: "pointer",
+    backgroundColor: "rgb(240,240,240)",
   },
-  sorted:{
-    fill:'#5d83d2'
+  sorted: {
+    fill: "#5d83d2",
   },
   media: {
     width: figureWidth,
@@ -109,168 +108,191 @@ function scale(width, maxValue) {
 const accScale = scale(40, 1);
 const timeScale = scale(40, 3.59);
 
-
-
-
-
 export const BarChart = (props) => {
-  const { allData, hoveredRow, hoveredRowColor, metric, vert = false, size = { width: 150, height: 200 } } = props;
+  const {
+    allData,
+    hoveredRow,
+    hoveredRowColor,
+    metric,
+    vert = false,
+    size = { width: 150, height: 200 },
+  } = props;
 
-  let data =  allData.find(
-    (m) => m.metric == metric
-  );
-  if (
-    data.type == "text" ||
-    data.type == "longtext"
-  ){
-  let width = vert ? size.width : 900;
-  let height = vert ? size.height : 80;
+  let data = allData.find((m) => m.metric == metric);
+  if (data.type == "text" || data.type == "longtext") {
+    let width = vert ? size.width : 900;
+    let height = vert ? size.height : 80;
 
+    let maxBarHeight = vert ? 20 : height - 10;
 
-  let maxBarHeight = vert ? 20 : height-10;
+    let varsToPlot = Object.entries(data.count)
+      .sort((a, b) => (a[1] > b[1] ? -1 : 1))
+      .slice(0, 20);
 
+    //compute scale for data;
+    let yDomain = varsToPlot.map((v) => v[0]);
+    let xDomain = d3.extent(varsToPlot.map((v) => v[1]));
 
-  let varsToPlot = Object.entries(data.count).sort((a,b)=>a[1]>b[1] ? -1 : 1).slice(0,20)
+    let xScale = d3.scaleLinear().domain(xDomain).range([0, maxBarHeight]);
 
-  
+    let yScale = d3
+      .scaleBand()
+      .domain(yDomain)
+      .range([0, height])
+      .padding(0.65);
 
-  //compute scale for data;
-  let yDomain = varsToPlot.map(v=>v[0]);
-  let xDomain = d3.extent(varsToPlot.map(v=>v[1]));
+    let barWidth = yScale.bandwidth();
 
-  let xScale = d3.scaleLinear().domain(xDomain).range([0, maxBarHeight]);
-   
+    let hoveredStats = hoveredRow
+      ? hoveredRow.stats.find((m) => m.metric == metric)
+      : undefined;
+    let hoveredVarsToPlot = hoveredStats
+      ? Object.entries(hoveredStats.count)
+          .sort((a, b) => (a[1] > b[1] ? -1 : 1))
+          .slice(0, 20)
+      : [];
 
-  let yScale =  d3.scaleBand()
-  .domain(yDomain)
-  .range([0, height])
-  .padding(0.65);
+    if (!vert) {
+      xDomain = varsToPlot.map((v) => v[0]);
+      yDomain = [0, d3.extent(varsToPlot.map((v) => v[1]))[1]];
 
-  let barWidth = yScale.bandwidth();
+      yScale = d3.scaleLinear().domain(yDomain).range([15, maxBarHeight]);
 
-  let hoveredStats = hoveredRow ? hoveredRow.stats.find(m=>m.metric == metric ) : undefined
-  let hoveredVarsToPlot = hoveredStats ? Object.entries(hoveredStats.count).sort((a,b)=>a[1]>b[1] ? -1 : 1).slice(0,20) : []
+      xScale = d3.scaleBand().domain(xDomain).range([0, width]).padding(0.5);
 
+      barWidth = xScale.bandwidth();
+    }
 
-  if (!vert){
-    xDomain = varsToPlot.map(v=>v[0]);
-    yDomain = [0,d3.extent(varsToPlot.map(v=>v[1]))[1]];
+    let nothingToPlot = varsToPlot.length < 1;
+    let transform = vert ? "translate(100px,0px)" : "translate(10px,20px)";
+    {
+      return nothingToPlot ? null : (
+        <svg width={width + 10} height={height + 20}>
+          {/* add axis */}
+          <g style={{ transform: transform }}>
+            <line
+              x1={0}
+              y1={vert ? yScale.range()[0] : yScale.range()[1]}
+              x2={vert ? 0 : xScale.range()[1]}
+              y2={yScale.range()[1]}
+              style={{ stroke: "rgb(0,0,0,0.25)", strokeWidth: 1 }}></line>
+            {varsToPlot.map((entry) => {
+              let key = entry[0];
+              let value = entry[1];
+              let tooltipText = key + " : " + value;
 
-    yScale = d3.scaleLinear().domain(yDomain).range([15, maxBarHeight]);
-    
+              let x = vert ? xScale(value) + 5 : xScale(key) - 3;
+              let y = vert
+                ? yScale(key) - barWidth
+                : height - yScale.range()[0];
+              return (
+                <React.Fragment key={key}>
+                  <Tooltip title={tooltipText}>
+                    <rect
+                      className="count"
+                      key={"d_" + key}
+                      style={{
+                        opacity: hoveredRowColor ? 0.5 : 1,
+                        fill: "rgb(93, 131, 210)",
+                      }}
+                      x={vert ? 0 : xScale(key)}
+                      y={
+                        vert
+                          ? yScale(key)
+                          : height - yScale.range()[0] - yScale(value)
+                      }
+                      width={vert ? xScale(value) : barWidth}
+                      height={vert ? barWidth : yScale(value)}></rect>
+                  </Tooltip>
+                  <Tooltip title={tooltipText}>
+                    <text
+                      style={{
+                        fontSize: "1em",
+                        textAnchor: "start",
+                        transform:
+                          "translate(" + x + "px," + y + "px) rotate(270deg)",
+                      }}
+                      x={0}
+                      y={0}>
+                      {" "}
+                      {key}{" "}
+                    </text>
+                  </Tooltip>
+                  {hoveredRowColor ? (
+                    ""
+                  ) : (
+                    <text
+                      style={{
+                        fontSize: "1em",
+                        textAnchor: "middle",
+                      }}
+                      x={vert ? -5 : xScale(key) + barWidth / 2}
+                      y={
+                        vert
+                          ? yScale(key) - barWidth
+                          : height - yScale.range()[0] - yScale(value) - 2
+                      }>
+                      {" "}
+                      {value}{" "}
+                    </text>
+                  )}
+                </React.Fragment>
+              );
+            })}
 
-    xScale =  d3.scaleBand()
-    .domain(xDomain)
-    .range([0, width])
-    .padding(0.5);
+            {/* //Only plot hoveredVars that are in the original top 20 to keep the distribution of bars the same */}
+            {hoveredVarsToPlot
+              .filter((d) => xScale(d[0]))
+              .map((entry) => {
+                let key = entry[0];
+                let value = entry[1];
+                let tooltipText = key + " : " + value;
 
-    barWidth = xScale.bandwidth();
+                let x = vert ? xScale(value) + 5 : xScale(key) - 3;
+                let y = vert
+                  ? yScale(key) - barWidth
+                  : height - yScale.range()[0];
+                return (
+                  <React.Fragment key={"hovered" + key}>
+                    <Tooltip title={tooltipText}>
+                      <rect
+                        className="count"
+                        key={"d_" + key}
+                        style={{ fill: hoveredRowColor }}
+                        x={vert ? 0 : xScale(key)}
+                        y={
+                          vert
+                            ? yScale(key)
+                            : height - yScale.range()[0] - yScale(value)
+                        }
+                        width={vert ? xScale(value) : barWidth}
+                        height={vert ? barWidth : yScale(value)}></rect>
+                    </Tooltip>
+
+                    <text
+                      style={{
+                        fontSize: "1em",
+                        textAnchor: "middle",
+                      }}
+                      x={vert ? -5 : xScale(key) + barWidth / 2}
+                      y={
+                        vert
+                          ? yScale(key) - barWidth
+                          : height - yScale.range()[0] - yScale(value) - 2
+                      }>
+                      {" "}
+                      {value}{" "}
+                    </text>
+                  </React.Fragment>
+                );
+              })}
+          </g>
+        </svg>
+      );
+    }
   }
 
-    let nothingToPlot = varsToPlot.length < 1 ;
-    let transform = vert ? 'translate(100px,0px)' :  'translate(10px,20px)'
-  { return nothingToPlot ? null :  <svg width={width+10} height={height+20}>
-      {/* add axis */}
-      <g style={{transform: transform}}>
-      <line
-        x1={0}
-        y1={vert ? yScale.range()[0] : yScale.range()[1]}
-        x2={vert ? 0  : xScale.range()[1]}
-        y2={yScale.range()[1]}
-        style={{ stroke: "rgb(0,0,0,0.25)", strokeWidth: 1 }}></line>
-      {varsToPlot.map((entry) => {
-        let key = entry[0];
-        let value = entry[1]
-        let tooltipText = key + " : " + value;
-
-        let x = vert ? xScale(value)+5 : xScale(key)-3;
-        let y = vert ? yScale(key)-barWidth : height - yScale.range()[0] 
-        return (
-          < React.Fragment key = {key}>
-            <Tooltip title={tooltipText}>
-              <rect
-                className="count"
-                key={"d_" + key}
-                style={{ opacity: hoveredRowColor ? .5 : 1, fill: "rgb(93, 131, 210)" }}
-                x={vert ? 0 : xScale(key)}
-                y={vert ? yScale(key) : height - yScale.range()[0] - yScale(value)}
-                width={vert ? xScale(value) : barWidth}
-                height={vert ? barWidth : yScale(value)}></rect>
-            </Tooltip>
-            <Tooltip title={tooltipText}>
-              <text
-                style={{
-                  fontSize: "1em",
-                  textAnchor: "start",
-                  transform:"translate(" + x + "px," + y + "px) rotate(270deg)"
-                }}
-               
-                x={0}
-                y={0}>
-                {" "}
-                {key}{" "}
-              </text>
-              </Tooltip>
-              {hoveredRowColor ? '' : <text
-              style={{
-                fontSize: "1em",
-                textAnchor: "middle",
-              }}
-              x={ vert ? -5 : xScale(key)+barWidth/2}
-              y={vert ? yScale(key)-barWidth : height - yScale.range()[0] - yScale(value)-2}>
-                {" "}
-                {value}{" "}
-              </text>}
-           
-              </React.Fragment>
-        );
-      })}
-
-    {/* //Only plot hoveredVars that are in the original top 20 to keep the distribution of bars the same */}
-    {hoveredVarsToPlot.filter(d=>xScale(d[0])).map((entry) => {
-        let key = entry[0];
-        let value = entry[1]
-        let tooltipText = key + " : " + value;
-
-        let x = vert ? xScale(value)+5 : xScale(key)-3;
-        let y = vert ? yScale(key)-barWidth : height - yScale.range()[0] 
-        return (
-          <React.Fragment key={'hovered' + key}>
-            <Tooltip title={tooltipText}>
-              <rect
-                className="count"
-                key={"d_" + key}
-                style={{ fill: hoveredRowColor }}
-                x={vert ? 0 : xScale(key)}
-                y={vert ? yScale(key) : height - yScale.range()[0] - yScale(value)}
-                width={vert ? xScale(value) : barWidth}
-                height={vert ? barWidth : yScale(value)}></rect>
-            </Tooltip>
-          
-              <text
-              style={{
-                fontSize: "1em",
-                textAnchor: "middle",
-              }}
-              x={ vert ? -5 : xScale(key)+barWidth/2}
-              y={vert ? yScale(key)-barWidth : height - yScale.range()[0] - yScale(value)-2}>
-                {" "}
-                {value}{" "}
-              </text>
-           
-              </React.Fragment>
-        );
-      })}
-      </g>
-    </svg>
-  }
-  ;
-
-  }
-
-  return null
-
-  
+  return null;
 };
 
 {
@@ -301,77 +323,95 @@ export const BarChart = (props) => {
 }
 let countScale = d3.scaleLinear().range([0, 75]).domain([0, 137]);
 
-function Stimulus({taskID,conditionName,classes}){
+function Stimulus({ taskID, conditionName, classes }) {
   // console.log('am rerendering')
-  return  <><Box mt={"5px"} mb={"6px"} mr={"10px"} boxShadow={1}>
-  <CardMedia
-    style={{ display: "inline-block" }}
-    className={classes.media}
-    component="img"
-    image={require("../static/taskImages/" +
-      taskID +
-      "_" +
-      conditionName +
-      ".png")}
-    // image="https://placekitten.com/g/100/100"
-    title="Task 1 AM"
-  />
-</Box>
-<Typography
-  className={classes.pos}
-  variant="overline"
-  color="primary">
-  Stimulus
-</Typography>
-</>
+  return (
+    <>
+      <Box mt={"5px"} mb={"6px"} mr={"10px"} boxShadow={1}>
+        <CardMedia
+          style={{ display: "inline-block" }}
+          className={classes.media}
+          component="img"
+          image={require("../static/taskImages/" +
+            taskID +
+            "_" +
+            conditionName +
+            ".png")}
+          // image="https://placekitten.com/g/100/100"
+          title="Task 1 AM"
+        />
+      </Box>
+      <Typography className={classes.pos} variant="overline" color="primary">
+        Stimulus
+      </Typography>
+    </>
+  );
 }
 
 //Compoment to draw participant counts for each interaction sequence
-function SequenceCount({row,hoveredRow,hoveredRowColor}){
+function SequenceCount({ row, hoveredRow, hoveredRowColor }) {
   let total = 137;
-  let height =25;
+  let height = 25;
   let iconWidth = 3;
   let padding = 1;
-  let numIconsPerCol = Math.floor(height/(iconWidth+padding))
-  let numCols = Math.ceil(total/numIconsPerCol)
-  let width = numCols*(iconWidth+padding) 
+  let numIconsPerCol = Math.floor(height / (iconWidth + padding));
+  let numCols = Math.ceil(total / numIconsPerCol);
+  let width = numCols * (iconWidth + padding);
 
-  let textWidth = 25
+  let textWidth = 25;
 
-  let xScale = d3.scaleLinear().range([0,iconWidth+padding]).domain([0,1])
-  let yScale = d3.scaleLinear().range([0,height]).domain([0,numIconsPerCol])
+  let xScale = d3
+    .scaleLinear()
+    .range([0, iconWidth + padding])
+    .domain([0, 1]);
+  let yScale = d3.scaleLinear().range([0, height]).domain([0, numIconsPerCol]);
 
-  let currentParticipants = row.matchingSequences.map(s=>s.participantID)
-  let hoveredParticipants = hoveredRow ? hoveredRow.matchingSequences.map(s=>s.participantID) : []
+  let currentParticipants = row.matchingSequences.map((s) => s.participantID);
+  let hoveredParticipants = hoveredRow
+    ? hoveredRow.matchingSequences.map((s) => s.participantID)
+    : [];
 
-  let intersection = currentParticipants.filter(x => hoveredParticipants.includes(x));
-  
+  let intersection = currentParticipants.filter((x) =>
+    hoveredParticipants.includes(x)
+  );
 
   // width = countScale.range()[1]
 
-  return  <svg width={width+textWidth} height={height}>
-  {Array.from(Array(total).keys()).map(key=>{
-    return <rect key={key}
-    x={xScale(Math.floor(key/numIconsPerCol))}
-    y={yScale(key%numIconsPerCol)+padding}
-    width={iconWidth}
-    height={iconWidth}
-    style={{
-      // opacity: key < intersection.length ? 1 : .2,
-      fill: key < intersection.length ? hoveredRowColor : key < row.count ? "rgb(150, 150, 150)" :  'rgb(220, 220, 220)'  //rgb(147 195 209)
-    }}></rect>
-  })} 
-  
-  <text
-    x={xScale(numCols)+padding}
-    y={yScale(numIconsPerCol/2)}
-    style={{ fontWeight: "bold", alignmentBaseline:'middle', textAnchor: "start" ,'fill':'rgb(93, 131, 210)' }}>
-    {row.count}
-  </text>
-  
-  
- 
-  {/* <rect
+  return (
+    <svg width={width + textWidth} height={height}>
+      {Array.from(Array(total).keys()).map((key) => {
+        return (
+          <rect
+            key={key}
+            x={xScale(Math.floor(key / numIconsPerCol))}
+            y={yScale(key % numIconsPerCol) + padding}
+            width={iconWidth}
+            height={iconWidth}
+            style={{
+              // opacity: key < intersection.length ? 1 : .2,
+              fill:
+                key < intersection.length
+                  ? hoveredRowColor
+                  : key < row.count
+                  ? "rgb(150, 150, 150)"
+                  : "rgb(220, 220, 220)", //rgb(147 195 209)
+            }}></rect>
+        );
+      })}
+
+      <text
+        x={xScale(numCols) + padding}
+        y={yScale(numIconsPerCol / 2)}
+        style={{
+          fontWeight: "bold",
+          alignmentBaseline: "middle",
+          textAnchor: "start",
+          fill: "rgb(93, 131, 210)",
+        }}>
+        {row.count}
+      </text>
+
+      {/* <rect
     x={0}
     y={0}
     width={countScale(137)}
@@ -395,75 +435,118 @@ function SequenceCount({row,hoveredRow,hoveredRowColor}){
     style={{ fontWeight: "bold", alignmentBaseline:'middle', textAnchor: "start" ,'fill':'rgb(93, 131, 210)' }}>
     {row.count}
   </text> */}
-  
-  
-</svg>
+    </svg>
+  );
 }
 
-function SortIconContainer({sorted,classes}){
+function SortIconContainer({ sorted, classes }) {
   let size = 20;
-  return <svg width={size} height={size} style={{paddingTop:'5px'}}>
-    <SortIcon className = {sorted ? classes.sorted : ''} style={{transform: "rotate(-180deg)"}}  width={size} height={size} /></svg>
+  return (
+    <svg width={size} height={size} style={{ paddingTop: "5px" }}>
+      <SortIcon
+        className={sorted ? classes.sorted : ""}
+        style={{ transform: "rotate(-180deg)" }}
+        width={size}
+        height={size}
+      />
+    </svg>
+  );
 }
 
 //Compoment to draw interaction sequence tables
-function TableComponent({rows,hoveredRowColor, hoveredRow=undefined,setHoveredRow=undefined}){  
-// console.log('rendering table',hoveredRow) 
+function TableComponent({
+  rows,
+  hoveredRowColor,
+  hoveredRow = undefined,
+  setHoveredRow = undefined,
+}) {
+  // console.log('rendering table',hoveredRow)
   // console.log(rows)
 
   const classes = useStyles();
 
-
-  let [sort,setSort]=useState({value:'Count',desc:{'Count':true,'Pattern':true}})
+  let [sort, setSort] = useState({
+    value: "Count",
+    desc: { Count: true, Pattern: true },
+  });
 
   // useEffect()({
-    rows.sort((a,b)=>{
-      let aValue = sort.value == 'Count' ? a.count : a.seq.length;
-      let bValue = sort.value == 'Count' ? b.count : b.seq.length;
-      let rValue = sort.desc[sort.value] ? -1 : 1
-      return aValue > bValue ? rValue : -rValue
-    })
+  rows.sort((a, b) => {
+    let aValue = sort.value == "Count" ? a.count : a.seq.length;
+    let bValue = sort.value == "Count" ? b.count : b.seq.length;
+    let rValue = sort.desc[sort.value] ? -1 : 1;
+    return aValue > bValue ? rValue : -rValue;
+  });
   // },[])
-  
+
   // console.log(rows)
   return (
     <MuiThemeProvider theme={theme}>
-      <TableContainer style={{ maxHeight:'300px'}}>
+      <TableContainer style={{ maxHeight: "300px" }}>
         <Table stickyHeader aria-label="sticky table">
           <TableHead>
-    <TableRow>
-      {[{key:'Pattern',title:'Interaction Pattern'},{key:'Count',title:'Participant Count'}].map(header=>{
-              return <TableCell  key = {header['key']} onClick={ () =>{
-                sort =  { ...sort }; 
-                let sameKey = sort.value == header.key;
-                sort.value  = header.key; 
-                sort.desc[header.key] =  sameKey ? !sort.desc[header.key] : true; 
-                setSort(sort);
-              
-              }}  className={classes.sortable}> {header.title}<SortIconContainer classes = {classes} sorted={sort.value == header.key}></SortIconContainer></TableCell>
-      })}
-    </TableRow>
-  </TableHead>
+            <TableRow>
+              {[
+                { key: "Pattern", title: "Interaction Pattern" },
+                { key: "Count", title: "Participant Count" },
+              ].map((header) => {
+                return (
+                  <TableCell
+                    key={header["key"]}
+                    onClick={() => {
+                      sort = { ...sort };
+                      let sameKey = sort.value == header.key;
+                      sort.value = header.key;
+                      sort.desc[header.key] = sameKey
+                        ? !sort.desc[header.key]
+                        : true;
+                      setSort(sort);
+                    }}
+                    className={classes.sortable}>
+                    {" "}
+                    {header.title}
+                    <SortIconContainer
+                      classes={classes}
+                      sorted={sort.value == header.key}></SortIconContainer>
+                  </TableCell>
+                );
+              })}
+            </TableRow>
+          </TableHead>
           <TableBody>
             {rows.map((row, i) => {
               // console.log('row',row)
               return (
-              <TableRow key={row.id} onMouseEnter={() =>{setHoveredRow(row)}} onMouseLeave={() => setHoveredRow()} style={{background: hoveredRow == row? 'rgb(245,245,245)':'white'}} >
+                <TableRow
+                  key={row.id}
+                  onMouseEnter={() => {
+                    setHoveredRow(row);
+                  }}
+                  onMouseLeave={() => setHoveredRow()}
+                  style={{
+                    background:
+                      hoveredRow == row ? "rgb(245,245,245)" : "white",
+                  }}>
                   <TableCell
                     component="th"
                     scope="row"
-                    style={{ width:'300px', padding: "10px"}}>
+                    style={{ width: "300px", padding: "10px" }}>
                     {row.seq ? (
                       <ProvenanceIsolatedNodes
                         // key={}
-                        nodes={row.seqObj} selectedItemId = {undefined} handleProvenanceNodeClick={()=>{}}></ProvenanceIsolatedNodes>
+                        nodes={row.seqObj}
+                        selectedItemId={undefined}
+                        handleProvenanceNodeClick={() => {}}></ProvenanceIsolatedNodes>
                     ) : (
                       row.answer
                     )}
                   </TableCell>
                   {row.seq ? (
                     <TableCell align="left">
-                     <SequenceCount row = {row} hoveredRow = {hoveredRow} hoveredRowColor = {hoveredRowColor}></SequenceCount>
+                      <SequenceCount
+                        row={row}
+                        hoveredRow={hoveredRow}
+                        hoveredRowColor={hoveredRowColor}></SequenceCount>
                     </TableCell>
                   ) : (
                     <></>
@@ -482,22 +565,24 @@ function TableComponent({rows,hoveredRowColor, hoveredRow=undefined,setHoveredRo
 }
 
 // Compoment for single metric histogram
-function Histogram({data,hoveredRow,metric,hoveredRowColor}){
-  // let hoveredStats = undefined; 
+function Histogram({ data, hoveredRow, metric, hoveredRowColor }) {
+  // let hoveredStats = undefined;
   // let hoveredCI = undefined;
-  let value = data.find(
-    (m) => m.metric == metric
-  );
-  if (
-    value.type == "int" ||
-    value.type == "float"
-  ) {
-
-    let hoveredStats = hoveredRow ? hoveredRow.stats.find(m=>m.metric == metric ) : undefined;
+  let value = data.find((m) => m.metric == metric);
+  if (value.type == "int" || value.type == "float") {
+    let hoveredStats = hoveredRow
+      ? hoveredRow.stats.find((m) => m.metric == metric)
+      : undefined;
     let hoveredCI = hoveredStats ? hoveredStats.ci : undefined;
     return (
-      <Grid key={metric+ '_hist'} item>
-        {<DrawHistogram hoveredRowColor={hoveredRowColor} data={hoveredStats || value} ci={hoveredCI ||  value.ci} />}
+      <Grid key={metric + "_hist"} item>
+        {
+          <DrawHistogram
+            hoveredRowColor={hoveredRowColor}
+            data={hoveredStats || value}
+            ci={hoveredCI || value.ci}
+          />
+        }
         <Typography
           style={{ display: "block" }}
           color="primary"
@@ -521,38 +606,39 @@ function Histogram({data,hoveredRow,metric,hoveredRowColor}){
   //   );
   // }
   return <></>;
-
 }
 
-
 export const DrawHistogram = (props) => {
+  const {
+    data,
+    hoveredRowColor,
+    ci,
+    size = { width: 100, height: 40 },
+  } = props;
 
-  const { data, hoveredRowColor, ci, size = { width: 100, height: 40 } } = props;
-
-  let[hovered,setHovered]=useState(false)
+  let [hovered, setHovered] = useState(false);
 
   let menu = function () {
-    return <><rect
-      x={0}
-      y={0}
-      width={width}
-      height={height}
-      rx={5}
-      fill={'white'}
-      opacity={.5}></rect>
+    return (
+      <>
+        <rect
+          x={0}
+          y={0}
+          width={width}
+          height={height}
+          rx={5}
+          fill={"white"}
+          opacity={0.5}></rect>
 
-
-      <g transform={`translate(0,0)`}>{<SortIcon width={
-        16
-      }
-        height={
-          16
-        } />}
-        <text x={20} y={10}>Sort</text>
-      </g>
-
-    </>
-  }
+        <g transform={`translate(0,0)`}>
+          {<SortIcon width={16} height={16} />}
+          <text x={20} y={10}>
+            Sort
+          </text>
+        </g>
+      </>
+    );
+  };
 
   let average = ci[0];
   let lowerBound = ci[1];
@@ -577,167 +663,241 @@ export const DrawHistogram = (props) => {
   let barWidth = xScale(data.bins[1]) - xScale(data.bins[0]) - barPadding;
 
   let textLabel = Math.round(average * 10) / 10; //label == '%' ? (Math.round(average * 100) + ' ' + label) : Math.round(average * 10) / 10 + ' ' + label
-  
-  
-  return (<>
-    <svg style={{transform:'translate(-10px,0px)'}} width={width} height={height} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
-      <g transform = {'translate(10,0)'}><line
-        x1={0}
-        y1={yScale.range()[1]}
-        x2={xScale.range()[1]}
-        y2={yScale.range()[1]}
-        style={{ stroke: "rgb(0,0,0,0.25)", strokeWidth: 1 }}></line>
-        {data.hist.map((d, i) => (
-          <rect
+
+  return (
+    <>
+      <svg
+        style={{ transform: "translate(-10px,0px)" }}
+        width={width}
+        height={height}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}>
+        <g transform={"translate(10,0)"}>
+          <line
+            x1={0}
+            y1={yScale.range()[1]}
+            x2={xScale.range()[1]}
+            y2={yScale.range()[1]}
+            style={{ stroke: "rgb(0,0,0,0.25)", strokeWidth: 1 }}></line>
+          {data.hist.map((d, i) => (
+            <rect
+              className="count"
+              key={"d_" + data.bins[i]}
+              style={{ fill: hoveredRowColor || "rgb(93, 131, 210)" }}
+              x={xScale(data.bins[i]) + barPadding / 2}
+              y={barHeight - yScale(d)}
+              width={barWidth}
+              height={yScale(d)}></rect>
+          ))}
+          <circle
             className="count"
-            key={"d_" + data.bins[i]}
-            style={{ fill: hoveredRowColor || "rgb(93, 131, 210)" }}
-            x={xScale(data.bins[i]) + barPadding / 2}
-            y={barHeight - yScale(d)}
-            width={barWidth}
-            height={yScale(d)}></rect>
-        ))}
-        <circle
-          className="count"
-          style={{ fill: "#ff5e00", opacity: 1 }}
-          cx={xScale(average)}
-          cy={yScale.range()[1] / 2}
-          r={5}></circle>
+            style={{ fill: "#ff5e00", opacity: 1 }}
+            cx={xScale(average)}
+            cy={yScale.range()[1] / 2}
+            r={5}></circle>
 
-        <line
-          className="count"
-          style={{ stroke: "black", strokeWidth: 2, opacity: 0.5 }}
-          x1={xScale(lowerBound)}
-          x2={xScale(upperBound)}
-          y1={yScale.range()[1] / 2}
-          y2={yScale.range()[1] / 2}></line>
+          <line
+            className="count"
+            style={{ stroke: "black", strokeWidth: 2, opacity: 0.5 }}
+            x1={xScale(lowerBound)}
+            x2={xScale(upperBound)}
+            y1={yScale.range()[1] / 2}
+            y2={yScale.range()[1] / 2}></line>
 
-<text
-          style={{ fontSize: "1em", textAnchor: "middle" }}
-          x={xScale(average)}
-          y={40}>
-          {" "}
-          {textLabel}{" "}
-        </text>
-   
-      
-      {hovered ? <>
-      
-        <text
-          style={{ fill:'rgb(0,0,0,0.25)', fontSize: "1em", textAnchor: "end" }}
-          x={-2}
-          y={23}>
-          {" "}
-          {Math.floor(xScale.domain()[0])}{" "}
-        </text>
-        <text
-          style={{ fill: 'rgb(0,0,0,0.25)' ,fontSize: "1em", textAnchor: "start" }}
-          x={xScale.range()[1]+2}
-          y={23}>
-          {" "}
-          {Math.ceil(xScale.domain()[1])}{" "}
-        </text>
-      
-      </> : null}
-      </g>
-    </svg>
-  </>
+          <text
+            style={{ fontSize: "1em", textAnchor: "middle" }}
+            x={xScale(average)}
+            y={40}>
+            {" "}
+            {textLabel}{" "}
+          </text>
 
+          {hovered ? (
+            <>
+              <text
+                style={{
+                  fill: "rgb(0,0,0,0.25)",
+                  fontSize: "1em",
+                  textAnchor: "end",
+                }}
+                x={-2}
+                y={23}>
+                {" "}
+                {Math.floor(xScale.domain()[0])}{" "}
+              </text>
+              <text
+                style={{
+                  fill: "rgb(0,0,0,0.25)",
+                  fontSize: "1em",
+                  textAnchor: "start",
+                }}
+                x={xScale.range()[1] + 2}
+                y={23}>
+                {" "}
+                {Math.ceil(xScale.domain()[1])}{" "}
+              </text>
+            </>
+          ) : null}
+        </g>
+      </svg>
+    </>
   );
 };
 
 //Compoment for the card for a single Condition
 function ConditionCard({ condition, conditionName, classes, taskID }) {
-  
   //Keeps track of which rows in the table are hovered on
   const [hoveredRow, setHoveredRow] = useState();
-  let[hidden,setHidden]=useState(false)
+  let [hidden, setHidden] = useState(false);
 
-
-  let hoveredRowColor =  '#f59c3d' // '#9100e6'; 
+  let hoveredRowColor = "#f59c3d"; // '#9100e6';
   let freqPattern, data, metricValues;
 
   //only compute when the condition changes
   // useEffect(() => {
-    // console.log('calling use effect')
-    freqPattern = condition.patterns[0].topK;
-    data = condition.stats;
+  // console.log('calling use effect')
+  freqPattern = condition.patterns[0].topK;
+  data = condition.stats;
 
-    metricValues = [...new Set(data.map((m) => m.metric))]; 
+  metricValues = [...new Set(data.map((m) => m.metric))];
 
-    freqPattern.map((action,i) => {
-      action.id = i;
-      action.seqObj = action.seq.map(a => ({ name: a, id: a, count: action.count }))
-      return action
-    }) 
+  freqPattern.map((action, i) => {
+    action.id = i;
+    action.seqObj = action.seq.map((a) => ({
+      name: a,
+      id: a,
+      count: action.count,
+    }));
+    return action;
+  });
 
   // }, [condition]);
-    // console.log(condition.textAnswers.map(a=>a.answer).flat())
+  // console.log(condition.textAnswers.map(a=>a.answer).flat())
   // console.log(metricValues)
-  return (!metricValues ? <></> :
+  return !metricValues ? (
+    <></>
+  ) : (
     <React.Fragment key={"ConditionCard_" + conditionName}>
-      <Typography  onClick={()=>{setHidden(!hidden)}} style={{ cursor:'pointer' }} className={classes.condition} variant="overline">
+      <Typography
+        onClick={() => {
+          setHidden(!hidden);
+        }}
+        style={{ cursor: "pointer" }}
+        className={classes.condition}
+        variant="overline">
         {conditionName}
       </Typography>
-      {hidden ? <></> :<Grid container className={classes.root} spacing={2}>
-        <Grid item xs={12}>
-          <Grid container justify="flex-start" spacing={2}>
-            <Grid key={"cat"} item>
-              <Stimulus taskID={taskID} classes={classes} conditionName={conditionName}></Stimulus>
-            </Grid>
-            <Grid key={"prov"} item>
-              <Box height={rowHeight} width={600} mt={"5px"} mb={"6px"} mr={'10px'} boxShadow={0} style={{ overflow: 'scroll' }}>
-                {<TableComponent rows={freqPattern} hoveredRow={hoveredRow} hoveredRowColor = {hoveredRow ? hoveredRowColor : undefined} setHoveredRow={setHoveredRow}></TableComponent>}
-              </Box>
-              <Typography
-                className={classes.pos}
-                variant="overline"
-                color="primary">
-                Actions
-              </Typography>
-            </Grid>
-            <Grid key={'performanceMetrics'} item xs>
-              <Grid key={'performanceMetrics'} item style={{ display: 'block' }}>
-                <Box height={rowHeight / 2.5} p={"20px"} mt={"5px"} mb={"6px"} mr={'10px'} style={{ overflow: 'scroll', display: 'inline-flex' }} boxShadow={1}>
-                  {metricValues.map((metric) => {
-                    return <Histogram key={metric} data = {data} hoveredRow={hoveredRow} hoveredRowColor = {hoveredRow ? hoveredRowColor : undefined} metric={metric}></Histogram>
-                  })}
-                </Box>
-                <Typography
-                  className={classes.pos}
-                  variant="overline"
-                  color="primary"
-                  style={{ display: "block" }}>
-                  Performance Metrics
-                </Typography>
+      {hidden ? (
+        <></>
+      ) : (
+        <Grid container className={classes.root} spacing={2}>
+          <Grid item xs={12}>
+            <Grid container justify="flex-start" spacing={2}>
+              <Grid key={"cat"} item>
+                <Stimulus
+                  taskID={taskID}
+                  classes={classes}
+                  conditionName={conditionName}></Stimulus>
               </Grid>
-
-              <Grid key={"qualData"} item xs>
+              <Grid key={"prov"} item>
                 <Box
-                  height={rowHeight / 2.5}
-                  width={1}
+                  height={rowHeight}
+                  width={600}
                   mt={"5px"}
                   mb={"6px"}
                   mr={"10px"}
-                  boxShadow={1}
+                  boxShadow={0}
                   style={{ overflow: "scroll" }}>
-                     {metricValues.map((metric) => {
-                    return <BarChart key = {metric} allData = {data} hoveredRow={hoveredRow} hoveredRowColor = {hoveredRow ? hoveredRowColor : undefined} metric={metric}></BarChart>
-                  })}
-                  {<Tagger text = {condition.textAnswers.map(a=>a.answer).flat().join('--')}></Tagger>}
-                  {/* <TableComponent rows={condition.textAnswers}></TableComponent> */}
+                  {
+                    <TableComponent
+                      rows={freqPattern}
+                      hoveredRow={hoveredRow}
+                      hoveredRowColor={hoveredRow ? hoveredRowColor : undefined}
+                      setHoveredRow={setHoveredRow}></TableComponent>
+                  }
                 </Box>
                 <Typography
                   className={classes.pos}
                   variant="overline"
                   color="primary">
-                  Word Counts for Qualitative Responses
+                  Actions
                 </Typography>
               </Grid>
-            </Grid>
-      
+              <Grid key={"performanceMetrics"} item xs>
+                <Grid
+                  key={"performanceMetrics"}
+                  item
+                  style={{ display: "block" }}>
+                  <Box
+                    height={rowHeight / 2.5}
+                    p={"20px"}
+                    mt={"5px"}
+                    mb={"6px"}
+                    mr={"10px"}
+                    style={{ overflow: "scroll", display: "inline-flex" }}
+                    boxShadow={1}>
+                    {metricValues.map((metric) => {
+                      return (
+                        <Histogram
+                          key={metric}
+                          data={data}
+                          hoveredRow={hoveredRow}
+                          hoveredRowColor={
+                            hoveredRow ? hoveredRowColor : undefined
+                          }
+                          metric={metric}></Histogram>
+                      );
+                    })}
+                  </Box>
+                  <Typography
+                    className={classes.pos}
+                    variant="overline"
+                    color="primary"
+                    style={{ display: "block" }}>
+                    Performance Metrics
+                  </Typography>
+                </Grid>
 
-            {/* {condition.textAnswers.map(txt=>{
+                <Grid key={"qualData"} item xs>
+                  <Box
+                    height={rowHeight / 2.5}
+                    width={1}
+                    mt={"5px"}
+                    mb={"6px"}
+                    mr={"10px"}
+                    boxShadow={1}
+                    style={{ overflow: "scroll" }}>
+                    {metricValues.map((metric) => {
+                      return (
+                        <BarChart
+                          key={metric}
+                          allData={data}
+                          hoveredRow={hoveredRow}
+                          hoveredRowColor={
+                            hoveredRow ? hoveredRowColor : undefined
+                          }
+                          metric={metric}></BarChart>
+                      );
+                    })}
+                    {
+                      <Tagger
+                        text={condition.textAnswers
+                          .map((a) => a.answer)
+                          .flat()
+                          .join("--")}></Tagger>
+                    }
+                    {/* <TableComponent rows={condition.textAnswers}></TableComponent> */}
+                  </Box>
+                  <Typography
+                    className={classes.pos}
+                    variant="overline"
+                    color="primary">
+                    Word Counts for Qualitative Responses
+                  </Typography>
+                </Grid>
+              </Grid>
+
+              {/* {condition.textAnswers.map(txt=>{
               return <List dense={true}>
               <ListItem>
                 <ListItemText
@@ -747,65 +907,71 @@ function ConditionCard({ condition, conditionName, classes, taskID }) {
               </ListItem>
           </List>
             })} */}
+            </Grid>
           </Grid>
         </Grid>
-      </Grid>
-}
+      )}
       <Divider />
     </React.Fragment>
   );
 }
 
-function TaskCard({task,classes}){
+function TaskCard({ task, classes }) {
+  let [hidden, setHidden] = useState(false);
 
-  let[hidden,setHidden]=useState(false)
+  return (
+    <Box
+      m={2}
+      key={"box_" + task.taskID}
+      // style={{ display: "inline-block" }}
+    >
+      {/* style={{ 'width': 600 }}  */}
+      <Card className={classes.root} key={task.taskID}>
+        <CardContent>
+          <Typography
+            variant="h5"
+            component="h2"
+            onClick={() => {
+              setHidden(!hidden);
+            }}
+            style={{ cursor: "pointer", display: "inline-block" }}>
+            {task.name}
+          </Typography>
+          {/* <Tooltip title={taskTooltip}> */}
+          <Typography
+            className={classes.pos}
+            color="textSecondary"
+            style={{ display: "inline-block", marginLeft: "10px" }}>
+            {task.prompt + "  [" + task.answer + "]"}
+          </Typography>
+          <Divider />
 
-  return <Box
-  m={2}
-  key={"box_" + task.taskID}
-  // style={{ display: "inline-block" }}
->
-  {/* style={{ 'width': 600 }}  */}
-  <Card className={classes.root} key={task.taskID}>
-    <CardContent>
-      <Typography
-        variant="h5"
-        component="h2"
-        onClick={()=>{setHidden(!hidden)}}
-        style={{ cursor:'pointer', display: "inline-block" }}>
-        {task.name}
-      </Typography>
-      {/* <Tooltip title={taskTooltip}> */}
-      <Typography
-        className={classes.pos}
-        color="textSecondary"
-        style={{ display: "inline-block", marginLeft: "10px" }}>
-        {task.prompt + "  [" + task.answer + "]"}
-      </Typography>
-      <Divider />
-
-      {hidden ? <></> : Object.keys(task.conditions).map((cKey) => {
-        let condition = task.conditions[cKey];
-        return (
-          <ConditionCard
-            key = {task.taskID + cKey}
-            condition={condition}
-            conditionName={cKey}
-            taskID={task.taskID}
-            classes={classes}></ConditionCard>
-        );
-      })
-      
-      }
-    </CardContent>
-      {hidden ? <></> :
-    <CardActions>
-      <Button size="small">Explore</Button>
-    </CardActions>
-      }
-  </Card>
-</Box>
-
+          {hidden ? (
+            <></>
+          ) : (
+            Object.keys(task.conditions).map((cKey) => {
+              let condition = task.conditions[cKey];
+              return (
+                <ConditionCard
+                  key={task.taskID + cKey}
+                  condition={condition}
+                  conditionName={cKey}
+                  taskID={task.taskID}
+                  classes={classes}></ConditionCard>
+              );
+            })
+          )}
+        </CardContent>
+        {hidden ? (
+          <></>
+        ) : (
+          <CardActions>
+            <Button size="small">Explore</Button>
+          </CardActions>
+        )}
+      </Card>
+    </Box>
+  );
 }
 
 export default function TaskContainer() {
@@ -815,49 +981,47 @@ export default function TaskContainer() {
   const { data, homeTaskSort } = useContext(ProvenanceDataContext);
 
   // console.log('homeTaskSort is ', homeTaskSort)
- 
-  function getValues(task,conditionFilter,sortKey){
+
+  function getValues(task, conditionFilter, sortKey) {
     let conditions = Object.keys(task.conditions);
-    let values = []
-    conditions.map(c=>{
-      if (conditionFilter[c]){
-        let metricValues = task.conditions[c].stats.find(s=>s.metric == sortKey)
-        values.push(metricValues.ci[1]) //average for that metric
+    let values = [];
+    conditions.map((c) => {
+      if (conditionFilter[c]) {
+        let metricValues = task.conditions[c].stats.find(
+          (s) => s.metric == sortKey
+        );
+        values.push(metricValues.ci[1]); //average for that metric
       }
-    })
+    });
     return values;
-
   }
-  if (data){
+  if (data) {
     // console.log(data.tasks)
-    
-    if (homeTaskSort){
 
+    if (homeTaskSort) {
       let sortKey = homeTaskSort.metric;
-      let desc = homeTaskSort.desc
-      let conditionFilter = homeTaskSort.conditions
+      let desc = homeTaskSort.desc;
+      let conditionFilter = homeTaskSort.conditions;
 
-      
-      data.tasks.sort((a,b)=>{
-        
-        let aValue, bValue; 
-        if (sortKey == 'name'){
-          aValue = a[sortKey]
-          bValue = b[sortKey]
+      data.tasks.sort((a, b) => {
+        let aValue, bValue;
+        if (sortKey == "name") {
+          aValue = a[sortKey];
+          bValue = b[sortKey];
         } else {
-          let aValues = getValues(a,conditionFilter,sortKey)
-          let bValues = getValues(b,conditionFilter,sortKey)
-          aValue = desc? Math.max(...aValues) : Math.min(...aValues)
-          bValue = desc? Math.max(...bValues) : Math.min(...bValues)
+          let aValues = getValues(a, conditionFilter, sortKey);
+          let bValues = getValues(b, conditionFilter, sortKey);
+          aValue = desc ? Math.max(...aValues) : Math.min(...aValues);
+          bValue = desc ? Math.max(...bValues) : Math.min(...bValues);
         }
 
-        let rValue = desc ? -1 : 1
-        return aValue > bValue ? rValue : -rValue
-    })
+        let rValue = desc ? -1 : 1;
+        return aValue > bValue ? rValue : -rValue;
+      });
 
-    console.log('done sorting')
-
-  }}
+      console.log("done sorting");
+    }
+  }
 
   // })
   let colorScale = d3
@@ -875,7 +1039,9 @@ export default function TaskContainer() {
     <>
       {data.tasks.map((task) => {
         // let taskTooltip = <Typography>{task.prompt}</Typography>;
-        return (<TaskCard key = {task.name} task={task} classes={classes}></TaskCard>);
+        return (
+          <TaskCard key={task.name} task={task} classes={classes}></TaskCard>
+        );
       })}
     </>
   );

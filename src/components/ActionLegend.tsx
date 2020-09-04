@@ -1,6 +1,6 @@
 //@ts-nocheck
 import { storiesOf } from "@storybook/react";
-import React, { useState, useContext } from "react";
+import React, { useState, useRef, useContext } from "react";
 import { start } from "repl";
 import { withKnobs, optionsKnob as options } from "@storybook/addon-knobs";
 import List from "@material-ui/core/List";
@@ -14,7 +14,8 @@ import TextField from "@material-ui/core/TextField";
 import { IsolatedNode } from "./ProvenanceIsolatedNodes";
 import ProvenanceDataContext from "./ProvenanceDataContext";
 import Button from "@material-ui/core/Button";
-
+import EditIcon from "@material-ui/icons/Edit";
+import Popper from "@material-ui/core/Popper";
 export const ActionLegend = (props) => {
   const [actionItemBeingEdited, setActionItemBeingEdited] = useState(null);
   const { actionConfigurationsList, setActionConfigurationsList } = useContext(
@@ -48,6 +49,9 @@ export const ActionLegend = (props) => {
           aria-describedby="simple-modal-description">
           <EditActionForm
             actionConfiguration={actionItemBeingEdited}
+            handleActionConfigurationCancel={() =>
+              setActionItemBeingEdited(null)
+            }
             handleActionConfigurationChange={
               handleSaveActionConfiguration
             }></EditActionForm>
@@ -69,6 +73,7 @@ class ActionConfiguration {
 const EditActionForm = ({
   actionConfiguration,
   handleActionConfigurationChange,
+  handleActionConfigurationCancel,
 }) => {
   console.log("in edit action form", actionConfiguration);
 
@@ -144,10 +149,7 @@ const EditActionForm = ({
           }>
           Submit
         </Button>
-        <Button
-          onClick={() => handleActionConfigurationChange(actionConfiguration)}>
-          Cancel
-        </Button>
+        <Button onClick={handleActionConfigurationCancel}>Cancel</Button>
       </div>
     </div>
   );
@@ -157,34 +159,69 @@ const ActionLegendPresentational = ({
   handleActionItemEdit,
   collapsed,
 }) => {
+  const listRef = useRef(null);
+  const Pop = ({ open }) => {
+    console.log("in render popover", listRef.current, open);
+    return (
+      <Popper
+        open={open}
+        id={"hidingpop"}
+        anchorEl={listRef.current}
+        placement={"right-start"}>
+        <div
+          style={{
+            backgroundColor: "white",
+            width: "500px",
+            height: "100%",
+            padding: "8px",
+            display: "flex",
+          }}>
+          {" "}
+          <div>The content of the Popover.</div>
+          <div>The content of the Popover.</div>
+        </div>
+      </Popper>
+    );
+  };
+  console.log(listRef, listRef ? listRef.current : null);
   return (
-    <List>
-      {actionsConfigurations.map((actionConfiguration) => {
-        return (
-          <ListItem>
+    <React.Fragment>
+      <List ref={listRef}>
+        {actionsConfigurations.map((actionConfiguration) => {
+          return (
             <ActionItemNode
               collapsed={collapsed}
               actionConfiguration={actionConfiguration}
               handleActionItemEdit={handleActionItemEdit}></ActionItemNode>
-          </ListItem>
-        );
-      })}
-    </List>
+          );
+        })}
+      </List>
+      {listRef.current && <Pop open={!collapsed}></Pop>}
+    </React.Fragment>
   );
 };
-const ActionItemNode = ({
+
+export const ActionItemNode = ({
   actionConfiguration,
   handleActionItemEdit,
   collapsed,
 }) => {
+  console.log("in node", actionConfiguration);
   return (
-    <React.Fragment>
+    <ListItem>
       <IsolatedNode node={{ name: actionConfiguration.id }}></IsolatedNode>
       {!collapsed && (
-        <ListItemText onClick={() => handleActionItemEdit(actionConfiguration)}>
-          {actionConfiguration.name}
-        </ListItemText>
+        <React.Fragment>
+          <ListItemText>{actionConfiguration.name}</ListItemText>
+          {handleActionItemEdit && (
+            <EditIcon
+              style={{ cursor: "pointer", "margin-left": "auto" }}
+              onClick={() =>
+                handleActionItemEdit(actionConfiguration)
+              }></EditIcon>
+          )}
+        </React.Fragment>
       )}
-    </React.Fragment>
+    </ListItem>
   );
 };

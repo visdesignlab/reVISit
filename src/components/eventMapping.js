@@ -39,129 +39,13 @@ const selectColor = colors[3];
 const searchColor = colors[4];
 const clearColor = colors[5];
 
-export const eventMapping = {
-  custom: {
-    name: "CustomIcon",
-    color: "#d1d1d1",
-    icon: <CheckBoxOutlineBlankIcon width={16} height={16} />,
-  },
-
-  startedProvenance: {
-    name: "PlayArrowIcon",
-    color: "#d1d1d1",
-    icon: <PlayArrowIcon width={16} height={16} />,
-  },
-  "Finished Task": {
-    name: "StopIcon",
-    color: "#d1d1d1",
-    icon: <StopIcon width={16} height={16} />,
-  },
-
-  answerBox: {
-    name: "Add",
-    color: answerSelectColor,
-    icon: <Add width={16} height={16} />,
-  },
-  "Hard Selected a Node": {
-    name: "Add",
-    color: answerSelectColor,
-    icon: <Add width={16} height={16} />,
-  },
-  "Dragged Node": {
-    name: "PanTool",
-    color: dragColor,
-    icon: <PanTool width={16} height={16} />,
-  },
-  sort: {
-    name: "Sort",
-    color: sortColor,
-    icon: <Sort width={16} height={16} />,
-  },
-  attrRow: {
-    name: "FiberManualRecordIcon",
-    color: selectColor,
-    icon: <FiberManualRecordIcon width={16} height={16} />,
-  },
-  "Hard Unselected a Node": {
-    name: "RadioButtonUncheckedIcon",
-    color: answerSelectColor,
-    icon: <RadioButtonUncheckedIcon width={16} height={16} />,
-  },
-  "Select Node": {
-    name: "FiberManualRecordIcon",
-    color: selectColor,
-    icon: <FiberManualRecordIcon width={16} height={16} />,
-  },
-  rowLabel: {
-    name: "FiberManualRecordIcon",
-    color: selectColor,
-    icon: <FiberManualRecordIcon width={16} height={16} />,
-  },
-  colLabel: {
-    name: "FiberManualRecordIcon",
-    color: selectColor,
-    icon: <FiberManualRecordIcon width={16} height={16} />,
-  },
-  search: {
-    name: "Search",
-    color: searchColor,
-    icon: <Search width={16} height={16} />,
-  },
-  "Searched for Node": {
-    name: "Search",
-    color: searchColor,
-    icon: <Search width={16} height={16} />,
-  },
-  cell: {
-    name: "FiberManualRecordIcon",
-    color: selectColor,
-    icon: <FiberManualRecordIcon width={16} height={16} />,
-  },
-  "Unselect Node": {
-    name: "RadioButtonUncheckedIcon",
-    color: selectColor,
-    icon: <RadioButtonUncheckedIcon width={16} height={16} />,
-  },
-  clear: {
-    name: "Clear",
-    color: clearColor,
-    icon: <Clear width={16} height={16} />,
-  },
-  "cleared all selected nodes": {
-    name: "Clear",
-    color: clearColor,
-    icon: <Clear width={16} height={16} />,
-  },
-  // "startedProvenance": {
-  //   name: "Start",
-  //   color: 'rgb(255,255,255)',
-  //   icon: < Start width={
-  //     16
-  //   }
-  //     height={
-  //       16
-  //     }
-  //   />
-  // },
-  // "Finished Task": {
-  //   name: "Start",
-  //   color: 'rgb(255,255,255)',
-  //   icon: < Start width={
-  //     16
-  //   }
-  //     height={
-  //       16
-  //     }
-  //   />
-  // }
-};
-
 export const eventMappingList = [
   {
     icon: "PlayArrowIcon",
     color: "#d1d1d1",
     id: "startedProvenance",
     name: "Began Task",
+    type: "raw",
   },
 
   {
@@ -169,6 +53,7 @@ export const eventMappingList = [
     color: "#d1d1d1",
     id: "Finished Task",
     name: "Finished Task",
+    type: "raw",
   },
 
   {
@@ -176,72 +61,84 @@ export const eventMappingList = [
     color: answerSelectColor,
     id: "answerBox",
     name: "Answer Select",
+    type: "raw",
   },
   {
     icon: "Add",
     color: answerSelectColor,
     id: "Hard Selected a Node",
     name: "Answer Select",
+    type: "raw",
   },
   {
     icon: "PanTool",
     color: dragColor,
     name: "Dragged Node",
     id: "Dragged Node",
+    type: "raw",
   },
   {
     icon: "Sort",
     color: sortColor,
     id: "sort",
     name: "Sort",
+    type: "raw",
   },
   {
     icon: "FiberManualRecordIcon",
     color: selectColor,
     id: "attrRow",
     name: "Selected a Node",
+    type: "raw",
   },
   {
     icon: "RadioButtonUncheckedIcon",
     color: answerSelectColor,
     id: "Hard Unselected a Node",
     name: "Unselected Answer",
+    type: "raw",
   },
   {
     icon: "FiberManualRecordIcon",
     color: selectColor,
     id: "Select Node",
     name: "Selected Node",
+    type: "raw",
   },
   {
     icon: "FiberManualRecordIcon",
     color: selectColor,
     id: "rowLabel",
     name: "Selected Node",
+    type: "raw",
   },
   {
     icon: "FiberManualRecordIcon",
     color: selectColor,
     id: "colLabel",
     name: "Neighbor Highlight",
+    type: "raw",
   },
   {
     icon: "Search",
     color: searchColor,
     id: "search",
     name: "Search",
+    type: "raw",
   },
   {
     icon: "Search",
     color: searchColor,
     id: "Searched for Node",
     name: "Search",
+    type: "raw",
   },
   {
     icon: "FiberManualRecordIcon",
     color: selectColor,
     id: "cell",
     name: "Cell Select",
+    type: "raw",
   },
 
   {
@@ -249,17 +146,20 @@ export const eventMappingList = [
     color: selectColor,
     id: "Unselect Node",
     name: "Unselected Node",
+    type: "raw",
   },
   {
     icon: "Clear",
     color: clearColor,
     id: "clear",
     name: "Clear Selections",
+    type: "raw",
   },
   {
     icon: "Clear",
     color: clearColor,
     id: "cleared all selected nodes",
     name: "Clear Selections",
+    type: "raw",
   },
 ];

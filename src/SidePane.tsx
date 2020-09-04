@@ -39,7 +39,7 @@ import HomeIcon from "@material-ui/icons/Home";
 import { ActionLegend } from "./components/ActionLegend";
 import SortMenu from "./components/sortMenu";
 
-const drawerWidth = 240;
+const drawerWidth = 260;
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

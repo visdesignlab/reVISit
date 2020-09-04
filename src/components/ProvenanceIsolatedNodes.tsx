@@ -55,9 +55,10 @@ const ProvenanceIsolatedNodes = ({
 export const IsolatedNode = ({ node }) => {
   const { actionConfigurations } = useContext(ProvenanceDataContext);
   const eventMapping = actionConfigurations;
+  console.log("eventMapping", eventMapping, node);
   let eventMap = eventMapping[node.name]
     ? eventMapping[node.name]
-    : eventMapping["custom"];
+    : { icon: "Add", color: "#fff" };
   //add check for custom icons for newly created events;
   let ProvenanceIcon = iconMapping[eventMap.icon];
   if (!ProvenanceIcon) {
