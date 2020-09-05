@@ -1,6 +1,6 @@
 //@ts-nocheck
 import { storiesOf } from "@storybook/react";
-import React, { useState, useRef, useContext } from "react";
+import React, { useState, useRef, useContext, useEffect, useMemo } from "react";
 import { start } from "repl";
 import { withKnobs, optionsKnob as options } from "@storybook/addon-knobs";
 import List from "@material-ui/core/List";
@@ -8,7 +8,6 @@ import ListItem from "@material-ui/core/ListItem";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
 import Modal from "@material-ui/core/Modal";
-import { useEffect } from "@storybook/addons";
 import ColorPicker from "material-ui-color-picker";
 import TextField from "@material-ui/core/TextField";
 import { IsolatedNode } from "./ProvenanceIsolatedNodes";
@@ -48,9 +47,16 @@ const ActionLegendDragContainer = (props) => {
     setActionConfigurationsList,
     collapsed,
     handleActionItemEdit,
+    isActionLegendEditing,
+    hashMapConfig,
   } = props;
   const listRef = useRef(null);
 
+  function handleAddConfigurationToList(item) {
+    const copy = [...actionConfigurations];
+    copy.push(item);
+    setActionConfigurationsList(copy);
+  }
   /*function handleAddConfigurationToList(item) {
     const copy = [...actionConfigurationsList];
     copy.push(item);
@@ -148,18 +154,11 @@ const ActionLegendDragContainer = (props) => {
     setActionConfigurationsList(copy);
   }
   // filter
-  const typedConfigs = actionConfigurations.filter(
-    (config) => config.type === "sequence"
-  );
+
   let listEvents = {};
-  typedConfigs.forEach((config) => {
+  actionConfigurations.forEach((config) => {
     listEvents[config.id] = config;
   });
-  function handleAddConfigurationToList(item) {
-    const copy = [...actionConfigurations];
-    copy.push(item);
-    setActionConfigurationsList(copy);
-  }
 
   /*return (
     <GroupedList
@@ -175,8 +174,11 @@ const ActionLegendDragContainer = (props) => {
       <ActionLegendPresentational
         {...props}
         listRef={listRef}></ActionLegendPresentational>
-      {listRef.current && (
+      {listRef.current && isActionLegendEditing && (
         <Pop
+          hashMapConfig={hashMapConfig}
+          actionConfigurationsList={actionConfigurations}
+          handleAddConfigurationToList={handleAddConfigurationToList}
           reference={listRef.current}
           open={!collapsed}
           handleActionItemEdit={handleActionItemEdit}></Pop>
@@ -184,26 +186,82 @@ const ActionLegendDragContainer = (props) => {
     </DragDropContext>
   );
 };
+function compileActionListToHashTable(list) {
+  let newActionObject = {};
+  list.forEach((item) => {
+    let newObject = {};
+    newObject[item.id] = item;
+    Object.assign(newActionObject, newObject);
+  });
+  return newActionObject;
+}
 export const ActionLegend = (props) => {
   const [actionItemBeingEdited, setActionItemBeingEdited] = useState(null);
+  const [isActionLegendEditing, setIsActionLegendEditing] = useState(false);
   const { actionConfigurationsList, setActionConfigurationsList } = useContext(
     ProvenanceDataContext
   );
+
+  const [
+    volatileActionConfigurationList,
+    setVolatileActionConfigurationList,
+  ] = useState(actionConfigurationsList);
+
+  const hashMapConfig = useMemo(() => {
+    const hashConfig = compileActionListToHashTable(
+      volatileActionConfigurationList
+    );
+    console.log(
+      "compiling new configs",
+      hashConfig,
+      volatileActionConfigurationList
+    );
+    return hashConfig;
+  }, [volatileActionConfigurationList]);
+
   function handleSaveActionConfiguration(newConfiguration) {
-    const configurationIndex = actionConfigurationsList.findIndex(
+    const configurationIndex = volatileActionConfigurationList.findIndex(
       (config) => config.id === newConfiguration.id
     );
-    let configCopy = [...actionConfigurationsList];
+    let configCopy = [...volatileActionConfigurationList];
     configCopy[configurationIndex] = newConfiguration;
-    setActionConfigurationsList(configCopy);
+    setVolatileActionConfigurationList(configCopy);
     setActionItemBeingEdited(null);
+  }
+  function saveChanges() {
+    setActionConfigurationsList(volatileActionConfigurationList);
+    setIsActionLegendEditing(false);
   }
   return (
     <div>
+      {!props.collapsed ? (
+        isActionLegendEditing ? (
+          <div>
+            <Button variant={"primary"} onClick={saveChanges}>
+              Apply Changes
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => setIsActionLegendEditing(false)}>
+              Cancel
+            </Button>
+          </div>
+        ) : (
+          <Button
+            variant={"primary"}
+            onClick={() => setIsActionLegendEditing(true)}>
+            Edit Action List
+          </Button>
+        )
+      ) : null}
       <ActionLegendDragContainer
-        setActionConfigurationsList={setActionConfigurationsList}
-        actionConfigurations={actionConfigurationsList}
-        handleActionItemEdit={setActionItemBeingEdited}
+        hashMapConfig={hashMapConfig}
+        isActionLegendEditing={isActionLegendEditing}
+        setActionConfigurationsList={setVolatileActionConfigurationList}
+        actionConfigurations={volatileActionConfigurationList}
+        handleActionItemEdit={
+          isActionLegendEditing ? setActionItemBeingEdited : null
+        }
         collapsed={props.collapsed}></ActionLegendDragContainer>
       {actionItemBeingEdited && (
         <Modal
@@ -363,7 +421,14 @@ const move = (source, destination, droppableSource, droppableDestination) => {
 
   return result;
 };
-const Pop = ({ open, handleActionItemEdit, reference }) => {
+const Pop = ({
+  open,
+  handleActionItemEdit,
+  reference,
+  handleAddConfigurationToList,
+  actionConfigurationsList,
+  hashMapConfig,
+}) => {
   console.log("in render popover", open, handleActionItemEdit, reference);
   return (
     <div>
@@ -376,13 +441,17 @@ const Pop = ({ open, handleActionItemEdit, reference }) => {
           <div
             style={{
               backgroundColor: "white",
-              width: "500px",
+              width: "650px",
               height: "100%",
               padding: "8px",
               display: "flex",
+              overflow: "auto",
             }}>
             {
               <EventManager
+                hashMapConfig={hashMapConfig}
+                actionConfigurationsList={actionConfigurationsList}
+                handleAddConfigurationToList={handleAddConfigurationToList}
                 handleEditActionConfiguration={
                   handleActionItemEdit
                 }></EventManager>
@@ -398,6 +467,7 @@ const ActionLegendPresentational = ({
   handleActionItemEdit,
   collapsed,
   listRef,
+  hashMapConfig,
 }) => {
   const renderedItems = React.useMemo(() => {
     return actionConfigurations.map((config) =>
@@ -417,13 +487,7 @@ const ActionLegendPresentational = ({
   </List>
   */
 
-  console.log(
-    actionConfigurations,
-    renderedItems,
-    handleActionItemEdit,
-    collapsed,
-    listRef
-  );
+  console.log("at hashmap config", hashMapConfig);
   return (
     <React.Fragment>
       <div ref={listRef}>
@@ -448,13 +512,18 @@ const ActionLegendPresentational = ({
                         style={provided.draggableProps.style}>
                         {
                           <ActionItemNode
+                            hashMapConfig={hashMapConfig}
                             collapsed={collapsed}
+                            handleActionItemEdit={handleActionItemEdit}
                             actionConfiguration={item}></ActionItemNode>
                         }
                       </div>
                       {snapshot.isDragging && (
                         <div>
                           <ActionItemNode
+                            collapsed={collapsed}
+                            hashMapConfig={hashMapConfig}
+                            handleActionItemEdit={handleActionItemEdit}
                             actionConfiguration={item}></ActionItemNode>
                         </div>
                       )}
@@ -475,11 +544,14 @@ export const ActionItemNode = ({
   actionConfiguration,
   handleActionItemEdit,
   collapsed,
+  hashMapConfig,
 }) => {
   console.log("in node", actionConfiguration);
   return (
     <ListItem>
-      <IsolatedNode node={{ name: actionConfiguration.id }}></IsolatedNode>
+      <IsolatedNode
+        node={{ name: actionConfiguration.id }}
+        configToUse={hashMapConfig}></IsolatedNode>
       {!collapsed && (
         <React.Fragment>
           <ListItemText

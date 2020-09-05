@@ -1,45 +1,38 @@
-import React, { useState, useContext, useEffect, Component } from "react";
+import React, { useEffect } from "react";
 import ProvenanceDataContext from "./ProvenanceDataContext";
 import styled from "styled-components";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { ActionItemNode } from "./ActionLegend";
 import { Delete } from "@material-ui/icons";
-const EventManager = ({ handleEditActionConfiguration }) => {
-  const { actionConfigurationsList, setActionConfigurationsList } = useContext(
-    ProvenanceDataContext
-  );
-
-  function handleActionConfigurationChange(item) {
-    // match item on the id, change it
-    const index = actionConfigurationsList.findIndex(
-      (config) => config.id === item.id
-    );
-    let copy = [...actionConfigurationsList];
-    copy[index] = item;
-    setActionConfigurationsList(copy);
-  }
+const EventManager = ({
+  handleAddConfigurationToList,
+  handleEditActionConfiguration,
+  actionConfigurationsList,
+  hashMapConfig,
+}) => {
   // filter
-  const typedConfigs = actionConfigurationsList.filter(
-    (config) => config.type === "sequence"
-  );
-  let listEvents = {};
-  typedConfigs.forEach((config) => {
-    listEvents[config.id] = config;
-  });
-  function handleAddConfigurationToList(item) {
-    const copy = [...actionConfigurationsList];
-    copy.push(item);
-    setActionConfigurationsList(copy);
-  }
 
   return (
-    <GroupedList
-      listEvents={listEvents}
-      handleActionConfigurationChange={handleActionConfigurationChange}
-      handleAddGroup={handleAddConfigurationToList}
-      initialItems={actionConfigurationsList}
-      handleEditActionConfiguration={handleEditActionConfiguration}
-      type="sequence"></GroupedList>
+    <div style={{ display: "flex" }}>
+      {["sequence", "group"].map((type) => {
+        const typedConfigs = actionConfigurationsList.filter(
+          (config) => config.type === type
+        );
+        let listEvents = {};
+        typedConfigs.forEach((config) => {
+          listEvents[config.id] = config;
+        });
+        return (
+          <GroupedList
+            hashMapConfig={hashMapConfig}
+            listEvents={listEvents}
+            handleAddGroup={handleAddConfigurationToList}
+            initialItems={actionConfigurationsList}
+            handleEditActionConfiguration={handleEditActionConfiguration}
+            type={type}></GroupedList>
+        );
+      })}
+    </div>
   );
 };
 
@@ -47,9 +40,7 @@ export default EventManager;
 
 const grid = 8;
 
-const Content = styled.div`
-  margin-right: 200px;
-`;
+const Content = styled.div``;
 
 const Item = styled.div`
   display: flex;
@@ -148,8 +139,8 @@ export const GroupedList = ({
   type,
   handleAddGroup,
   handleEditActionConfiguration,
-  handleActionConfigurationChange,
   listEvents,
+  hashMapConfig,
 }) => {
   console.log(initialItems);
 
@@ -212,6 +203,7 @@ export const GroupedList = ({
                   isDraggingOver={snapshot.isDraggingOver}>
                   <div>
                     <ActionItemNode
+                      hashMapConfig={hashMapConfig}
                       handleActionItemEdit={(actionItem) => {
                         console.log("dywootto in actionitem edit", actionItem);
                         handleEditActionConfiguration(actionItem);
@@ -238,6 +230,7 @@ export const GroupedList = ({
                                 <div {...provided.dragHandleProps}>
                                   {
                                     <ActionItemNode
+                                      hashMapConfig={hashMapConfig}
                                       actionConfiguration={
                                         copyItem
                                       }></ActionItemNode>
