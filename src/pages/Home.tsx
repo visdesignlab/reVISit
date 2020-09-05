@@ -808,6 +808,7 @@ function ConditionCard({ condition, conditionName, classes, taskID }) {
                   mr={"10px"}
                   boxShadow={0}
                   style={{ overflow: "scroll" }}>
+<<<<<<< HEAD
                   {
                     <TableComponent
                       rows={freqPattern}
@@ -815,6 +816,13 @@ function ConditionCard({ condition, conditionName, classes, taskID }) {
                       hoveredRowColor={hoveredRow ? hoveredRowColor : undefined}
                       setHoveredRow={setHoveredRow}></TableComponent>
                   }
+=======
+                     {metricValues.map((metric) => {
+                    return <BarChart key = {metric} allData = {data} hoveredRow={hoveredRow} hoveredRowColor = {hoveredRow ? hoveredRowColor : undefined} metric={metric}></BarChart>
+                  })}
+                  {/* {<Tagger text = {condition.textAnswers.map(a=>a.answer).flat().join('--')}></Tagger>} */}
+                  {/* <TableComponent rows={condition.textAnswers}></TableComponent> */}
+>>>>>>> 8138420d7a118f38730cf6a5d04a9278d2e8e200
                 </Box>
                 <Typography
                   className={classes.pos}

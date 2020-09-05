@@ -1,6 +1,6 @@
 import mockAllData from "./mockData.json";
 let local = true;
-let host = local ? "http://127.0.0.1:5000" : "http://18.222.101.54";
+let host = local ? "http://127.0.0.1:5000" : "http://18.222.101.54:5000";
 
 export async function performPrefixSpan(data) {
   console.log("postData is ", data);
@@ -13,10 +13,10 @@ export async function getDataFromServer() {
   //let res = await postData(host + "/data");
   console.log("dywootto", mockAllData);
   try {
-    console.log(mockAPICall(host + "/data", mockAllData));
-    // let res = await postData(host + "/data");
+    // console.log(mockAPICall(host + "/data", mockAllData));
+    let res = await postData(host + "/data");
 
-    let res = await mockAPICall(host + "/data", mockAllData);
+    // let res = await mockAPICall(host + "/data", mockAllData);
     return res;
   } catch (err) {
     console.log("dywootto res", err);
