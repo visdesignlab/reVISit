@@ -19,6 +19,7 @@ import EventManager, { GroupedList } from "./EventManager";
 import styled from "styled-components";
 
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { values } from "mobx";
 const Item = styled.div`
   display: flex;
   user-select: none;
@@ -37,6 +38,23 @@ const Clone = styled(Item)`
     transform: none !important;
   }
 `;
+
+function checkIfGroupDuplicates(allItemConfig) {
+  const usedGroupedElements = {};
+  let duplicatedFlag = false;
+  Object.entries(allItemConfig).map(([key, value]) => {
+    if (value.type === "group") {
+      value.elements.forEach((element) => {
+        if (usedGroupedElements[element.id]) {
+          duplicatedFlag = true;
+          return;
+        }
+        usedGroupedElements[element.id] = true;
+      });
+    }
+  });
+  return duplicatedFlag;
+}
 const ActionLegendDragContainer = (props) => {
   /*const { actionConfigurationsList, setActionConfigurationsList } = useContext(
     ProvenanceDataContext
@@ -91,7 +109,7 @@ const ActionLegendDragContainer = (props) => {
 
         //setListEvents(copyListEvents);
         break;
-      case "ITEMS":
+      case "ITEMS": // if dragged from items
         copyListEvents = { ...listEvents };
 
         copyListItem = JSON.parse(
@@ -105,11 +123,18 @@ const ActionLegendDragContainer = (props) => {
             destination
           ),
         });
-        handleActionConfigurationChange(copyListItem);
         copyListEvents[destination.droppableId] = copyListItem;
+
+        console.log("in list event", copyListItem, copyListEvents);
+        if (checkIfGroupDuplicates(copyListEvents)) {
+          console.error("cannot add duplicate items to group");
+          return;
+        }
+        handleActionConfigurationChange(copyListItem);
         //setListEvents(copyListEvents);
         break;
       default:
+        // if moved from a list
         copyListEvents = { ...listEvents };
         // move in between lists
         let copiedSource = JSON.parse(
