@@ -17,13 +17,38 @@ import Button from "@material-ui/core/Button";
 import EditIcon from "@material-ui/icons/Edit";
 import Popper from "@material-ui/core/Popper";
 import EventManager, { GroupedList } from "./EventManager";
-import { DragDropContext } from "react-beautiful-dnd";
+import styled from "styled-components";
 
+import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+const Item = styled.div`
+  display: flex;
+  user-select: none;
+  padding: 0.5rem;
+  margin: 0 0 0.5rem 0;
+  align-items: flex-start;
+  align-content: flex-start;
+  line-height: 1.5;
+  border-radius: 3px;
+  background: #fff;
+  border: 1px ${(props) => (props.isDragging ? "dashed #000" : "solid #ddd")};
+`;
+
+const Clone = styled(Item)`
+  ~ div {
+    transform: none !important;
+  }
+`;
 const ActionLegendDragContainer = (props) => {
   /*const { actionConfigurationsList, setActionConfigurationsList } = useContext(
     ProvenanceDataContext
   );*/
-  const { actionConfigurationsList } = props;
+  console.log(props);
+  const {
+    actionConfigurations,
+    setActionConfigurationsList,
+    collapsed,
+    handleActionItemEdit,
+  } = props;
   const listRef = useRef(null);
 
   /*function handleAddConfigurationToList(item) {
@@ -68,7 +93,7 @@ const ActionLegendDragContainer = (props) => {
         );
         copyListItem = Object.assign(copyListItem, {
           elements: copy(
-            renderedItems,
+            actionConfigurations,
             listEvents[destination.droppableId].elements,
             source,
             destination
@@ -78,9 +103,6 @@ const ActionLegendDragContainer = (props) => {
         copyListEvents[destination.droppableId] = copyListItem;
         //setListEvents(copyListEvents);
         break;
-      /*case "DELETE":
-        console.log("in delete", source, destination, listEvents);
-        break;*/
       default:
         copyListEvents = { ...listEvents };
         // move in between lists
@@ -118,15 +140,15 @@ const ActionLegendDragContainer = (props) => {
 
   function handleActionConfigurationChange(item) {
     // match item on the id, change it
-    const index = actionConfigurationsList.findIndex(
+    const index = actionConfigurations.findIndex(
       (config) => config.id === item.id
     );
-    let copy = [...actionConfigurationsList];
+    let copy = [...actionConfigurations];
     copy[index] = item;
     setActionConfigurationsList(copy);
   }
   // filter
-  const typedConfigs = actionConfigurationsList.filter(
+  const typedConfigs = actionConfigurations.filter(
     (config) => config.type === "sequence"
   );
   let listEvents = {};
@@ -134,7 +156,7 @@ const ActionLegendDragContainer = (props) => {
     listEvents[config.id] = config;
   });
   function handleAddConfigurationToList(item) {
-    const copy = [...actionConfigurationsList];
+    const copy = [...actionConfigurations];
     copy.push(item);
     setActionConfigurationsList(copy);
   }
@@ -179,7 +201,8 @@ export const ActionLegend = (props) => {
   return (
     <div>
       <ActionLegendDragContainer
-        actionsConfigurations={actionConfigurationsList}
+        setActionConfigurationsList={setActionConfigurationsList}
+        actionConfigurations={actionConfigurationsList}
         handleActionItemEdit={setActionItemBeingEdited}
         collapsed={props.collapsed}></ActionLegendDragContainer>
       {actionItemBeingEdited && (
@@ -300,6 +323,46 @@ const EditActionForm = ({
     </div>
   );
 };
+function uuid() {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+    var r = (Math.random() * 16) | 0,
+      v = c == "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+// a little function to help us with reordering the result
+const reorder = (list, startIndex, endIndex) => {
+  const result = Array.from(list);
+  const [removed] = result.splice(startIndex, 1);
+  result.splice(endIndex, 0, removed);
+
+  return result;
+};
+/**
+ * Moves an item from one list to another list.
+ */
+const copy = (source, destination, droppableSource, droppableDestination) => {
+  const sourceClone = Array.from(source);
+  const destClone = Array.from(destination);
+  const item = sourceClone[droppableSource.index];
+
+  destClone.splice(droppableDestination.index, 0, { ...item, dragId: uuid() });
+  return destClone;
+};
+
+const move = (source, destination, droppableSource, droppableDestination) => {
+  const sourceClone = Array.from(source);
+  const destClone = Array.from(destination);
+  const [removed] = sourceClone.splice(droppableSource.index, 1);
+
+  destClone.splice(droppableDestination.index, 0, removed);
+
+  const result = {};
+  result[droppableSource.droppableId] = sourceClone;
+  result[droppableDestination.droppableId] = destClone;
+
+  return result;
+};
 const Pop = ({ open, handleActionItemEdit, reference }) => {
   console.log("in render popover", open, handleActionItemEdit, reference);
   return (
@@ -331,24 +394,79 @@ const Pop = ({ open, handleActionItemEdit, reference }) => {
   );
 };
 const ActionLegendPresentational = ({
-  actionsConfigurations,
+  actionConfigurations,
   handleActionItemEdit,
   collapsed,
   listRef,
 }) => {
-  console.log(listRef, listRef ? listRef.current : null);
+  const renderedItems = React.useMemo(() => {
+    return actionConfigurations.map((config) =>
+      Object.assign(config, { dragId: uuid() })
+    );
+  }, [actionConfigurations]);
+  /*
+  <List ref={listRef}>
+    {actionConfigurations.map((actionConfiguration) => {
+      return (
+        <ActionItemNode
+          collapsed={collapsed}
+          actionConfiguration={actionConfiguration}
+          handleActionItemEdit={handleActionItemEdit}></ActionItemNode>
+      );
+    })}
+  </List>
+  */
+
+  console.log(
+    actionConfigurations,
+    renderedItems,
+    handleActionItemEdit,
+    collapsed,
+    listRef
+  );
   return (
     <React.Fragment>
-      <List ref={listRef}>
-        {actionsConfigurations.map((actionConfiguration) => {
-          return (
-            <ActionItemNode
-              collapsed={collapsed}
-              actionConfiguration={actionConfiguration}
-              handleActionItemEdit={handleActionItemEdit}></ActionItemNode>
-          );
-        })}
-      </List>
+      <div ref={listRef}>
+        <Droppable droppableId="ITEMS" isDropDisabled={true}>
+          {(provided, snapshot) => (
+            <div
+              ref={provided.innerRef}
+              isDraggingOver={snapshot.isDraggingOver}>
+              {renderedItems.map((item, index) => (
+                <Draggable
+                  isDragDisabled={collapsed}
+                  key={item.dragId}
+                  draggableId={item.dragId}
+                  index={index}>
+                  {(provided, snapshot) => (
+                    <React.Fragment>
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        {...provided.dragHandleProps}
+                        isDragging={snapshot.isDragging}
+                        style={provided.draggableProps.style}>
+                        {
+                          <ActionItemNode
+                            collapsed={collapsed}
+                            actionConfiguration={item}></ActionItemNode>
+                        }
+                      </div>
+                      {snapshot.isDragging && (
+                        <div>
+                          <ActionItemNode
+                            actionConfiguration={item}></ActionItemNode>
+                        </div>
+                      )}
+                    </React.Fragment>
+                  )}
+                </Draggable>
+              ))}
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
+      </div>
     </React.Fragment>
   );
 };

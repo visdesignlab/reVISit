@@ -60,15 +60,7 @@ export const IsolatedNode = ({ node }) => {
   console.log("eventMapping", eventMapping, node);
   let eventMap = eventMapping[node.name]
     ? eventMapping[node.name]
-<<<<<<< HEAD
     : { icon: "Add", color: "#fff" };
-=======
-    : {
-      name: "CustomIcon",
-      color: "#d1d1d1",
-      icon: <CheckBoxOutlineBlankIcon width={16} height={16} />,
-    };
->>>>>>> 8138420d7a118f38730cf6a5d04a9278d2e8e200
   //add check for custom icons for newly created events;
   let ProvenanceIcon = iconMapping[eventMap.icon];
   if (!ProvenanceIcon) {

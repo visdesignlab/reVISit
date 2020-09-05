@@ -58,21 +58,8 @@ export const eventMappingList = [
   {
     icon: "Add",
     color: answerSelectColor,
-<<<<<<< HEAD
-    id: "answerBox",
-    name: "Answer Select",
-    type: "raw",
-  },
-  {
-    icon: "Add",
-    color: answerSelectColor,
-    id: "Hard Selected a Node",
-    name: "Answer Select",
-    type: "raw",
-=======
     id: "Select Answer",
     name: "Select Answer",
->>>>>>> 8138420d7a118f38730cf6a5d04a9278d2e8e200
   },
   {
     icon: "PanTool",
@@ -92,24 +79,13 @@ export const eventMappingList = [
     icon: "FiberManualRecordIcon",
     color: selectColor,
     id: "attrRow",
-<<<<<<< HEAD
-    name: "Selected a Node",
-    type: "raw",
-=======
     name: "Selecte Node [Attr Row]",
->>>>>>> 8138420d7a118f38730cf6a5d04a9278d2e8e200
   },
   {
     icon: "RadioButtonUncheckedIcon",
     color: answerSelectColor,
-<<<<<<< HEAD
-    id: "Hard Unselected a Node",
-    name: "Unselected Answer",
-    type: "raw",
-=======
     id: "Unselect Answer",
     name: "Unselect Answer",
->>>>>>> 8138420d7a118f38730cf6a5d04a9278d2e8e200
   },
   {
     icon: "FiberManualRecordIcon",
@@ -122,12 +98,7 @@ export const eventMappingList = [
     icon: "FiberManualRecordIcon",
     color: selectColor,
     id: "rowLabel",
-<<<<<<< HEAD
-    name: "Selected Node",
-    type: "raw",
-=======
     name: "Select Node[rowLabel]",
->>>>>>> 8138420d7a118f38730cf6a5d04a9278d2e8e200
   },
   {
     icon: "FiberManualRecordIcon",
@@ -144,54 +115,22 @@ export const eventMappingList = [
     type: "raw",
   },
   {
-<<<<<<< HEAD
-    icon: "Search",
-    color: searchColor,
-    id: "Searched for Node",
-    name: "Search",
-    type: "raw",
-  },
-  {
-    icon: "FiberManualRecordIcon",
-    color: selectColor,
-    id: "cell",
-    name: "Cell Select",
-    type: "raw",
-=======
     icon: "FiberManualRecordIcon",
     color: selectColor,
     id: "cell",
     name: "Edge Select",
->>>>>>> 8138420d7a118f38730cf6a5d04a9278d2e8e200
   },
 
   {
     icon: "RadioButtonUncheckedIcon",
     color: selectColor,
     id: "Unselect Node",
-<<<<<<< HEAD
-    name: "Unselected Node",
-    type: "raw",
-=======
     name: "Unselect Node",
->>>>>>> 8138420d7a118f38730cf6a5d04a9278d2e8e200
   },
   {
     icon: "Clear",
     color: clearColor,
     id: "clear",
     name: "Clear Selections",
-<<<<<<< HEAD
-    type: "raw",
   },
-  {
-    icon: "Clear",
-    color: clearColor,
-    id: "cleared all selected nodes",
-    name: "Clear Selections",
-    type: "raw",
-  },
-=======
-  }
->>>>>>> 8138420d7a118f38730cf6a5d04a9278d2e8e200
 ];

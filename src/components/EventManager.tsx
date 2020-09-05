@@ -44,46 +44,6 @@ const EventManager = ({ handleEditActionConfiguration }) => {
 };
 
 export default EventManager;
-function uuid() {
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
-    var r = (Math.random() * 16) | 0,
-      v = c == "x" ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
-}
-// a little function to help us with reordering the result
-const reorder = (list, startIndex, endIndex) => {
-  const result = Array.from(list);
-  const [removed] = result.splice(startIndex, 1);
-  result.splice(endIndex, 0, removed);
-
-  return result;
-};
-/**
- * Moves an item from one list to another list.
- */
-const copy = (source, destination, droppableSource, droppableDestination) => {
-  const sourceClone = Array.from(source);
-  const destClone = Array.from(destination);
-  const item = sourceClone[droppableSource.index];
-
-  destClone.splice(droppableDestination.index, 0, { ...item, dragId: uuid() });
-  return destClone;
-};
-
-const move = (source, destination, droppableSource, droppableDestination) => {
-  const sourceClone = Array.from(source);
-  const destClone = Array.from(destination);
-  const [removed] = sourceClone.splice(droppableSource.index, 1);
-
-  destClone.splice(droppableDestination.index, 0, removed);
-
-  const result = {};
-  result[droppableSource.droppableId] = sourceClone;
-  result[droppableDestination.droppableId] = destClone;
-
-  return result;
-};
 
 const grid = 8;
 
@@ -176,7 +136,13 @@ const Button = styled.button`
 const ButtonText = styled.div`
   margin: 0 1rem;
 `;
-
+function uuid() {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+    var r = (Math.random() * 16) | 0,
+      v = c == "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
 export const GroupedList = ({
   initialItems,
   type,
@@ -186,9 +152,7 @@ export const GroupedList = ({
   listEvents,
 }) => {
   console.log(initialItems);
-  const [renderedItems, setRenderedItems] = useState(
-    initialItems.map((item) => Object.assign(item, { dragId: uuid() }))
-  );
+
   useEffect(() => {
     console.log("in unique render of grouped list");
   }, []);
@@ -196,7 +160,7 @@ export const GroupedList = ({
   //const [listEvents, setListEvents] = useState({});
   function addList(e) {
     //let copyEvents = Object.assign({}, listEvents);
-    let newListName = uuid();
+    let newListName = uuid(); //uuid();
 
     let newListEvents = {
       [newListName]: {
@@ -219,129 +183,12 @@ export const GroupedList = ({
       return copyEvents;
     });*/
   }
-  function onDragEnd(result) {
-    const { source, destination } = result;
 
-    // dropped outside the list
-    if (!destination) {
-      return;
-    }
-    let copyListItem, copyListEvents;
-    switch (source.droppableId) {
-      case destination.droppableId:
-        copyListEvents = { ...listEvents };
-
-        copyListItem = JSON.parse(
-          JSON.stringify(copyListEvents[destination.droppableId])
-        );
-        copyListItem = Object.assign(copyListItem, {
-          elements: reorder(
-            listEvents[source.droppableId].elements,
-            source.index,
-            destination.index
-          ),
-        });
-        handleActionConfigurationChange(copyListItem);
-
-        copyListEvents[destination.droppableId] = copyListItem;
-
-        //setListEvents(copyListEvents);
-        break;
-      case "ITEMS":
-        copyListEvents = { ...listEvents };
-
-        copyListItem = JSON.parse(
-          JSON.stringify(copyListEvents[destination.droppableId])
-        );
-        copyListItem = Object.assign(copyListItem, {
-          elements: copy(
-            renderedItems,
-            listEvents[destination.droppableId].elements,
-            source,
-            destination
-          ),
-        });
-        handleActionConfigurationChange(copyListItem);
-        copyListEvents[destination.droppableId] = copyListItem;
-        //setListEvents(copyListEvents);
-        break;
-      /*case "DELETE":
-        console.log("in delete", source, destination, listEvents);
-        break;*/
-      default:
-        copyListEvents = { ...listEvents };
-        // move in between lists
-        let copiedSource = JSON.parse(
-          JSON.stringify(copyListEvents[source.droppableId])
-        );
-        let copiedDestination = JSON.parse(
-          JSON.stringify(copyListEvents[destination.droppableId])
-        );
-
-        const movedChanges = move(
-          listEvents[source.droppableId].elements,
-          listEvents[destination.droppableId].elements,
-          source,
-          destination
-        );
-
-        copiedSource = Object.assign(copiedSource, {
-          elements: movedChanges[source.droppableId],
-        });
-        copiedDestination = Object.assign(copiedDestination, {
-          elements: movedChanges[destination.droppableId],
-        });
-        handleActionConfigurationChange(copiedSource);
-        handleActionConfigurationChange(copiedDestination);
-
-        copyListEvents[source.droppableId] = copiedSource;
-        copyListEvents[destination.droppableId] = copiedDestination;
-
-        //setListEvents(copyListEvents);
-
-        break;
-    }
-  }
   console.log(listEvents);
   return (
-    <DragDropContext onDragEnd={onDragEnd}>
-      <Droppable droppableId="ITEMS" isDropDisabled={true}>
-        {(provided, snapshot) => (
-          <Kiosk
-            ref={provided.innerRef}
-            isDraggingOver={snapshot.isDraggingOver}>
-            {renderedItems.map((item, index) => (
-              <Draggable
-                key={item.dragId}
-                draggableId={item.dragId}
-                index={index}>
-                {(provided, snapshot) => (
-                  <React.Fragment>
-                    <Item
-                      ref={provided.innerRef}
-                      {...provided.draggableProps}
-                      {...provided.dragHandleProps}
-                      isDragging={snapshot.isDragging}
-                      style={provided.draggableProps.style}>
-                      {
-                        <ActionItemNode
-                          actionConfiguration={item}></ActionItemNode>
-                      }
-                    </Item>
-                    {snapshot.isDragging && (
-                      <Clone>
-                        <ActionItemNode
-                          actionConfiguration={item}></ActionItemNode>
-                      </Clone>
-                    )}
-                  </React.Fragment>
-                )}
-              </Draggable>
-            ))}
-            {provided.placeholder}
-          </Kiosk>
-        )}
-      </Droppable>
+    <div>
+      {/*<DragDropContext onDragEnd={onDragEnd}>*/}
+
       <Content>
         <Button onClick={addList}>
           <svg width="24" height="24" viewBox="0 0 24 24">
@@ -409,6 +256,7 @@ export const GroupedList = ({
           </React.Fragment>
         ))}
       </Content>
-    </DragDropContext>
+      {/*</DragDropContext>*/}
+    </div>
   );
 };
