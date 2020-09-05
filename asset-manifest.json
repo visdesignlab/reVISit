@@ -1,19 +1,19 @@
 {
   "files": {
-    "main.css": "/reVISit/static/css/main.d80366fb.chunk.css",
-    "main.js": "/reVISit/static/js/main.073b736e.chunk.js",
-    "main.js.map": "/reVISit/static/js/main.073b736e.chunk.js.map",
+    "main.css": "/reVISit/static/css/main.8fdfddcf.chunk.css",
+    "main.js": "/reVISit/static/js/main.44a6c6ce.chunk.js",
+    "main.js.map": "/reVISit/static/js/main.44a6c6ce.chunk.js.map",
     "runtime-main.js": "/reVISit/static/js/runtime-main.d14098cd.js",
     "runtime-main.js.map": "/reVISit/static/js/runtime-main.d14098cd.js.map",
     "static/css/2.3cb76441.chunk.css": "/reVISit/static/css/2.3cb76441.chunk.css",
-    "static/js/2.2852915e.chunk.js": "/reVISit/static/js/2.2852915e.chunk.js",
-    "static/js/2.2852915e.chunk.js.map": "/reVISit/static/js/2.2852915e.chunk.js.map",
+    "static/js/2.88da773b.chunk.js": "/reVISit/static/js/2.88da773b.chunk.js",
+    "static/js/2.88da773b.chunk.js.map": "/reVISit/static/js/2.88da773b.chunk.js.map",
     "index.html": "/reVISit/index.html",
-    "precache-manifest.ab3466ca2e6daee22330b08dc8623dde.js": "/reVISit/precache-manifest.ab3466ca2e6daee22330b08dc8623dde.js",
+    "precache-manifest.47421601ec99708595c96bc80763c4ab.js": "/reVISit/precache-manifest.47421601ec99708595c96bc80763c4ab.js",
     "service-worker.js": "/reVISit/service-worker.js",
     "static/css/2.3cb76441.chunk.css.map": "/reVISit/static/css/2.3cb76441.chunk.css.map",
-    "static/css/main.d80366fb.chunk.css.map": "/reVISit/static/css/main.d80366fb.chunk.css.map",
-    "static/js/2.2852915e.chunk.js.LICENSE.txt": "/reVISit/static/js/2.2852915e.chunk.js.LICENSE.txt",
+    "static/css/main.8fdfddcf.chunk.css.map": "/reVISit/static/css/main.8fdfddcf.chunk.css.map",
+    "static/js/2.88da773b.chunk.js.LICENSE.txt": "/reVISit/static/js/2.88da773b.chunk.js.LICENSE.txt",
     "static/media/S-task01_adjMatrix.png": "/reVISit/static/media/S-task01_adjMatrix.596f3f16.png",
     "static/media/S-task01_nodeLink.png": "/reVISit/static/media/S-task01_nodeLink.9aabba82.png",
     "static/media/S-task02_adjMatrix.png": "/reVISit/static/media/S-task02_adjMatrix.17795797.png",
@@ -50,8 +50,8 @@
   "entrypoints": [
     "static/js/runtime-main.d14098cd.js",
     "static/css/2.3cb76441.chunk.css",
-    "static/js/2.2852915e.chunk.js",
-    "static/css/main.d80366fb.chunk.css",
-    "static/js/main.073b736e.chunk.js"
+    "static/js/2.88da773b.chunk.js",
+    "static/css/main.8fdfddcf.chunk.css",
+    "static/js/main.44a6c6ce.chunk.js"
   ]
 }
