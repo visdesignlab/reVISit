@@ -1,13 +1,31 @@
-import React, { useState, useContext, Component } from "react";
+import React, { useState, useContext, useEffect, Component } from "react";
 import ProvenanceDataContext from "./ProvenanceDataContext";
 import styled from "styled-components";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { ActionItemNode } from "./ActionLegend";
 import { Delete } from "@material-ui/icons";
-const EventManager = ({}) => {
+const EventManager = ({ handleEditActionConfiguration }) => {
   const { actionConfigurationsList, setActionConfigurationsList } = useContext(
     ProvenanceDataContext
   );
+
+  function handleActionConfigurationChange(item) {
+    // match item on the id, change it
+    const index = actionConfigurationsList.findIndex(
+      (config) => config.id === item.id
+    );
+    let copy = [...actionConfigurationsList];
+    copy[index] = item;
+    setActionConfigurationsList(copy);
+  }
+  // filter
+  const typedConfigs = actionConfigurationsList.filter(
+    (config) => config.type === "sequence"
+  );
+  let listEvents = {};
+  typedConfigs.forEach((config) => {
+    listEvents[config.id] = config;
+  });
   function handleAddConfigurationToList(item) {
     const copy = [...actionConfigurationsList];
     copy.push(item);
@@ -16,8 +34,11 @@ const EventManager = ({}) => {
 
   return (
     <GroupedList
+      listEvents={listEvents}
+      handleActionConfigurationChange={handleActionConfigurationChange}
       handleAddGroup={handleAddConfigurationToList}
       initialItems={actionConfigurationsList}
+      handleEditActionConfiguration={handleEditActionConfiguration}
       type="sequence"></GroupedList>
   );
 };
@@ -156,14 +177,25 @@ const ButtonText = styled.div`
   margin: 0 1rem;
 `;
 
-const GroupedList = ({ initialItems, type, handleAddGroup }) => {
+export const GroupedList = ({
+  initialItems,
+  type,
+  handleAddGroup,
+  handleEditActionConfiguration,
+  handleActionConfigurationChange,
+  listEvents,
+}) => {
   console.log(initialItems);
   const [renderedItems, setRenderedItems] = useState(
     initialItems.map((item) => Object.assign(item, { dragId: uuid() }))
   );
-  const [listEvents, setListEvents] = useState({});
+  useEffect(() => {
+    console.log("in unique render of grouped list");
+  }, []);
+
+  //const [listEvents, setListEvents] = useState({});
   function addList(e) {
-    let copyEvents = Object.assign({}, listEvents);
+    //let copyEvents = Object.assign({}, listEvents);
     let newListName = uuid();
 
     let newListEvents = {
@@ -178,7 +210,14 @@ const GroupedList = ({ initialItems, type, handleAddGroup }) => {
       },
     };
     handleAddGroup(newListEvents[newListName]);
-    setListEvents(Object.assign(copyEvents, newListEvents));
+    /*
+    setListEvents((currentEvents) => {
+      let copyEvents = Object.assign({}, currentEvents);
+      copyEvents = Object.assign(copyEvents, newListEvents);
+      console.log("about to add", copyEvents);
+
+      return copyEvents;
+    });*/
   }
   function onDragEnd(result) {
     const { source, destination } = result;
@@ -202,8 +241,11 @@ const GroupedList = ({ initialItems, type, handleAddGroup }) => {
             destination.index
           ),
         });
+        handleActionConfigurationChange(copyListItem);
+
         copyListEvents[destination.droppableId] = copyListItem;
-        setListEvents(copyListEvents);
+
+        //setListEvents(copyListEvents);
         break;
       case "ITEMS":
         copyListEvents = { ...listEvents };
@@ -219,8 +261,9 @@ const GroupedList = ({ initialItems, type, handleAddGroup }) => {
             destination
           ),
         });
+        handleActionConfigurationChange(copyListItem);
         copyListEvents[destination.droppableId] = copyListItem;
-        setListEvents(copyListEvents);
+        //setListEvents(copyListEvents);
         break;
       /*case "DELETE":
         console.log("in delete", source, destination, listEvents);
@@ -241,17 +284,20 @@ const GroupedList = ({ initialItems, type, handleAddGroup }) => {
           source,
           destination
         );
+
         copiedSource = Object.assign(copiedSource, {
           elements: movedChanges[source.droppableId],
         });
         copiedDestination = Object.assign(copiedDestination, {
           elements: movedChanges[destination.droppableId],
         });
+        handleActionConfigurationChange(copiedSource);
+        handleActionConfigurationChange(copiedDestination);
 
         copyListEvents[source.droppableId] = copiedSource;
         copyListEvents[destination.droppableId] = copiedDestination;
 
-        setListEvents(copyListEvents);
+        //setListEvents(copyListEvents);
 
         break;
     }
@@ -319,6 +365,10 @@ const GroupedList = ({ initialItems, type, handleAddGroup }) => {
                   isDraggingOver={snapshot.isDraggingOver}>
                   <div>
                     <ActionItemNode
+                      handleActionItemEdit={(actionItem) => {
+                        console.log("dywootto in actionitem edit", actionItem);
+                        handleEditActionConfiguration(actionItem);
+                      }}
                       actionConfiguration={listEvents[list]}></ActionItemNode>
                   </div>
                   {listEvents[list].elements.length

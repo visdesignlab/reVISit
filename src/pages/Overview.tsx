@@ -46,7 +46,12 @@ const Overview = ({ location }) => {
             data={data}
             onChange={(newData) => console.log(newData)}
           />*/}
-        {<EventManager></EventManager>}
+        {
+          <EventManager
+            handleEditActionConfiguration={(val) =>
+              console.log(val)
+            }></EventManager>
+        }
       </div>
     </div>
   );

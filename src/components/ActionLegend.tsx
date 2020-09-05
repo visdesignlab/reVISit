@@ -16,6 +16,152 @@ import ProvenanceDataContext from "./ProvenanceDataContext";
 import Button from "@material-ui/core/Button";
 import EditIcon from "@material-ui/icons/Edit";
 import Popper from "@material-ui/core/Popper";
+import EventManager, { GroupedList } from "./EventManager";
+import { DragDropContext } from "react-beautiful-dnd";
+
+const ActionLegendDragContainer = (props) => {
+  /*const { actionConfigurationsList, setActionConfigurationsList } = useContext(
+    ProvenanceDataContext
+  );*/
+  const { actionConfigurationsList } = props;
+  const listRef = useRef(null);
+
+  /*function handleAddConfigurationToList(item) {
+    const copy = [...actionConfigurationsList];
+    copy.push(item);
+    setActionConfigurationsList(copy);
+  }*/
+
+  function onDragEnd(result) {
+    const { source, destination } = result;
+
+    // dropped outside the list
+    if (!destination) {
+      return;
+    }
+    let copyListItem, copyListEvents;
+    switch (source.droppableId) {
+      case destination.droppableId: // if dropped on same list
+        copyListEvents = { ...listEvents };
+
+        copyListItem = JSON.parse(
+          JSON.stringify(copyListEvents[destination.droppableId])
+        );
+        copyListItem = Object.assign(copyListItem, {
+          elements: reorder(
+            listEvents[source.droppableId].elements,
+            source.index,
+            destination.index
+          ),
+        });
+        handleActionConfigurationChange(copyListItem);
+
+        copyListEvents[destination.droppableId] = copyListItem;
+
+        //setListEvents(copyListEvents);
+        break;
+      case "ITEMS":
+        copyListEvents = { ...listEvents };
+
+        copyListItem = JSON.parse(
+          JSON.stringify(copyListEvents[destination.droppableId])
+        );
+        copyListItem = Object.assign(copyListItem, {
+          elements: copy(
+            renderedItems,
+            listEvents[destination.droppableId].elements,
+            source,
+            destination
+          ),
+        });
+        handleActionConfigurationChange(copyListItem);
+        copyListEvents[destination.droppableId] = copyListItem;
+        //setListEvents(copyListEvents);
+        break;
+      /*case "DELETE":
+        console.log("in delete", source, destination, listEvents);
+        break;*/
+      default:
+        copyListEvents = { ...listEvents };
+        // move in between lists
+        let copiedSource = JSON.parse(
+          JSON.stringify(copyListEvents[source.droppableId])
+        );
+        let copiedDestination = JSON.parse(
+          JSON.stringify(copyListEvents[destination.droppableId])
+        );
+
+        const movedChanges = move(
+          listEvents[source.droppableId].elements,
+          listEvents[destination.droppableId].elements,
+          source,
+          destination
+        );
+
+        copiedSource = Object.assign(copiedSource, {
+          elements: movedChanges[source.droppableId],
+        });
+        copiedDestination = Object.assign(copiedDestination, {
+          elements: movedChanges[destination.droppableId],
+        });
+        handleActionConfigurationChange(copiedSource);
+        handleActionConfigurationChange(copiedDestination);
+
+        copyListEvents[source.droppableId] = copiedSource;
+        copyListEvents[destination.droppableId] = copiedDestination;
+
+        //setListEvents(copyListEvents);
+
+        break;
+    }
+  }
+
+  function handleActionConfigurationChange(item) {
+    // match item on the id, change it
+    const index = actionConfigurationsList.findIndex(
+      (config) => config.id === item.id
+    );
+    let copy = [...actionConfigurationsList];
+    copy[index] = item;
+    setActionConfigurationsList(copy);
+  }
+  // filter
+  const typedConfigs = actionConfigurationsList.filter(
+    (config) => config.type === "sequence"
+  );
+  let listEvents = {};
+  typedConfigs.forEach((config) => {
+    listEvents[config.id] = config;
+  });
+  function handleAddConfigurationToList(item) {
+    const copy = [...actionConfigurationsList];
+    copy.push(item);
+    setActionConfigurationsList(copy);
+  }
+
+  /*return (
+    <GroupedList
+      listEvents={listEvents}
+      handleActionConfigurationChange={handleActionConfigurationChange}
+      handleAddGroup={handleAddConfigurationToList}
+      initialItems={actionConfigurationsList}
+      handleEditActionConfiguration={handleEditActionConfiguration}
+      type="sequence"></GroupedList>*/
+
+  return (
+    <DragDropContext onDragEnd={onDragEnd}>
+      <ActionLegendPresentational
+        {...props}
+        listRef={listRef}></ActionLegendPresentational>
+      {listRef.current && (
+        <Pop
+          reference={listRef.current}
+          open={!collapsed}
+          handleActionItemEdit={handleActionItemEdit}></Pop>
+      )}
+    </DragDropContext>
+  );
+};
 export const ActionLegend = (props) => {
   const [actionItemBeingEdited, setActionItemBeingEdited] = useState(null);
   const { actionConfigurationsList, setActionConfigurationsList } = useContext(
@@ -32,10 +178,10 @@ export const ActionLegend = (props) => {
   }
   return (
     <div>
-      <ActionLegendPresentational
+      <ActionLegendDragContainer
         actionsConfigurations={actionConfigurationsList}
         handleActionItemEdit={setActionItemBeingEdited}
-        collapsed={props.collapsed}></ActionLegendPresentational>
+        collapsed={props.collapsed}></ActionLegendDragContainer>
       {actionItemBeingEdited && (
         <Modal
           open={!!actionItemBeingEdited}
@@ -154,35 +300,42 @@ const EditActionForm = ({
     </div>
   );
 };
+const Pop = ({ open, handleActionItemEdit, reference }) => {
+  console.log("in render popover", open, handleActionItemEdit, reference);
+  return (
+    <div>
+      {
+        <Popper
+          open={open}
+          id={"hidingpop"}
+          anchorEl={reference}
+          placement={"right-start"}>
+          <div
+            style={{
+              backgroundColor: "white",
+              width: "500px",
+              height: "100%",
+              padding: "8px",
+              display: "flex",
+            }}>
+            {
+              <EventManager
+                handleEditActionConfiguration={
+                  handleActionItemEdit
+                }></EventManager>
+            }
+          </div>
+        </Popper>
+      }
+    </div>
+  );
+};
 const ActionLegendPresentational = ({
   actionsConfigurations,
   handleActionItemEdit,
   collapsed,
+  listRef,
 }) => {
-  const listRef = useRef(null);
-  const Pop = ({ open }) => {
-    console.log("in render popover", listRef.current, open);
-    return (
-      <Popper
-        open={open}
-        id={"hidingpop"}
-        anchorEl={listRef.current}
-        placement={"right-start"}>
-        <div
-          style={{
-            backgroundColor: "white",
-            width: "500px",
-            height: "100%",
-            padding: "8px",
-            display: "flex",
-          }}>
-          {" "}
-          <div>The content of the Popover.</div>
-          <div>The content of the Popover.</div>
-        </div>
-      </Popper>
-    );
-  };
   console.log(listRef, listRef ? listRef.current : null);
   return (
     <React.Fragment>
@@ -196,7 +349,6 @@ const ActionLegendPresentational = ({
           );
         })}
       </List>
-      {listRef.current && <Pop open={!collapsed}></Pop>}
     </React.Fragment>
   );
 };
@@ -212,7 +364,14 @@ export const ActionItemNode = ({
       <IsolatedNode node={{ name: actionConfiguration.id }}></IsolatedNode>
       {!collapsed && (
         <React.Fragment>
-          <ListItemText>{actionConfiguration.name}</ListItemText>
+          <ListItemText
+            style={{
+              maxWidth: "160px",
+              overflow: "hidden",
+              textOverflow: "truncate",
+            }}>
+            {actionConfiguration.name}
+          </ListItemText>
           {handleActionItemEdit && (
             <EditIcon
               style={{ cursor: "pointer", "margin-left": "auto" }}

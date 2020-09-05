@@ -55,7 +55,6 @@ export const eventMappingList = [
     name: "Finished Task",
     type: "raw",
   },
-
   {
     icon: "Add",
     color: answerSelectColor,
