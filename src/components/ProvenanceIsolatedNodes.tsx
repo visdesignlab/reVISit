@@ -69,7 +69,7 @@ export const IsolatedNode = ({ node }) => {
   if (!ProvenanceIcon) {
     ProvenanceIcon = () => <g></g>;
   }
-  console.log("in rerender", iconMapping, eventMap.icon, ProvenanceIcon);
+  // console.log("in rerender", iconMapping, eventMap.icon, ProvenanceIcon);
   // node.event !== "startedProvenance" &&
   //   node.event !== "Finished Task" ?
   return (
