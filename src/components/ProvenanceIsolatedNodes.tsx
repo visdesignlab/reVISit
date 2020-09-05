@@ -6,6 +6,8 @@ import styles from "./ProvenanceIsolatedNodes.module.css";
 import ProvenanceDataContext from "./ProvenanceDataContext";
 import Icon from "@material-ui/core/Icon";
 import { iconMapping } from "./eventMapping";
+import CheckBoxOutlineBlankIcon from "@material-ui/icons/CheckBoxOutlineBlank";
+
 const ProvenanceIsolatedNodes = ({
   nodes,
   selectedItemId,
@@ -57,7 +59,11 @@ export const IsolatedNode = ({ node }) => {
   const eventMapping = actionConfigurations;
   let eventMap = eventMapping[node.name]
     ? eventMapping[node.name]
-    : eventMapping["custom"];
+    : {
+      name: "CustomIcon",
+      color: "#d1d1d1",
+      icon: <CheckBoxOutlineBlankIcon width={16} height={16} />,
+    };
   //add check for custom icons for newly created events;
   let ProvenanceIcon = iconMapping[eventMap.icon];
   if (!ProvenanceIcon) {

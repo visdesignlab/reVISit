@@ -724,7 +724,7 @@ function ConditionCard({ condition, conditionName, classes, taskID }) {
                      {metricValues.map((metric) => {
                     return <BarChart key = {metric} allData = {data} hoveredRow={hoveredRow} hoveredRowColor = {hoveredRow ? hoveredRowColor : undefined} metric={metric}></BarChart>
                   })}
-                  {<Tagger text = {condition.textAnswers.map(a=>a.answer).flat().join('--')}></Tagger>}
+                  {/* {<Tagger text = {condition.textAnswers.map(a=>a.answer).flat().join('--')}></Tagger>} */}
                   {/* <TableComponent rows={condition.textAnswers}></TableComponent> */}
                 </Box>
                 <Typography

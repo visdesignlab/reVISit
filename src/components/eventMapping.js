@@ -174,14 +174,8 @@ export const eventMappingList = [
   {
     icon: "Add",
     color: answerSelectColor,
-    id: "answerBox",
-    name: "Answer Select",
-  },
-  {
-    icon: "Add",
-    color: answerSelectColor,
-    id: "Hard Selected a Node",
-    name: "Answer Select",
+    id: "Select Answer",
+    name: "Select Answer",
   },
   {
     icon: "PanTool",
@@ -199,13 +193,13 @@ export const eventMappingList = [
     icon: "FiberManualRecordIcon",
     color: selectColor,
     id: "attrRow",
-    name: "Selected a Node",
+    name: "Selecte Node [Attr Row]",
   },
   {
     icon: "RadioButtonUncheckedIcon",
     color: answerSelectColor,
-    id: "Hard Unselected a Node",
-    name: "Unselected Answer",
+    id: "Unselect Answer",
+    name: "Unselect Answer",
   },
   {
     icon: "FiberManualRecordIcon",
@@ -217,7 +211,7 @@ export const eventMappingList = [
     icon: "FiberManualRecordIcon",
     color: selectColor,
     id: "rowLabel",
-    name: "Selected Node",
+    name: "Select Node[rowLabel]",
   },
   {
     icon: "FiberManualRecordIcon",
@@ -232,34 +226,22 @@ export const eventMappingList = [
     name: "Search",
   },
   {
-    icon: "Search",
-    color: searchColor,
-    id: "Searched for Node",
-    name: "Search",
-  },
-  {
     icon: "FiberManualRecordIcon",
     color: selectColor,
     id: "cell",
-    name: "Cell Select",
+    name: "Edge Select",
   },
 
   {
     icon: "RadioButtonUncheckedIcon",
     color: selectColor,
     id: "Unselect Node",
-    name: "Unselected Node",
+    name: "Unselect Node",
   },
   {
     icon: "Clear",
     color: clearColor,
     id: "clear",
     name: "Clear Selections",
-  },
-  {
-    icon: "Clear",
-    color: clearColor,
-    id: "cleared all selected nodes",
-    name: "Clear Selections",
-  },
+  }
 ];
