@@ -13,6 +13,9 @@ import TrendingFlatIcon from "@material-ui/icons/TrendingFlat";
 import Divider from "@material-ui/core/Divider";
 import { createMuiTheme, MuiThemeProvider } from "@material-ui/core/styles";
 
+import Skeleton from '@material-ui/lab/Skeleton';
+
+
 import Fab from '@material-ui/core/Fab';
 
 
@@ -814,6 +817,8 @@ export default function TaskContainer() {
 
   const { data, homeTaskSort } = useContext(ProvenanceDataContext);
 
+  // console.log('data is ', data)
+
   // console.log('homeTaskSort is ', homeTaskSort)
  
   function getValues(task,conditionFilter,sortKey){
@@ -833,6 +838,7 @@ export default function TaskContainer() {
     
     if (homeTaskSort){
 
+      console.log('homeTaskSort', homeTaskSort)
       let sortKey = homeTaskSort.metric;
       let desc = homeTaskSort.desc
       let conditionFilter = homeTaskSort.conditions
@@ -855,6 +861,20 @@ export default function TaskContainer() {
         return aValue > bValue ? rValue : -rValue
     })
 
+    data.taskList.sort((a,b)=>{
+      let taskA = data.tasks.find(t=>t.taskID == a);
+      let taskB = data.tasks.find(t=>t.taskID == b);
+
+      if (!taskA || !taskB){
+        return -1
+      }
+      let indexA = data.tasks.indexOf(taskA);
+      let indexB = data.tasks.indexOf(taskB);
+
+      return indexA > indexB ? 1 : -1
+
+    })
+
     console.log('done sorting')
 
   }}
@@ -873,9 +893,9 @@ export default function TaskContainer() {
     <></>
   ) : (
     <>
-      {data.tasks.map((task) => {
-        // let taskTooltip = <Typography>{task.prompt}</Typography>;
-        return (<TaskCard key = {task.name} task={task} classes={classes}></TaskCard>);
+      {data.taskList.map((taskID) => {
+        let task = data.tasks.find(t=>t.taskID == taskID);
+        return  task ? <TaskCard key = {task.name} task={task} classes={classes}></TaskCard>  : <Skeleton key={taskID} variant="rect" width={'98%'} height={500} style={{margin:'20px',padding:'20px'}}>Loading {taskID}</Skeleton>    
       })}
     </>
   );
