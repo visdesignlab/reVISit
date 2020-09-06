@@ -46,6 +46,7 @@ export const eventMappingList = [
     id: "startedProvenance",
     name: "Began Task",
     type: "raw",
+    hidden: false,
   },
 
   {
@@ -54,12 +55,15 @@ export const eventMappingList = [
     id: "Finished Task",
     name: "Finished Task",
     type: "raw",
+    hidden: false,
   },
   {
     icon: "Add",
     color: answerSelectColor,
     id: "Select Answer",
     name: "Select Answer",
+    type: "raw",
+    hidden: false,
   },
   {
     icon: "PanTool",
@@ -67,6 +71,7 @@ export const eventMappingList = [
     name: "Dragged Node",
     id: "Dragged Node",
     type: "raw",
+    hidden: false,
   },
   {
     icon: "Sort",
@@ -74,12 +79,15 @@ export const eventMappingList = [
     id: "sort",
     name: "Sort",
     type: "raw",
+    hidden: false,
   },
   {
     icon: "FiberManualRecordIcon",
     color: selectColor,
     id: "attrRow",
-    name: "Selecte Node [Attr Row]",
+    name: "Select Node [Attr Row]",
+    type: "raw",
+    hidden: false,
   },
   {
     icon: "RadioButtonUncheckedIcon",
@@ -93,6 +101,7 @@ export const eventMappingList = [
     id: "Select Node",
     name: "Selected Node",
     type: "raw",
+    hidden: false,
   },
   {
     icon: "FiberManualRecordIcon",
@@ -106,6 +115,7 @@ export const eventMappingList = [
     id: "colLabel",
     name: "Neighbor Highlight",
     type: "raw",
+    hidden: false,
   },
   {
     icon: "Search",
@@ -113,12 +123,15 @@ export const eventMappingList = [
     id: "search",
     name: "Search",
     type: "raw",
+    hidden: false,
   },
   {
     icon: "FiberManualRecordIcon",
     color: selectColor,
     id: "cell",
     name: "Edge Select",
+    type: "raw",
+    hidden: false,
   },
 
   {
@@ -126,11 +139,41 @@ export const eventMappingList = [
     color: selectColor,
     id: "Unselect Node",
     name: "Unselect Node",
+    type: "raw",
+    hidden: false,
   },
   {
     icon: "Clear",
     color: clearColor,
     id: "clear",
     name: "Clear Selections",
+    type: "raw",
+    hidden: false,
+  },
+  {
+    icon: "Clear",
+    color: clearColor,
+    id: "clearGroup",
+    name: "Cleared Group",
+    type: "group",
+    hidden: false,
+    elements: [
+      {
+        icon: "Clear",
+        color: clearColor,
+        id: "clear",
+        name: "Clear Selections",
+        type: "raw",
+        hidden: false,
+      },
+      {
+        icon: "RadioButtonUncheckedIcon",
+        color: selectColor,
+        id: "Unselect Node",
+        name: "Unselect Node",
+        type: "raw",
+        hidden: false,
+      },
+    ],
   },
 ];

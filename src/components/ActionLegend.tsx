@@ -17,6 +17,7 @@ import EditIcon from "@material-ui/icons/Edit";
 import Popper from "@material-ui/core/Popper";
 import EventManager, { GroupedList } from "./EventManager";
 import styled from "styled-components";
+import Switch from "@material-ui/core/Switch";
 
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { values } from "mobx";
@@ -250,6 +251,12 @@ export const ActionLegend = (props) => {
     );
     let configCopy = [...volatileActionConfigurationList];
     configCopy[configurationIndex] = newConfiguration;
+
+    // if an action configuration isn't a raw event and was deleted, remove it.
+    if (newConfiguration.type !== "raw" && newConfiguration.hidden) {
+      console.log("deleting config", configCopy);
+      configCopy.splice(configurationIndex, 1);
+    }
     setVolatileActionConfigurationList(configCopy);
     setActionItemBeingEdited(null);
   }
@@ -322,6 +329,32 @@ class ActionConfiguration {
   }
 }
 
+const CustomTypeFields = ({
+  volatileConfiguration,
+  handleConfigurationPropertyChange,
+}) => {
+  let fields;
+  if (volatileConfiguration.type === "raw") {
+    fields = (
+      <Switch
+        checked={volatileConfiguration.hidden}
+        onChange={(event) =>
+          handleConfigurationPropertyChange("hidden", event.target.value)
+        }
+        name="checkedA"
+        inputProps={{ "aria-label": "secondary checkbox" }}
+      />
+    );
+  } else {
+    fields = (
+      <Button onClick={() => {}} color="secondary">
+        Delete
+      </Button>
+    );
+  }
+  return <div>{fields}</div>;
+};
+
 const EditActionForm = ({
   actionConfiguration,
   handleActionConfigurationChange,
@@ -332,12 +365,13 @@ const EditActionForm = ({
   const [volatileConfiguration, setVolatileConfiguration] = useState(
     actionConfiguration
   );
+  console.log("edit form volatile config", volatileConfiguration);
   if (!actionConfiguration.id) {
     console.error(`action configuration is missing an id.`);
     return <div></div>;
   }
   function handleConfigurationPropertyChange(key, newValue) {
-    console.log(key, newValue);
+    console.log("property changing", key, newValue);
     let clonedConfiguration = JSON.parse(JSON.stringify(volatileConfiguration));
     let newConfiguration = {};
     newConfiguration[key] = newValue;
@@ -393,7 +427,29 @@ const EditActionForm = ({
             handleConfigurationPropertyChange("color", newValue);
           }}></ColorPicker>
       </div>
-      <div style={{ order: 2, margin: "auto" }}>
+
+      <div style={{ order: 3, margin: "auto" }}>
+        <label
+          for={"deleteToggle"}
+          className={
+            "MuiFormLabel-root MuiInputLabel-root MuiInputLabel-animated MuiInputLabel-shrink MuiFormLabel-filled"
+          }>
+          {volatileConfiguration.type === "raw"
+            ? "Hide Element"
+            : "Delete Element"}
+        </label>
+        <Switch
+          id={"deleteToggle"}
+          checked={volatileConfiguration.hidden}
+          onChange={(event) =>
+            handleConfigurationPropertyChange("hidden", !event.target.value)
+          }
+          name="checkedA"
+          inputProps={{ "aria-label": "secondary checkbox" }}
+        />
+      </div>
+      <div style={{ order: 4 }}></div>
+      <div style={{ order: 5, margin: "auto" }}>
         <Button
           color="primary"
           onClick={() =>

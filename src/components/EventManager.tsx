@@ -188,7 +188,7 @@ export const GroupedList = ({
               d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"
             />
           </svg>
-          <ButtonText>Add List</ButtonText>
+          <ButtonText>Add {type}</ButtonText>
         </Button>
         {/*<Droppable droppableID="DELETE">
           {(provided, snapshot) => <Delete></Delete>}
@@ -248,6 +248,9 @@ export const GroupedList = ({
             </Droppable>
           </React.Fragment>
         ))}
+        {Object.keys(listEvents).length === 0 && (
+          <span>No {type}s have been created.</span>
+        )}
       </Content>
       {/*</DragDropContext>*/}
     </div>
