@@ -67,7 +67,10 @@ let xDomain, yDomain, categories;
 export default function StudyCard() {
     const classes = useStyles();
     const bull = <span className={classes.bullet}>•</span>;
-    const { data } = useContext(ProvenanceDataContext);
+    let { data,timelineData } = useContext(ProvenanceDataContext);
+
+    Object.assign(data,timelineData) 
+    // console.log('combinedData is ', data)
 
     function eventMap(eventData, size = { width: 130, height: 30 }) {
 
@@ -396,8 +399,8 @@ export default function StudyCard() {
     let participants, conditionGroups;
     if (data) {
         participants = data.participants
-        // console.log(participants)
-        participants.map(p => p.condition = p.study[0].condition)
+        //the concept of a single condition per participant is not always valid. 
+        // participants.map(p => p.condition = p.study[0].condition)
         let allLevels = participants.map(p => p.study.map(s => s.level)).flat();
         // console.log(allLevels)
         categories = [... new Set(participants.map(p => p.study.map(s => s.category)).flat())];
@@ -436,11 +439,11 @@ export default function StudyCard() {
                             {Object.keys(conditionGroups).map(cond =>
                                 <Grid item xs={12} key={cond}>
                                     <Grid container justify="flex-start" spacing={2}>
-                                        <Box display="flex" justifyContent="center" p={2}>
+                                        {/* <Box display="flex" justifyContent="center" p={2}>
                                             <Typography style={{ display: 'block' }} color="primary" variant='overline'  >
                                                 {cond}
                                             </Typography>
-                                        </Box>
+                                        </Box> */}
 
                                         <Divider />
 
@@ -451,7 +454,7 @@ export default function StudyCard() {
                                                         {/* <Box display="flex" justifyContent="flex-end"> */}
 
                                                         <Typography style={{ display: 'block' }} color="primary" variant='overline'  >
-                                                            {'Avg. Accuracy: ' + (Math.round(participant.averageAccuracy * 100) / 100)}
+                                                            {'Avg. Accuracy: ' + (Math.round(participant.averageAccuracy * 100) / 100 || undefined) }
                                                         </Typography>
                                                         {/* <Typography style={{ display: 'block' }} color="primary" variant='overline'  >
                                                                 {'ID:' + participant.participantID.slice(0, 3) + '...' + participant.participantID.slice(-3)}

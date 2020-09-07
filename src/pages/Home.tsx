@@ -306,18 +306,34 @@ let countScale = d3.scaleLinear().range([0, 75]).domain([0, 137]);
 
 function Stimulus({taskID,conditionName,classes}){
   // console.log('am rerendering')
+
+  //check if image exists
+  let imgName = "../static/taskImages/" +  taskID +  "_" +  conditionName +  ".png";
+
+  // image={require("../static/taskImages/" +
+  // taskID +
+  // "_" +
+  // conditionName +
+  // ".png")}
+  
+
+  let img; 
+  try{
+    img = require("../static/taskImages/" +  taskID +  "_" +  conditionName +  ".png")
+  }
+  catch(err){
+    console.log('could not find', imgName)
+      img = ''
+  }
+
   return  <><Box mt={"5px"} mb={"6px"} mr={"10px"} boxShadow={1}>
   <CardMedia
     style={{ display: "inline-block" }}
     className={classes.media}
     component="img"
-    image={require("../static/taskImages/" +
-      taskID +
-      "_" +
-      conditionName +
-      ".png")}
+      image={img}
     // image="https://placekitten.com/g/100/100"
-    title="Task 1 AM"
+    title={imgName}
   />
 </Box>
 <Typography
