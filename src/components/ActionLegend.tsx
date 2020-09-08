@@ -227,7 +227,9 @@ export const ActionLegend = (props) => {
   const { actionConfigurationsList, setActionConfigurationsList } = useContext(
     ProvenanceDataContext
   );
-
+  useEffect(() => {
+    setVolatileActionConfigurationList(actionConfigurationsList);
+  }, [actionConfigurationsList]);
   const [
     volatileActionConfigurationList,
     setVolatileActionConfigurationList,
@@ -244,7 +246,11 @@ export const ActionLegend = (props) => {
     );
     return hashConfig;
   }, [volatileActionConfigurationList]);
-
+  function cancelChanges() {
+    // set to orgiinal
+    setVolatileActionConfigurationList(actionConfigurationsList);
+    setIsActionLegendEditing(false);
+  }
   function handleSaveActionConfiguration(newConfiguration) {
     const configurationIndex = volatileActionConfigurationList.findIndex(
       (config) => config.id === newConfiguration.id
@@ -272,9 +278,7 @@ export const ActionLegend = (props) => {
             <Button variant={"primary"} onClick={saveChanges}>
               Apply Changes
             </Button>
-            <Button
-              variant="secondary"
-              onClick={() => setIsActionLegendEditing(false)}>
+            <Button variant="secondary" onClick={cancelChanges}>
               Cancel
             </Button>
           </div>

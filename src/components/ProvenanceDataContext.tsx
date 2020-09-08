@@ -5,6 +5,8 @@ import _ from "lodash";
 import {
   getDataFromServer,
   getTaskDataFromServer,
+  getActionConfigurations,
+  saveActionConfigurationToDB,
 } from "../fetchers/fetchMocks.js";
 import { useFetchAPIData } from "../hooks/hooks";
 import { eventMappingList } from "./eventMapping";
@@ -67,13 +69,95 @@ function compileActionListToHashTable(list) {
 export const ProvenanceDataContextProvider = ({ children }) => {
   // console.trace('calling provenanceDataContextProvider')
   const [selectedTaskIds, setSelectedTaskIds] = React.useState(["S-task01"]);
-  const [actionConfigurationsList, setActionConfigurationsList] = useState(
-    eventMappingList
-  );
+
+  // state variable used to trigger an update of action configuration list
+  const [queryCount, setQueryCount] = useState(0);
+  console.log("queryCount", queryCount);
+  const [
+    loadingActionConfigurations,
+    errorLoadingActionConfigurations,
+    actionConfigurationsFromServer,
+  ] = useFetchAPIData(async () => {
+    console.log("in fetch api data");
+    const value = await getActionConfigurations();
+    console.log("action config value", value);
+    return value;
+  }, [queryCount]);
+
+  useEffect(() => {
+    // filter out events like "browsed away"
+    console.log(actionConfigurationsFromServer);
+    if (actionConfigurationsFromServer) {
+      const actionConfigurationsFiltered = actionConfigurationsFromServer.filter(
+        (config) => config.type !== "event"
+      );
+      setActionConfigurationsListInternal(actionConfigurationsFiltered);
+    }
+  }, [actionConfigurationsFromServer]);
+
+  /**
+   * Determines if a structural change occured when editing action configurations.
+   * A structural change is a change that would impact any event sequence dependent
+   * calculations (like event pattern mining)
+   * @param old
+   * @param */
+
+  function isStructuralActionChange(oldActions, newActions) {
+    // if the number of action configurations, then it is a structural change
+    if (oldActions.length !== newActions.length) {
+      return true;
+    }
+
+    // if elements, hidden, or id's are different for any action, change is structural
+    for (let i = 0; i < oldActions.length; i++) {
+      let difference = Object.keys(oldActions[i]).filter(
+        (k) =>
+          JSON.stringify(oldActions[i][k]) !== JSON.stringify(newActions[i][k])
+      );
+      for (let innerIndex = 0; innerIndex < difference.length; innerIndex++) {
+        if (
+          difference[innerIndex] === "elements" ||
+          difference[innerIndex] === "hidden" ||
+          difference[innerIndex] === "id"
+        ) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+  function setActionConfigurationsList(newActionConfigurationsList) {
+    console.log(
+      "in setActionConfgiuration about to save",
+      newActionConfigurationsList
+    );
+    saveActionConfigurationToDB(newActionConfigurationsList).then(
+      (response) => {
+        // if a structural change, refetch, else just reset
+        if (
+          isStructuralActionChange(
+            actionConfigurationsList,
+            newActionConfigurationsList
+          )
+        ) {
+          console.log("IN STRUCTURAL");
+          setQueryCount(queryCount + 1);
+        } else {
+          console.log("IN SUPERFICIAL");
+          setActionConfigurationsListInternal(newActionConfigurationsList);
+        }
+      }
+    );
+  }
+  const [
+    actionConfigurationsList,
+    setActionConfigurationsListInternal,
+  ] = useState([]);
+  console.log("final list", actionConfigurationsList);
   const [actionConfigurations, setActionConfigurations] = useState(
     compileActionListToHashTable(eventMappingList)
   );
-
   useEffect(() => {
     setActionConfigurations(
       compileActionListToHashTable(actionConfigurationsList)

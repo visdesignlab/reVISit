@@ -40,7 +40,9 @@ export default EventManager;
 
 const grid = 8;
 
-const Content = styled.div``;
+const Content = styled.div`
+  width: 310px;
+`;
 
 const Item = styled.div`
   display: flex;
@@ -249,7 +251,10 @@ export const GroupedList = ({
           </React.Fragment>
         ))}
         {Object.keys(listEvents).length === 0 && (
-          <span>No {type}s have been created.</span>
+          <span>
+            No {type}s have been created. Click Add {type} to get started
+            dragging items.
+          </span>
         )}
       </Content>
       {/*</DragDropContext>*/}
