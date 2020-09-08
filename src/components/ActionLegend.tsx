@@ -259,10 +259,10 @@ export const ActionLegend = (props) => {
     configCopy[configurationIndex] = newConfiguration;
 
     // if an action configuration isn't a raw event and was deleted, remove it.
-    if (newConfiguration.type !== "raw" && newConfiguration.hidden) {
+    /*if (newConfiguration.type !== "raw" && newConfiguration.hidden) {
       console.log("deleting config", configCopy);
       configCopy.splice(configurationIndex, 1);
-    }
+    }*/
     setVolatileActionConfigurationList(configCopy);
     setActionItemBeingEdited(null);
   }
@@ -446,7 +446,10 @@ const EditActionForm = ({
           id={"deleteToggle"}
           checked={volatileConfiguration.hidden}
           onChange={(event) =>
-            handleConfigurationPropertyChange("hidden", !event.target.value)
+            handleConfigurationPropertyChange(
+              "hidden",
+              !volatileConfiguration.hidden
+            )
           }
           name="checkedA"
           inputProps={{ "aria-label": "secondary checkbox" }}
@@ -531,6 +534,7 @@ const Pop = ({
               padding: "8px",
               display: "flex",
               overflow: "auto",
+              border: "1px lightgray solid",
             }}>
             {
               <EventManager

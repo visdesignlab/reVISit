@@ -18,8 +18,12 @@ const EventManager = ({
         const typedConfigs = actionConfigurationsList.filter(
           (config) => config.type === type
         );
+        const nonHiddenConfigs = typedConfigs.filter((config) => {
+          console.log(config);
+          return config.hidden === 0;
+        });
         let listEvents = {};
-        typedConfigs.forEach((config) => {
+        nonHiddenConfigs.forEach((config) => {
           listEvents[config.id] = config;
         });
         return (
