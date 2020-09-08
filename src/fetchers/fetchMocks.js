@@ -1,5 +1,5 @@
 import mockAllData from "./mockData.json";
-let local = true;
+let local = false;
 let host = local ? "http://127.0.0.1:5000" : "http://18.222.101.54:5000";
 
 export async function performPrefixSpan(data) {
