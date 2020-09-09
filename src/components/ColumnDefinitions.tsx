@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { QuantitativeFilter, CategoricalFilter } from "./TableFilters";
 import * as d3 from "d3";
-import eventMapping from "./eventMapping";
 import TagWrapper from "./reactTagWrapper";
 import ProvenanceIsolatedNodes from "./ProvenanceIsolatedNodes";
 import EventSearch from "./EventSearch";
@@ -283,7 +282,7 @@ function filterEvents(filterValue, rowValue) {
   }
   return hasSubArrayStrict(
     rowValue.map((val) => val.name),
-    filterValue.map((val) => val.label)
+    filterValue.map((val) => val.id)
   ); //rowValue.length >= 5;
 }
 const GroupedContainer = (props) => {
@@ -330,6 +329,7 @@ export class ProvenanceColumn {
         <EventsSummary
           incomingData={{ incomingData: this.data }}
           onFilter={(filter, value, row) => {
+            console.log("in event summary filter", filter, value, row);
             return this.handleFilterChange(this.name, filter);
           }}></EventsSummary>
       ),
