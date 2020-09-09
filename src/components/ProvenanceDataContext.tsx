@@ -3,10 +3,12 @@ import React, { useState, useEffect, useMemo } from "react";
 import * as d3 from "d3";
 import _ from "lodash";
 import {
-  getDataFromServer,
+  getTaskOverviewFromServer,
   getTaskDataFromServer,
   getActionConfigurations,
   saveActionConfigurationToDB,
+  getTaskListFromServer,
+  getTimelineFromServer,
 } from "../fetchers/fetchMocks.js";
 import { useFetchAPIData } from "../hooks/hooks";
 import { eventMappingList } from "./eventMapping";
@@ -184,10 +186,14 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     { name: "Task 16", key: "S-task16" },
   ];
 
-  let [data, setData] = useState();
+  const [data, setData] = useState();
+  const [fetchedInitialTask, setFetchedInitialTask] = useState(false);
+  const [taskList, setTaskList] = useState();
+  const [timelineData, setTimelineData] = useState();
   const [currentlyVisitedNodes, setCurrentlyVisitedNodes] = React.useState(
     null
   );
+
   // const [metrics,setMetrics] = React.useState()
 
   let conditions;
@@ -225,17 +231,70 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     // render vis using that provenance graph
     //});
   }
-  // get initial data from server;
+
+  // get taskList from server;
+  let [, , taskListFromServer] = useFetchAPIData(async () => {
+    console.log("requesting tasklist from server ");
+    return await getTaskListFromServer();
+  }, []);
+
+  // get task overview data from server for one task;
   let [isLoading, isError, dataFromServer] = useFetchAPIData(async () => {
-    return await getDataFromServer();
-  }, [queryCount]);
+    console.log("requesting task overview for ", taskList[0]);
+    return await getTaskOverviewFromServer(taskList[0]);
+  }, [taskList, queryCount]);
+
+  //  get timeline from server;
+  let [, , timelineDataFromServer] = useFetchAPIData(async () => {
+    console.log("requesting timeline data from server ");
+    return await getTimelineFromServer();
+  }, []);
+
   // console.log(isLoading, isError, dataFromServer);
   /*[{"_id":"startedProvenance","actionID":"startedProvenance","category":"Study\r","condition":"nodeLink","elapsedTime":0,"id":1,"label":"Start Task","participantID":"545d6768fdf99b7f9fca24e3","target":null,"taskID":"S-task01","time":"Wed, 28 Aug 2019 00:51:18 GMT","type":"action"},{"_id":"Hard Selected A Node","actionID":"Hard Selected a Node","category":"Answer\r","condition":"nodeLink","elapsedTime":0.283333,"id":2,"label":"Select","participantID":"545d6768fdf99b7f9fca24e3","target":null,"taskID":"S-task01","time":"Wed, 28 Aug 2019 00:51:35 GMT","type":"action"},{"_id":"Hard Unselected A Node","actionID":"Hard Unselected a Node","category":"Answer\r","condition":"nodeLink","elapsedTime":0.316667,"id":3,"label":"Unselect","participantID":"545d6768fdf99b7f9fca24e3","target":null,"taskID":"S-task01","time":"Wed, 28 Aug 2019 00:51:37 GMT","type":"action"},{"_id":"Hard Selected A Node","actionID":"Hard Selected a Node","category":"Answer\r","condition":"nodeLink","elapsedTime":0.45,"id":2,"label":"Select","participantID":"545d6768fdf99b7f9fca24e3","target":null,"taskID":"S-task01","time":"Wed, 28 Aug 2019 00:51:45 GMT","type":"action"},{"_id":"Finished Task","actionID":"Finished Task","category":"Study\r","condition":"nodeLink","elapsedTime":0.666667,"id":4,"label":"Finish Task","participantID":"545d6768fdf99b7f9fca24e3","target":null,"taskID":"S-task01","time":"Wed, 28 Aug 2019 00:51:58 GMT","type":"action"}]*/
 
   useEffect(() => {
+    console.log("timeline data from server", timelineDataFromServer);
+    setTimelineData(timelineDataFromServer);
+  }, [timelineDataFromServer]);
+
+  useEffect(() => {
     console.log("data from server", dataFromServer);
-    setData(dataFromServer);
+    if (dataFromServer) {
+      setData(dataFromServer);
+      setFetchedInitialTask(true);
+    }
   }, [dataFromServer]);
+
+  //get task overviewdata for all remaining tasks
+  useFetchAPIData(async () => {
+    console.log("loop test for task overviews", fetchedInitialTask, taskList);
+    taskList.map((task) => {
+      getTaskOverviewFromServer(task).then((newTaskData) => {
+        let newData = { ...data };
+        // console.log(newData)
+        console.log(newTaskData.data.tasks[0]);
+        newData.tasks.push(newTaskData.data.tasks[0]);
+        setData(newData);
+      });
+    });
+  }, [fetchedInitialTask]);
+
+  //get task overviewdata for all remaining tasks
+  // useFetchAPIData(async () => {
+  //   if (dataFromServer){
+  //     console.log('get remaining tasks ')
+  //     getTaskOverviewFromServer().then((newTaskData)=>{
+  //       console.log('newTaskData', newTaskData.data)
+  //       setData(newTaskData.data)
+  //     });
+  //   }
+  // }, [dataFromServer]);
+
+  useEffect(() => {
+    console.log("taskList from server", taskListFromServer);
+    setTaskList(taskListFromServer);
+  }, [taskListFromServer]);
 
   //State
   function timeout(ms) {
@@ -293,6 +352,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
         handleChangeSelectedTaskId,
         selectedTaskIds,
         data,
+        timelineData,
         metrics,
         setTaskSort,
         homeTaskSort,

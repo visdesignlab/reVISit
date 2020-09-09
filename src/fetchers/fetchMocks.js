@@ -62,12 +62,16 @@ export async function getActionConfigurations() {
 
   return res;
 }
-export async function getDataFromServer() {
+export async function getTaskOverviewFromServer(taskID = undefined) {
   //let res = await postData(host + "/data");
-  console.log("dywootto", mockAllData);
+  // console.log("dywootto", mockAllData);
   try {
     // console.log(mockAPICall(host + "/data", mockAllData));
-    let res = await getData(host + "/data");
+    // let res = await postData(host + `/data`);
+
+    let res = taskID
+      ? await postData(host + `/overview/${taskID}`)
+      : await postData(host + `/overview/allTasks`);
 
     // let res = await mockAPICall(host + "/data", mockAllData);
     return res;
@@ -81,6 +85,19 @@ export async function getSchema(tableID) {
 }
 export async function getTaskDataFromServer(taskID) {
   let res = await getData(`${host}/data/task/${taskID}`);
+  return res;
+}
+
+export async function getTimelineFromServer() {
+  // return await setTimeout(async () => {
+  let res = await getData(`${host}/timeline`);
+  //   console.log("World!");
+  return res;
+  //  }, 5000);
+}
+
+export async function getTaskListFromServer() {
+  let res = await getData(`${host}/taskList`);
   return res;
 }
 

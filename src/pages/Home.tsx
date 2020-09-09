@@ -13,6 +13,8 @@ import TrendingFlatIcon from "@material-ui/icons/TrendingFlat";
 import Divider from "@material-ui/core/Divider";
 import { createMuiTheme, MuiThemeProvider } from "@material-ui/core/styles";
 
+import Skeleton from "@material-ui/lab/Skeleton";
+
 import Fab from "@material-ui/core/Fab";
 
 import Table from "@material-ui/core/Table";
@@ -301,11 +303,9 @@ export const BarChart = (props) => {
                                   return <>
                                     <Box style={{ display: 'block' }} >
                                       <Box  mb={"6px"} style={{ display: 'inline-block', width: 100 }}>
-
                                         <svg width={100} height={34}>
                                         <rect x={100-countScale(freqPattern[i].count)} y={0} width={countScale(freqPattern[i].count)} height={30} style={{fill: 'rgb(147 195 209)', 'stroke':'white', strokeWidth:'8px' }}></rect>
                                         <text x={90} y={20} style={{'fontWeight':'bold','textAnchor':'end'}}>{freqPattern[i].count}</text>
-
                                         </svg>
                                       </Box>
                                       <Box mt={"5px"} mb={"6px"} style={{ display: 'inline-block', width: 300 }}>
@@ -325,6 +325,28 @@ let countScale = d3.scaleLinear().range([0, 75]).domain([0, 137]);
 
 function Stimulus({ taskID, conditionName, classes }) {
   // console.log('am rerendering')
+
+  //check if image exists
+  let imgName = "../static/taskImages/" + taskID + "_" + conditionName + ".png";
+
+  // image={require("../static/taskImages/" +
+  // taskID +
+  // "_" +
+  // conditionName +
+  // ".png")}
+
+  let img;
+  try {
+    img = require("../static/taskImages/" +
+      taskID +
+      "_" +
+      conditionName +
+      ".png");
+  } catch (err) {
+    console.log("could not find", imgName);
+    img = "";
+  }
+
   return (
     <>
       <Box mt={"5px"} mb={"6px"} mr={"10px"} boxShadow={1}>
@@ -332,13 +354,9 @@ function Stimulus({ taskID, conditionName, classes }) {
           style={{ display: "inline-block" }}
           className={classes.media}
           component="img"
-          image={require("../static/taskImages/" +
-            taskID +
-            "_" +
-            conditionName +
-            ".png")}
+          image={img}
           // image="https://placekitten.com/g/100/100"
-          title="Task 1 AM"
+          title={imgName}
         />
       </Box>
       <Typography className={classes.pos} variant="overline" color="primary">
@@ -419,7 +437,6 @@ function SequenceCount({ row, hoveredRow, hoveredRowColor }) {
     style={{
       fill: "rgb(220, 220, 220)"
     }}></rect>
-
 <rect
     x={0}
     y={0}
@@ -428,7 +445,6 @@ function SequenceCount({ row, hoveredRow, hoveredRowColor }) {
     style={{
       fill: "rgb(93, 131, 210)"
     }}></rect>
-
 <text
     x={countScale(137)+padding}
     y={10}
@@ -808,20 +824,13 @@ function ConditionCard({ condition, conditionName, classes, taskID }) {
                   mr={"10px"}
                   boxShadow={0}
                   style={{ overflow: "scroll" }}>
-                  {metricValues.map((metric) => {
-                    return (
-                      <BarChart
-                        key={metric}
-                        allData={data}
-                        hoveredRow={hoveredRow}
-                        hoveredRowColor={
-                          hoveredRow ? hoveredRowColor : undefined
-                        }
-                        metric={metric}></BarChart>
-                    );
-                  })}
-                  {/* {<Tagger text = {condition.textAnswers.map(a=>a.answer).flat().join('--')}></Tagger>} */}
-                  {/* <TableComponent rows={condition.textAnswers}></TableComponent> */}
+                  {
+                    <TableComponent
+                      rows={freqPattern}
+                      hoveredRow={hoveredRow}
+                      hoveredRowColor={hoveredRow ? hoveredRowColor : undefined}
+                      setHoveredRow={setHoveredRow}></TableComponent>
+                  }
                 </Box>
                 <Typography
                   className={classes.pos}
@@ -886,13 +895,7 @@ function ConditionCard({ condition, conditionName, classes, taskID }) {
                           metric={metric}></BarChart>
                       );
                     })}
-                    {
-                      <Tagger
-                        text={condition.textAnswers
-                          .map((a) => a.answer)
-                          .flat()
-                          .join("--")}></Tagger>
-                    }
+                    {/* {<Tagger text = {condition.textAnswers.map(a=>a.answer).flat().join('--')}></Tagger>} */}
                     {/* <TableComponent rows={condition.textAnswers}></TableComponent> */}
                   </Box>
                   <Typography
@@ -987,6 +990,8 @@ export default function TaskContainer() {
 
   const { data, homeTaskSort } = useContext(ProvenanceDataContext);
 
+  // console.log('data is ', data)
+
   // console.log('homeTaskSort is ', homeTaskSort)
 
   function getValues(task, conditionFilter, sortKey) {
@@ -1006,6 +1011,7 @@ export default function TaskContainer() {
     // console.log(data.tasks)
 
     if (homeTaskSort) {
+      console.log("homeTaskSort", homeTaskSort);
       let sortKey = homeTaskSort.metric;
       let desc = homeTaskSort.desc;
       let conditionFilter = homeTaskSort.conditions;
@@ -1026,6 +1032,19 @@ export default function TaskContainer() {
         return aValue > bValue ? rValue : -rValue;
       });
 
+      data.taskList.sort((a, b) => {
+        let taskA = data.tasks.find((t) => t.taskID == a);
+        let taskB = data.tasks.find((t) => t.taskID == b);
+
+        if (!taskA || !taskB) {
+          return -1;
+        }
+        let indexA = data.tasks.indexOf(taskA);
+        let indexB = data.tasks.indexOf(taskB);
+
+        return indexA > indexB ? 1 : -1;
+      });
+
       console.log("done sorting");
     }
   }
@@ -1044,10 +1063,19 @@ export default function TaskContainer() {
     <></>
   ) : (
     <>
-      {data.tasks.map((task) => {
-        // let taskTooltip = <Typography>{task.prompt}</Typography>;
-        return (
+      {data.taskList.map((taskID) => {
+        let task = data.tasks.find((t) => t.taskID == taskID);
+        return task ? (
           <TaskCard key={task.name} task={task} classes={classes}></TaskCard>
+        ) : (
+          <Skeleton
+            key={taskID}
+            variant="rect"
+            width={"98%"}
+            height={500}
+            style={{ margin: "20px", padding: "20px" }}>
+            Loading {taskID}
+          </Skeleton>
         );
       })}
     </>
