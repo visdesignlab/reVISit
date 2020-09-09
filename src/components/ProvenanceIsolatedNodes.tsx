@@ -54,16 +54,19 @@ const ProvenanceIsolatedNodes = ({
   );
 };
 
-export const IsolatedNode = ({ node }) => {
-  const { actionConfigurations } = useContext(ProvenanceDataContext);
+export const IsolatedNode = ({ node, configToUse }) => {
+  let { actionConfigurations } = useContext(ProvenanceDataContext);
+
+  // if provided a config to use, use that (used for volatile config changes before they are saved)
+  if (configToUse) {
+    actionConfigurations = configToUse;
+  }
+
   const eventMapping = actionConfigurations;
+  // console.log("eventMapping", eventMapping, node);
   let eventMap = eventMapping[node.name]
     ? eventMapping[node.name]
-    : {
-      name: "CustomIcon",
-      color: "#d1d1d1",
-      icon: <CheckBoxOutlineBlankIcon width={16} height={16} />,
-    };
+    : { icon: "Add", color: "#fff" };
   //add check for custom icons for newly created events;
   let ProvenanceIcon = iconMapping[eventMap.icon];
   if (!ProvenanceIcon) {

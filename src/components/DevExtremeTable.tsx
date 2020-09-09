@@ -212,6 +212,7 @@ const DevExtremeTable = ({
   console.log("new provenance data", provenanceData);
   const [filters, setFilters] = React.useState([]);
   const handleFilter = (columnName, value) => {
+    console.log("in filter", columnName, value, filters);
     const currentFilterIndex = filters.findIndex(
       (filter) => filter.name === columnName
     );

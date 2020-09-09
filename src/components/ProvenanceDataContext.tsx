@@ -5,6 +5,8 @@ import _ from "lodash";
 import {
   getTaskOverviewFromServer,
   getTaskDataFromServer,
+  getActionConfigurations,
+  saveActionConfigurationToDB,
   getTaskListFromServer,
   getTimelineFromServer,
 } from "../fetchers/fetchMocks.js";
@@ -69,15 +71,96 @@ function compileActionListToHashTable(list) {
 export const ProvenanceDataContextProvider = ({ children }) => {
   // console.trace('calling provenanceDataContextProvider')
   const [selectedTaskIds, setSelectedTaskIds] = React.useState(["S-task01"]);
-  const [actionConfigurationsList, setActionConfigurationsList] = useState(
-    eventMappingList
-  );
+
+  // state variable used to trigger an update of action configuration list
+  const [queryCount, setQueryCount] = useState(0);
+  console.log("queryCount", queryCount);
+  const [
+    loadingActionConfigurations,
+    errorLoadingActionConfigurations,
+    actionConfigurationsFromServer,
+  ] = useFetchAPIData(async () => {
+    console.log("in fetch api data");
+    const value = await getActionConfigurations();
+    console.log("action config value", value);
+    return value;
+  }, [queryCount]);
+
+  useEffect(() => {
+    // filter out events like "browsed away"
+    console.log(actionConfigurationsFromServer);
+    if (actionConfigurationsFromServer) {
+      const actionConfigurationsFiltered = actionConfigurationsFromServer.filter(
+        (config) => config.type !== "event"
+      );
+      setActionConfigurationsListInternal(actionConfigurationsFiltered);
+    }
+  }, [actionConfigurationsFromServer]);
+
+  /**
+   * Determines if a structural change occured when editing action configurations.
+   * A structural change is a change that would impact any event sequence dependent
+   * calculations (like event pattern mining)
+   * @param old
+   * @param */
+
+  function isStructuralActionChange(oldActions, newActions) {
+    // if the number of action configurations, then it is a structural change
+    if (oldActions.length !== newActions.length) {
+      return true;
+    }
+
+    // if elements, hidden, or id's are different for any action, change is structural
+    for (let i = 0; i < oldActions.length; i++) {
+      let difference = Object.keys(oldActions[i]).filter(
+        (k) =>
+          JSON.stringify(oldActions[i][k]) !== JSON.stringify(newActions[i][k])
+      );
+      for (let innerIndex = 0; innerIndex < difference.length; innerIndex++) {
+        if (
+          difference[innerIndex] === "elements" ||
+          difference[innerIndex] === "hidden" ||
+          difference[innerIndex] === "id"
+        ) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+  console.log("current query count", queryCount);
+  function setActionConfigurationsList(newActionConfigurationsList) {
+    console.log(
+      "in setActionConfgiuration about to save",
+      newActionConfigurationsList
+    );
+    saveActionConfigurationToDB(newActionConfigurationsList).then(
+      (response) => {
+        // if a structural change, refetch, else just reset
+        if (
+          isStructuralActionChange(
+            actionConfigurationsList,
+            newActionConfigurationsList
+          )
+        ) {
+          console.log("IN STRUCTURAL");
+          setQueryCount(queryCount + 1);
+        } else {
+          console.log("IN SUPERFICIAL");
+          setActionConfigurationsListInternal(newActionConfigurationsList);
+        }
+      }
+    );
+  }
+  const [
+    actionConfigurationsList,
+    setActionConfigurationsListInternal,
+  ] = useState([]);
+  console.log("final list", actionConfigurationsList);
   const [actionConfigurations, setActionConfigurations] = useState(
     compileActionListToHashTable(eventMappingList)
   );
-
-  
-
   useEffect(() => {
     setActionConfigurations(
       compileActionListToHashTable(actionConfigurationsList)
@@ -104,7 +187,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   ];
 
   const [data, setData] = useState();
-  const [fetchedInitialTask,setFetchedInitialTask] = useState(false)
+  const [fetchedInitialTask, setFetchedInitialTask] = useState(false);
   const [taskList, setTaskList] = useState();
   const [timelineData, setTimelineData] = useState();
   const [currentlyVisitedNodes, setCurrentlyVisitedNodes] = React.useState(
@@ -114,7 +197,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   // const [metrics,setMetrics] = React.useState()
 
   let conditions;
-  let metrics; 
+  let metrics;
 
   if (data) {
     conditions = data.conditions;
@@ -149,27 +232,23 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     //});
   }
 
-   // get taskList from server;
-   let [,, taskListFromServer] = useFetchAPIData(async () => {
-    console.log('requesting tasklist from server ')
+  // get taskList from server;
+  let [, , taskListFromServer] = useFetchAPIData(async () => {
+    console.log("requesting tasklist from server ");
     return await getTaskListFromServer();
   }, []);
 
-       // get task overview data from server for one task;
-    let [isLoading, isError, dataFromServer] = useFetchAPIData(async () => {
-      console.log('requesting task overview for ', taskList[0])
-      return await getTaskOverviewFromServer(taskList[0]);
-    }, [taskList]);
+  // get task overview data from server for one task;
+  let [isLoading, isError, dataFromServer] = useFetchAPIData(async () => {
+    console.log("requesting task overview for ", taskList[0]);
+    return await getTaskOverviewFromServer(taskList[0]);
+  }, [taskList, queryCount]);
 
-
-  
-    //  get timeline from server;
-     let [,, timelineDataFromServer] = useFetchAPIData(async () => {
-      console.log('requesting timeline data from server ')
-      return await getTimelineFromServer();
-    }, []);
-
-  
+  //  get timeline from server;
+  let [, , timelineDataFromServer] = useFetchAPIData(async () => {
+    console.log("requesting timeline data from server ");
+    return await getTimelineFromServer();
+  }, []);
 
   // console.log(isLoading, isError, dataFromServer);
   /*[{"_id":"startedProvenance","actionID":"startedProvenance","category":"Study\r","condition":"nodeLink","elapsedTime":0,"id":1,"label":"Start Task","participantID":"545d6768fdf99b7f9fca24e3","target":null,"taskID":"S-task01","time":"Wed, 28 Aug 2019 00:51:18 GMT","type":"action"},{"_id":"Hard Selected A Node","actionID":"Hard Selected a Node","category":"Answer\r","condition":"nodeLink","elapsedTime":0.283333,"id":2,"label":"Select","participantID":"545d6768fdf99b7f9fca24e3","target":null,"taskID":"S-task01","time":"Wed, 28 Aug 2019 00:51:35 GMT","type":"action"},{"_id":"Hard Unselected A Node","actionID":"Hard Unselected a Node","category":"Answer\r","condition":"nodeLink","elapsedTime":0.316667,"id":3,"label":"Unselect","participantID":"545d6768fdf99b7f9fca24e3","target":null,"taskID":"S-task01","time":"Wed, 28 Aug 2019 00:51:37 GMT","type":"action"},{"_id":"Hard Selected A Node","actionID":"Hard Selected a Node","category":"Answer\r","condition":"nodeLink","elapsedTime":0.45,"id":2,"label":"Select","participantID":"545d6768fdf99b7f9fca24e3","target":null,"taskID":"S-task01","time":"Wed, 28 Aug 2019 00:51:45 GMT","type":"action"},{"_id":"Finished Task","actionID":"Finished Task","category":"Study\r","condition":"nodeLink","elapsedTime":0.666667,"id":4,"label":"Finish Task","participantID":"545d6768fdf99b7f9fca24e3","target":null,"taskID":"S-task01","time":"Wed, 28 Aug 2019 00:51:58 GMT","type":"action"}]*/
@@ -181,28 +260,25 @@ export const ProvenanceDataContextProvider = ({ children }) => {
 
   useEffect(() => {
     console.log("data from server", dataFromServer);
-    if (dataFromServer){
+    if (dataFromServer) {
       setData(dataFromServer);
-      setFetchedInitialTask(true)
+      setFetchedInitialTask(!fetchedInitialTask);
     }
-    
   }, [dataFromServer]);
 
-// //get task overviewdata for all remaining tasks
-// useFetchAPIData(async () => {
-//   console.log('loop test for task overviews',fetchedInitialTask,taskList)
-//   taskList.map(task=>{
-//     getTaskOverviewFromServer(task).then((newTaskData)=>{
-     
-//       let newData = {...data}
-//       // console.log(newData)
-//       console.log(newTaskData.data.tasks[0])
-//       newData.tasks.push(newTaskData.data.tasks[0])
-//       setData(newData) 
-//     });
-//   })
-
-// }, [fetchedInitialTask]);
+  //get task overviewdata for all remaining tasks
+  useFetchAPIData(async () => {
+    console.log("loop test for task overviews", fetchedInitialTask, taskList);
+    taskList.map((task) => {
+      getTaskOverviewFromServer(task).then((newTaskData) => {
+        let newData = { ...data };
+        // console.log(newData)
+        console.log(newTaskData.data.tasks[0]);
+        newData.tasks.push(newTaskData.data.tasks[0]);
+        setData(newData);
+      });
+    });
+  }, [fetchedInitialTask]);
 
   //get task overviewdata for all remaining tasks
   // useFetchAPIData(async () => {
@@ -219,7 +295,6 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     console.log("taskList from server", taskListFromServer);
     setTaskList(taskListFromServer);
   }, [taskListFromServer]);
-
 
   //State
   function timeout(ms) {
@@ -259,7 +334,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
       return datum;
     });
     return response;
-  }, [selectedTaskIds]);
+  }, [selectedTaskIds, queryCount]);
 
   useEffect(() => {
     setCurrentTaskData(taskDataFromServer);

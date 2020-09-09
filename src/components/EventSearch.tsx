@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useContext, useMemo } from "react";
 import styles from "./EventSearch.module.css";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import { Divider } from "antd";
@@ -7,7 +7,7 @@ import Button from "@material-ui/core/Button";
 import Category from "@material-ui/icons/Category";
 import IconButton from "@material-ui/core/IconButton";
 import Delete from "@material-ui/icons/Delete";
-
+import ProvenanceDataContext from "./ProvenanceDataContext";
 import { IsolatedNode } from "./ProvenanceIsolatedNodes";
 function uuidv4() {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
@@ -51,7 +51,7 @@ const getRenderItem = (items, className) => (provided, snapshot, rubric) => {
         ref={provided.innerRef}
         style={provided.draggableProps.style}
         className={snapshot.isDragging ? "dragging" : ""}>
-        <IsolatedNode node={{ name: item.label }} />
+        <IsolatedNode node={{ name: item.id }} />
       </div>
     </React.Fragment>
   );
@@ -75,7 +75,7 @@ function ActionList(props) {
                   {shouldRenderClone ? (
                     <div className="react-beatiful-dnd-copy">
                       {" "}
-                      <IsolatedNode node={{ name: item.label }} />
+                      <IsolatedNode node={{ name: item.id }} />
                     </div>
                   ) : (
                     <Draggable draggableId={item.id} index={index}>
@@ -89,7 +89,7 @@ function ActionList(props) {
                               className={snapshot.isDragging ? "dragging" : ""}>
                               <IsolatedNode
                                 key={`node-${item.id}`}
-                                node={{ name: item.label }}
+                                node={{ name: item.id }}
                               />
                             </div>
                           </React.Fragment>
@@ -160,14 +160,17 @@ function ShoppingBag(props) {
         {(provided, snapshot) => (
           <div ref={provided.innerRef} className={styles.searchBar}>
             {props.items.map((item, index) => (
-              <Draggable key={item.id} draggableId={item.id} index={index}>
+              <Draggable
+                key={item.dragID}
+                draggableId={item.dragID}
+                index={index}>
                 {(provided, snapshot) => (
                   <div
                     ref={provided.innerRef}
                     {...provided.draggableProps}
                     {...provided.dragHandleProps}
                     style={provided.draggableProps.style}>
-                    <IsolatedNode node={{ name: item.label }} />
+                    <IsolatedNode node={{ name: item.id }} />
                   </div>
                 )}
               </Draggable>
@@ -191,7 +194,7 @@ const copy = (source, destination, droppableSource, droppableDestination) => {
   const item = source[droppableSource.index];
   destination.splice(droppableDestination.index, 0, {
     ...item,
-    id: `copy${uuidv4()}`,
+    dragID: `copy${uuidv4()}`,
   });
   return [...destination];
 };
@@ -201,6 +204,17 @@ const EventSearch = ({
     console.log(val);
   },
 }) => {
+  const { actionConfigurationsList } = useContext(ProvenanceDataContext);
+  const collection = useMemo(
+    () =>
+      actionConfigurationsList.map((config) => {
+        let value = Object.assign({}, config);
+        value = Object.assign(value, { dragID: uuidv4() });
+        return value;
+      }),
+    [actionConfigurationsList]
+  );
+
   const [shoppingBagItems, setShoppingBagItems] = React.useState([]);
   useEffect(() => {
     if (onFilter) {
@@ -234,7 +248,7 @@ const EventSearch = ({
           break;
         case "SHOP":
           setShoppingBagItems((state) =>
-            copy(COLLECTION, state, source, destination)
+            copy(actionConfigurationsList, state, source, destination)
           );
           break;
         default:
@@ -251,7 +265,7 @@ const EventSearch = ({
           <ShoppingBag items={shoppingBagItems} />
         </div>
         <div className={styles.outerSearchOptions}>
-          <Shop items={COLLECTION} />
+          <Shop items={actionConfigurationsList} />
         </div>
         <div className={styles.outerSearchDiscard}>
           <Discard />
