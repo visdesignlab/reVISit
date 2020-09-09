@@ -18,6 +18,17 @@ import {
 
 } from "@ant-design/icons";
 
+{
+    id: newItemId,
+    name: `${type}-${newItemId}`,
+    type:type,
+    deleted:false,
+    elements: reorder(
+      listEvents[source.droppableId],
+      source.index,
+      destination.index
+    ),
+  }
 
 
 

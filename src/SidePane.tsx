@@ -8,6 +8,7 @@ import {
 import clsx from "clsx";
 
 import Box from "@material-ui/core/Box";
+import Skeleton from "@material-ui/lab/Skeleton";
 
 import styles from "./SidePane.module.css";
 import Drawer from "@material-ui/core/Drawer";
@@ -114,9 +115,10 @@ const useStyles = makeStyles((theme: Theme) =>
 
 const SidePane = ({}) => {
   const {
-    taskStructure,
+    taskList,
+    loadingTaskList,
     handleChangeSelectedTaskId,
-    selectedTaskIds,
+    selectedTaskId,
   } = React.useContext(ProvenanceDataContext);
 
   const classes = useStyles();
@@ -155,8 +157,15 @@ const SidePane = ({}) => {
     HTMLAnchorElement,
     Omit<LinkProps, "innerRef" | "to">
   >((props, ref) => <Link innerRef={ref as any} to="/Export" {...props} />);
-
-  let taskInfo = taskStructure.find((t) => t.key == selectedTaskIds[0]);
+  console.log(
+    "task list",
+    loadingTaskList,
+    taskList,
+    "value",
+    !loadingTaskList && taskList,
+    "end"
+  );
+  //let taskInfo = taskList.find((t) => t.id == selectedTaskIds[0]);
 
   let location = useLocation();
   function appBarWidget() {
@@ -169,26 +178,37 @@ const SidePane = ({}) => {
             <Select
               labelId="demo-simple-select-label"
               id="demo-simple-select"
-              value={selectedTaskIds[0]}
+              value={selectedTaskId}
               onChange={handleChangeSelectedTaskId}
               label="name">
-              {taskStructure.map((value) => {
-                return (
-                  <MenuItem key={value.key} value={value.key}>
-                    {value.name}
-                  </MenuItem>
-                );
-              })}
+              {!loadingTaskList &&
+                taskList &&
+                taskList.map((value) => {
+                  return (
+                    <MenuItem key={value} value={value}>
+                      {value}
+                    </MenuItem>
+                  );
+                })}
+              {loadingTaskList && (
+                <Skeleton
+                  variant="rect"
+                  width={"200"}
+                  height={50}
+                  style={{ margin: "20px", padding: "20px" }}>
+                  Loading task selector
+                </Skeleton>
+              )}
             </Select>
           </FormControl>
-          <Box ml={3}>
+          {/*<Box ml={3}>
             <Typography
               variant="button"
               noWrap
               dangerouslySetInnerHTML={{
                 __html: taskInfo.prompt,
               }}></Typography>
-          </Box>
+            </Box>*/}
         </>
       );
     }

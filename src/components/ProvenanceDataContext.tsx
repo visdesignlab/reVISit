@@ -70,7 +70,7 @@ function compileActionListToHashTable(list) {
 }
 export const ProvenanceDataContextProvider = ({ children }) => {
   // console.trace('calling provenanceDataContextProvider')
-  const [selectedTaskIds, setSelectedTaskIds] = React.useState(["S-task01"]);
+  const [selectedTaskId, setSelectedTaskId] = React.useState(null);
 
   // state variable used to trigger an update of action configuration list
   const [queryCount, setQueryCount] = useState(0);
@@ -167,25 +167,6 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     );
   }, [actionConfigurationsList]);
 
-  const taskStructure = [
-    { name: "Task 1", key: "S-task01", prompt: "", actions: {}, stats: {} },
-    { name: "Task 2", key: "S-task02" },
-    { name: "Task 3", key: "S-task03" },
-    { name: "Task 4", key: "S-task04" },
-    { name: "Task 5", key: "S-task05" },
-    { name: "Task 6", key: "S-task06" },
-    { name: "Task 7", key: "S-task07" },
-    { name: "Task 8", key: "S-task08" },
-    { name: "Task 9", key: "S-task09" },
-    { name: "Task 10", key: "S-task10" },
-    { name: "Task 11", key: "S-task11" },
-    { name: "Task 12", key: "S-task12" },
-    { name: "Task 13", key: "S-task13" },
-    { name: "Task 14", key: "S-task14" },
-    { name: "Task 15", key: "S-task15" },
-    { name: "Task 16", key: "S-task16" },
-  ];
-
   const [data, setData] = useState();
   const [fetchedInitialTask, setFetchedInitialTask] = useState(false);
   const [taskList, setTaskList] = useState();
@@ -210,7 +191,6 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     console.log("dywootto handle provenance node click", id);
 
     // hardcoded data for now. ideally, we'll have the event id to be able to select on.
-    const taskId = selectedTaskIds[0];
     const participantId = "545d6768fdf99b7f9fca24e3";
     const taskNumber = 1;
     const currentlyVisitedProvInfo = {
@@ -233,10 +213,16 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   }
 
   // get taskList from server;
-  let [, , taskListFromServer] = useFetchAPIData(async () => {
+  let [, loadingTaskList, taskListFromServer] = useFetchAPIData(async () => {
     console.log("requesting tasklist from server ");
     return await getTaskListFromServer();
   }, []);
+  //
+  useEffect(() => {
+    if (taskListFromServer) {
+      setSelectedTaskId(taskListFromServer[0]);
+    }
+  }, [taskListFromServer]);
 
   // get task overview data from server for one task;
   let [isLoading, isError, dataFromServer] = useFetchAPIData(async () => {
@@ -319,10 +305,12 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     isTaskError,
     taskDataFromServer,
   ] = useFetchAPIData(async () => {
-    console.log("dywootto getTaskData", selectedTaskIds);
-    const response = await getTaskDataFromServer(selectedTaskIds[0]);
+    console.log("task data to fetch for id", selectedTaskId);
+    const response = await getTaskDataFromServer(selectedTaskId);
     response.data = response.data.map((datum) => {
       // console.log(datum.sequence);
+
+      // TODO: Fix this from being null
       try {
         datum.sequence = JSON.parse(`[${datum.sequence}]`);
       } catch (err) {
@@ -334,24 +322,25 @@ export const ProvenanceDataContextProvider = ({ children }) => {
       return datum;
     });
     return response;
-  }, [selectedTaskIds, queryCount]);
+  }, [selectedTaskId, queryCount]);
 
   useEffect(() => {
     setCurrentTaskData(taskDataFromServer);
   }, [taskDataFromServer]);
 
   function handleChangeSelectedTaskId(event) {
-    setSelectedTaskIds([event.target.value]);
+    setSelectedTaskId([event.target.value]);
   }
 
   return (
     <ProvenanceDataContext.Provider
       value={{
         currentTaskData,
-        taskStructure,
         handleChangeSelectedTaskId,
-        selectedTaskIds,
+        selectedTaskId,
         data,
+        loadingTaskList,
+        taskList,
         timelineData,
         metrics,
         setTaskSort,
