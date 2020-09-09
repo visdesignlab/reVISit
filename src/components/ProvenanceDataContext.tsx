@@ -262,7 +262,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     console.log("data from server", dataFromServer);
     if (dataFromServer) {
       setData(dataFromServer);
-      setFetchedInitialTask(true);
+      setFetchedInitialTask(!fetchedInitialTask);
     }
   }, [dataFromServer]);
 
