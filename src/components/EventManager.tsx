@@ -15,12 +15,13 @@ const EventManager = ({
   return (
     <div style={{ display: "flex" }}>
       {["sequence", "group"].map((type) => {
+        console.log();
         const typedConfigs = actionConfigurationsList.filter(
           (config) => config.type === type
         );
         const nonHiddenConfigs = typedConfigs.filter((config) => {
           console.log(config);
-          return config.hidden === 0;
+          return config.hidden === 0 || config.hidden === false;
         });
         let listEvents = {};
         nonHiddenConfigs.forEach((config) => {
