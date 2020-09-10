@@ -74,7 +74,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
 
   // state variable used to trigger an update of action configuration list
   const [queryCount, setQueryCount] = useState(0);
-  console.log("queryCount", queryCount);
+  // console.log("queryCount", queryCount);
   const [
     loadingActionConfigurations,
     errorLoadingActionConfigurations,
@@ -129,12 +129,12 @@ export const ProvenanceDataContextProvider = ({ children }) => {
 
     return false;
   }
-  console.log("current query count", queryCount);
+  // console.log("current query count", queryCount);
   function setActionConfigurationsList(newActionConfigurationsList) {
-    console.log(
-      "in setActionConfgiuration about to save",
-      newActionConfigurationsList
-    );
+    // console.log(
+    //   "in setActionConfgiuration about to save",
+    //   newActionConfigurationsList
+    // );
     saveActionConfigurationToDB(newActionConfigurationsList).then(
       (response) => {
         // if a structural change, refetch, else just reset
@@ -144,10 +144,10 @@ export const ProvenanceDataContextProvider = ({ children }) => {
             newActionConfigurationsList
           )
         ) {
-          console.log("IN STRUCTURAL");
+          // console.log("IN STRUCTURAL");
           setQueryCount(queryCount + 1);
         } else {
-          console.log("IN SUPERFICIAL");
+          // console.log("IN SUPERFICIAL");
           setActionConfigurationsListInternal(newActionConfigurationsList);
         }
       }
@@ -157,7 +157,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     actionConfigurationsList,
     setActionConfigurationsListInternal,
   ] = useState([]);
-  console.log("final list", actionConfigurationsList);
+  // console.log("final list", actionConfigurationsList);
   const [actionConfigurations, setActionConfigurations] = useState(
     compileActionListToHashTable(eventMappingList)
   );
@@ -207,7 +207,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   let [homeTaskSort, setHomeTaskSort] = useState();
 
   function handleProvenanceNodeClick(id) {
-    console.log("dywootto handle provenance node click", id);
+    // console.log("dywootto handle provenance node click", id);
 
     // hardcoded data for now. ideally, we'll have the event id to be able to select on.
     const taskId = selectedTaskIds[0];
@@ -217,7 +217,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
       data: addIdsToNodes(nodes1),
       props: commonProps,
     };
-    console.log("about to set visited", currentlyVisitedProvInfo);
+    // console.log("about to set visited", currentlyVisitedProvInfo);
     setCurrentlyVisitedNodes(currentlyVisitedProvInfo);
 
     // select all of that provenance graph.
@@ -273,7 +273,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
       getTaskOverviewFromServer(task).then((newTaskData) => {
         let newData = { ...data };
         // console.log(newData)
-        console.log(newTaskData.data.tasks[0]);
+        // console.log(newTaskData.data.tasks[0]);
         newData.tasks.push(newTaskData.data.tasks[0]);
         setData(newData);
       });

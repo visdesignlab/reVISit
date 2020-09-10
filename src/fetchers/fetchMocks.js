@@ -1,5 +1,5 @@
 import mockAllData from "./mockData.json";
-let local = false;
+let local = true;
 let host = local ? "http://127.0.0.1:5000" : "http://18.222.101.54:5000";
 
 export async function performPrefixSpan(data) {
@@ -107,7 +107,7 @@ export async function mysql_api(endpoint, body) {
 }
 
 export async function postData(uri, postBody, fetchOptions) {
-  console.log("postBody is ", postBody);
+  // console.log("postBody is ", postBody);
   let defaultHeaders = {
     url: uri,
     // mode: "no-cors",
@@ -117,9 +117,9 @@ export async function postData(uri, postBody, fetchOptions) {
     },
     body: JSON.stringify(postBody),
   };
-  console.log("post headers", defaultHeaders);
+  // console.log("post headers", defaultHeaders);
   const val = await completePromise(uri, defaultHeaders);
-  console.log("dywootto", val);
+  // console.log("dywootto", val);
   return val;
 }
 
@@ -138,7 +138,7 @@ export async function completePromise(uri, requestOptions) {
     response = await fetch(uri, requestOptions);
     // console.log(response.text())
     // console.log("inpromise", response);
-    console.log("fetched", response);
+    // console.log("fetched", response);
     response.data = await response.json();
     response.success = response.ok;
   } catch (err) {
