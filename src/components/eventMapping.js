@@ -10,6 +10,15 @@ import Start from "@material-ui/icons/Star";
 import PlayArrowIcon from "@material-ui/icons/PlayArrow";
 import StopIcon from "@material-ui/icons/Stop";
 import CheckBoxOutlineBlankIcon from "@material-ui/icons/CheckBoxOutlineBlank";
+import RemoveCircle from "@material-ui/icons/RemoveCircle";
+import TabUnselected from "@material-ui/icons/TabUnselected";
+import Crop75 from "@material-ui/icons/Crop75";
+import AspectRatio from "@material-ui/icons/AspectRatio";
+import VisibilityOff from "@material-ui/icons/VisibilityOff";
+import SelectAll from "@material-ui/icons/SelectAll";
+import GetApp from "@material-ui/icons/GetApp";
+import Brush from "@material-ui/icons/GetApp";
+
 export const iconMapping = {
   Add,
   PanTool,
@@ -22,6 +31,14 @@ export const iconMapping = {
   PlayArrowIcon,
   StopIcon,
   CheckBoxOutlineBlankIcon,
+  RemoveCircle,
+  TabUnselected,
+  Crop75,
+  AspectRatio,
+  VisibilityOff,
+  SelectAll,
+  GetApp,
+  Brush,
 };
 const colors = [
   "#c6e0d6",
