@@ -252,19 +252,19 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     }
   }, [dataFromServer]);
 
-  //get task overviewdata for all remaining tasks
-  useFetchAPIData(async () => {
-    console.log("loop test for task overviews", fetchedInitialTask, taskList);
-    taskList.map((task) => {
-      getTaskOverviewFromServer(task).then((newTaskData) => {
-        let newData = { ...data };
-        // console.log(newData)
-        // console.log(newTaskData.data.tasks[0]);
-        newData.tasks.push(newTaskData.data.tasks[0]);
-        setData(newData);
-      });
-    });
-  }, [fetchedInitialTask]);
+  // //get task overviewdata for all remaining tasks
+  // useFetchAPIData(async () => {
+  //   console.log("loop test for task overviews", fetchedInitialTask, taskList);
+  //   taskList.map((task) => {
+  //     getTaskOverviewFromServer(task).then((newTaskData) => {
+  //       let newData = { ...data };
+  //       // console.log(newData)
+  //       // console.log(newTaskData.data.tasks[0]);
+  //       newData.tasks.push(newTaskData.data.tasks[0]);
+  //       setData(newData);
+  //     });
+  //   });
+  // }, [fetchedInitialTask]);
 
   //get task overviewdata for all remaining tasks
   // useFetchAPIData(async () => {

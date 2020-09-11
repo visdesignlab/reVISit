@@ -385,7 +385,7 @@ function SequenceCount({ row, hoveredRow, hoveredRowColor, clickedRow, clickedRo
   let yScale = d3.scaleLinear().range([0, height]).domain([0, numIconsPerCol]);
 
   let currentParticipants = row.matchingSequences.map((s) => s.participantID);
-  let hoveredParticipants; 
+  let hoveredParticipants =[]; 
   
   if (clickedRow){
     hoveredParticipants  = clickedRow.matchingSequences.map((s) => s.participantID)
@@ -395,6 +395,13 @@ function SequenceCount({ row, hoveredRow, hoveredRowColor, clickedRow, clickedRo
     : [];
   } 
 
+  // if (hoveredRow){
+  //   console.log('currentRow has ', row.count, currentParticipants.length , 'participants')
+  //   console.log('hoveredRow has ', hoveredParticipants.length , 'participants')
+  
+  // }
+ 
+
   let intersection = currentParticipants.filter((x) =>
     hoveredParticipants.includes(x)
   );
@@ -402,7 +409,7 @@ function SequenceCount({ row, hoveredRow, hoveredRowColor, clickedRow, clickedRo
   // width = countScale.range()[1]
 
   return (
-    <svg width={width + textWidth} height={height}>
+    <svg width={width + textWidth*4} height={height}>
       {Array.from(Array(total).keys()).map((key) => {
         return (
           <rect
@@ -430,10 +437,36 @@ function SequenceCount({ row, hoveredRow, hoveredRowColor, clickedRow, clickedRo
           fontWeight: "bold",
           alignmentBaseline: "middle",
           textAnchor: "start",
-          fill: "rgb(93, 131, 210)",
+          fill:  "rgb(150, 150, 150)",
         }}>
         {row.count}
       </text>
+
+      {hoveredRow ? <text
+        x={xScale(numCols) + padding + 25}
+        y={yScale(numIconsPerCol / 2)}
+        style={{
+          fontWeight: "bold",
+          alignmentBaseline: "middle",
+          textAnchor: "start",
+          fill: hoveredRowColor,
+        }}>
+        {' / ' + intersection.length }
+      </text> : <></>}
+
+      {clickedRow && hoveredRow? <text
+        x={xScale(numCols) + padding + 55}
+        y={yScale(numIconsPerCol / 2)}
+        style={{
+          fontWeight: "bold",
+          alignmentBaseline: "middle",
+          textAnchor: "start",
+          fill: clickedRowColor,
+        }}>
+        {'/ ' + (row.count - intersection.length) }
+      </text> : <></>}
+
+
 
       {/* <rect
     x={0}
@@ -602,11 +635,22 @@ function Histogram({ data, hoveredRow, metric, hoveredRowColor, clickedRow, clic
   if (value.type == "int" || value.type == "float") {
     let hoveredStats; 
     
-    if (clickedRow){
+    if (clickedRow && hoveredRow && clickedRow == hoveredRow){
+      hoveredStats = hoveredRow
+      ? hoveredRow.stats.find((m) => m.metric == metric)
+      : undefined;
+      console.log('showing metrics for ', hoveredRow.matchingSequences.length)
+
+    }
+    else if (clickedRow){
+      
       let intersectionRow = hoveredRow ? clickedRow.intersections.find(r=>r.id == hoveredRow.id) : undefined
       hoveredStats = intersectionRow 
       ? intersectionRow.stats.find((m) => m.metric == metric)
       : undefined;
+      if (intersectionRow) {
+        console.log('showing metrics for ', intersectionRow.matchingSequences.length)
+      }
     } else {
       hoveredStats = hoveredRow
       ? hoveredRow.stats.find((m) => m.metric == metric)
@@ -616,11 +660,12 @@ function Histogram({ data, hoveredRow, metric, hoveredRowColor, clickedRow, clic
 
     
     let hoveredCI = hoveredStats ? hoveredStats.ci : undefined;
+    let histColor = clickedRow && clickedRow !== hoveredRow ? clickedRowColor  : hoveredRowColor
     return (
       <Grid key={metric + "_hist"} item>
         {
           <DrawHistogram
-            hoveredRowColor={clickedRowColor || hoveredRowColor}
+            hoveredRowColor={histColor}
             data={hoveredStats || value}
             ci={hoveredCI || value.ci}
           />
@@ -725,7 +770,7 @@ export const DrawHistogram = (props) => {
             <rect
               className="count"
               key={"d_" + data.bins[i]}
-              style={{ fill: hoveredRowColor || "rgb(93, 131, 210)" }}
+              style={{ fill: hoveredRowColor || "rgb(149 149 149)" }} //rgb(93, 131, 210)
               x={xScale(data.bins[i]) + barPadding / 2}
               y={barHeight - yScale(d)}
               width={barWidth}
