@@ -19,15 +19,9 @@ function parseTaskNumFromId(taskID) {
   // remove leading zeros
   return parseInt(taskNumber, 10);
 }
-const ProvenanceController = ({
-  nodes,
-  selectedNode,
-  taskId,
-  participantId,
-  condition,
-}) => {
+const ProvenanceController = ({ nodes, selectedNode }) => {
   //  "https://vdl.sci.utah.edu/mvnv-study/?vis=NL&taskNum=7&participantID=5588d7a1fdf99b304ee56840&taskID=S-task07/#c0203065-9927-42f5-88f6-07189cae6cff";
-  console.log(nodes, selectedNode, taskId, participantId, condition);
+  console.log(nodes, selectedNode);
 
   const [playInterval, setPlayInterval] = React.useState(null);
   const [hoveredItemId, setHoveredItemId] = React.useState(null);
@@ -35,13 +29,15 @@ const ProvenanceController = ({
     selectedNode.id
   );
 
-  let url = `https://vdl.sci.utah.edu/mvnv-study/?vis=${
+  let url = selectedNode.url;
+
+  /*`https://vdl.sci.utah.edu/mvnv-study/?vis=${
     conditionEnums[condition]
   }&taskNum=${parseTaskNumFromId(
     taskId
   )}&participantID=${participantId}&taskID=${taskId}/#${
     nodes.find((node) => node.id === selectedItemId)?.dataID
-  }`;
+  }`;*/
   console.log(
     url,
     url ===

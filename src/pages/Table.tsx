@@ -21,9 +21,8 @@ const Table = ({ location }) => {
           aria-labelledby="simple-modal-title"
           aria-describedby="simple-modal-description">
           <ProvenanceController
-            {...currentlyVisitedNodes.props}
-            nodes={currentlyVisitedNodes.data}
-            selectedNode={currentlyVisitedNodes.data[0]}></ProvenanceController>
+            nodes={currentlyVisitedNodes}
+            selectedNode={currentlyVisitedNodes[0]}></ProvenanceController>
         </Modal>
       )}
     </React.Fragment>
