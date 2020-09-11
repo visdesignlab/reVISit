@@ -367,7 +367,7 @@ function Stimulus({ taskID, conditionName, classes }) {
 }
 
 //Compoment to draw participant counts for each interaction sequence
-function SequenceCount({ row, hoveredRow, hoveredRowColor }) {
+function SequenceCount({ row, hoveredRow, hoveredRowColor, clickedRow, clickedRowColor }) {
   let total = 137;
   let height = 25;
   let iconWidth = 3;
@@ -385,9 +385,15 @@ function SequenceCount({ row, hoveredRow, hoveredRowColor }) {
   let yScale = d3.scaleLinear().range([0, height]).domain([0, numIconsPerCol]);
 
   let currentParticipants = row.matchingSequences.map((s) => s.participantID);
-  let hoveredParticipants = hoveredRow
+  let hoveredParticipants; 
+  
+  if (clickedRow){
+    hoveredParticipants  = clickedRow.matchingSequences.map((s) => s.participantID)
+  } else {
+    hoveredParticipants = hoveredRow
     ? hoveredRow.matchingSequences.map((s) => s.participantID)
     : [];
+  } 
 
   let intersection = currentParticipants.filter((x) =>
     hoveredParticipants.includes(x)
@@ -409,9 +415,9 @@ function SequenceCount({ row, hoveredRow, hoveredRowColor }) {
               // opacity: key < intersection.length ? 1 : .2,
               fill:
                 key < intersection.length
-                  ? hoveredRowColor
+                  ? hoveredRowColor || "rgb(220, 220, 220)"
                   : key < row.count
-                  ? "rgb(150, 150, 150)"
+                  ? (hoveredRow && clickedRow ? clickedRowColor : "rgb(150, 150, 150)")
                   : "rgb(220, 220, 220)", //rgb(147 195 209)
             }}></rect>
         );
@@ -475,6 +481,9 @@ function TableComponent({
   hoveredRowColor,
   hoveredRow = undefined,
   setHoveredRow = undefined,
+  clickedRowColor,
+  clickedRow = undefined,
+  setClickedRow = undefined
 }) {
   // console.log('rendering table',hoveredRow)
   // console.log(rows)
@@ -535,13 +544,15 @@ function TableComponent({
               return (
                 <TableRow
                   key={row.id}
+                  onMouseDown={() => {
+                    clickedRow == row ? setClickedRow() : setClickedRow(row);
+                  }}
                   onMouseEnter={() => {
                     setHoveredRow(row);
                   }}
                   onMouseLeave={() => setHoveredRow()}
                   style={{
-                    background:
-                      hoveredRow == row ? "rgb(245,245,245)" : "white",
+                    background: clickedRow == row ?  "rgb(230,230,230)" : hoveredRow == row ? "rgb(245,245,245)"  : "white",
                   }}>
                   <TableCell
                     component="th"
@@ -562,7 +573,10 @@ function TableComponent({
                       <SequenceCount
                         row={row}
                         hoveredRow={hoveredRow}
-                        hoveredRowColor={hoveredRowColor}></SequenceCount>
+                        hoveredRowColor={hoveredRowColor}
+                        clickedRow = {clickedRow}
+                        clickedRowColor = {clickedRowColor}
+                        ></SequenceCount>
                     </TableCell>
                   ) : (
                     <></>
@@ -581,20 +595,32 @@ function TableComponent({
 }
 
 // Compoment for single metric histogram
-function Histogram({ data, hoveredRow, metric, hoveredRowColor }) {
+function Histogram({ data, hoveredRow, metric, hoveredRowColor, clickedRow, clickedRowColor }) {
   // let hoveredStats = undefined;
   // let hoveredCI = undefined;
   let value = data.find((m) => m.metric == metric);
   if (value.type == "int" || value.type == "float") {
-    let hoveredStats = hoveredRow
+    let hoveredStats; 
+    
+    if (clickedRow){
+      let intersectionRow = hoveredRow ? clickedRow.intersections.find(r=>r.id == hoveredRow.id) : undefined
+      hoveredStats = intersectionRow 
+      ? intersectionRow.stats.find((m) => m.metric == metric)
+      : undefined;
+    } else {
+      hoveredStats = hoveredRow
       ? hoveredRow.stats.find((m) => m.metric == metric)
       : undefined;
+    }
+     
+
+    
     let hoveredCI = hoveredStats ? hoveredStats.ci : undefined;
     return (
       <Grid key={metric + "_hist"} item>
         {
           <DrawHistogram
-            hoveredRowColor={hoveredRowColor}
+            hoveredRowColor={clickedRowColor || hoveredRowColor}
             data={hoveredStats || value}
             ci={hoveredCI || value.ci}
           />
@@ -764,9 +790,11 @@ export const DrawHistogram = (props) => {
 function ConditionCard({ condition, conditionName, classes, taskID }) {
   //Keeps track of which rows in the table are hovered on
   const [hoveredRow, setHoveredRow] = useState();
+  const [clickedRow, setClickedRow] = useState();
   let [hidden, setHidden] = useState(false);
 
   let hoveredRowColor = "#f59c3d"; // '#9100e6';
+  let clickedRowColor = "#3d77f5"; // '#9100e6';
   let freqPattern, data, metricValues;
 
   //only compute when the condition changes
@@ -829,7 +857,10 @@ function ConditionCard({ condition, conditionName, classes, taskID }) {
                       rows={freqPattern}
                       hoveredRow={hoveredRow}
                       hoveredRowColor={hoveredRow ? hoveredRowColor : undefined}
-                      setHoveredRow={setHoveredRow}></TableComponent>
+                      setHoveredRow={setHoveredRow}
+                      clickedRow={clickedRow}
+                      clickedRowColor={clickedRow ? clickedRowColor : undefined}
+                      setClickedRow={setClickedRow}></TableComponent>
                   }
                 </Box>
                 <Typography
@@ -860,6 +891,10 @@ function ConditionCard({ condition, conditionName, classes, taskID }) {
                           hoveredRow={hoveredRow}
                           hoveredRowColor={
                             hoveredRow ? hoveredRowColor : undefined
+                          }
+                          clickedRow={clickedRow}
+                          clickedRowColor={
+                            clickedRow ? clickedRowColor : undefined
                           }
                           metric={metric}></Histogram>
                       );

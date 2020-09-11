@@ -157,14 +157,14 @@ const SidePane = ({}) => {
     HTMLAnchorElement,
     Omit<LinkProps, "innerRef" | "to">
   >((props, ref) => <Link innerRef={ref as any} to="/Export" {...props} />);
-  console.log(
-    "task list",
-    loadingTaskList,
-    taskList,
-    "value",
-    !loadingTaskList && taskList,
-    "end"
-  );
+  // console.log(
+  //   "task list",
+  //   loadingTaskList,
+  //   taskList,
+  //   "value",
+  //   !loadingTaskList && taskList,
+  //   "end"
+  // );
   //let taskInfo = taskList.find((t) => t.id == selectedTaskIds[0]);
 
   let location = useLocation();
