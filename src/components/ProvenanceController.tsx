@@ -1,5 +1,5 @@
 //@ts-nocheck
-import React, { useMemo } from "react";
+import React, { useMemo, useEffect } from "react";
 import ProvenanceIsolatedNodes from "./ProvenanceIsolatedNodes";
 import IconButton from "@material-ui/core/IconButton";
 import ArrowForward from "@material-ui/icons/ArrowForward";
@@ -37,16 +37,23 @@ const ProvenanceController = ({
 
   let url = `https://vdl.sci.utah.edu/mvnv-study/?vis=${
     conditionEnums[condition]
-  }&taskNum=${parseTaskNumFromId(
-    taskId
-  )}&participantID=${participantId}&taskID=${taskId}/#${
-    nodes.find((node) => node.id === selectedItemId)?.dataID
-  }`;
+    }&taskNum=${parseTaskNumFromId(
+      taskId
+    )}&participantID=${participantId}&taskID=${taskId}/`;
+
   console.log(
     url,
     url ===
-      "https://vdl.sci.utah.edu/mvnv-study/?vis=NL&taskNum=7&participantID=5588d7a1fdf99b304ee56840&taskID=S-task07/#c0203065-9927-42f5-88f6-07189cae6cff"
+    "https://vdl.sci.utah.edu/mvnv-study/?vis=NL&taskNum=7&participantID=5588d7a1fdf99b304ee56840&taskID=S-task07/#c0203065-9927-42f5-88f6-07189cae6cff"
   );
+
+  useEffect(() => {
+    console.log("sending signal");
+    console.log(selectedItemId);
+
+    document.querySelector('#childFrame').contentWindow.postMessage('hello', '*');
+
+  }, [selectedItemId]);
 
   function handlePlayClick() {
     // set if not selected
@@ -58,6 +65,8 @@ const ProvenanceController = ({
   }
 
   const setSelectedItemId = (id) => {
+    console.log("setting item id change");
+
     // make async call to load data
     if (id === selectedItemId) {
       setSelectedItemIdInternal(null);
@@ -73,6 +82,7 @@ const ProvenanceController = ({
     console.log("in forward", selectedItemId);
 
     setSelectedItemId((previousId) => {
+      console.log("setting item id change");
       if (!previousId) {
         setSelectedItemId(nodes[0].id);
       }
@@ -86,6 +96,7 @@ const ProvenanceController = ({
       return nodes[currentIndex + 1].id;
     });
   }
+
   function handleBackward() {
     console.log("in backward", selectedItemId);
     if (!selectedItemId) {
@@ -104,7 +115,7 @@ const ProvenanceController = ({
   return (
     <div style={{ backgroundColor: "white" }}>
       <div style={{ height: 825 }}>
-        <iframe width={"100%"} height={"100%"} src={url}></iframe>
+        <iframe id={"childFrame"} width={"100%"} height={"100%"} src={url}></iframe>
       </div>
       <div
         style={{
