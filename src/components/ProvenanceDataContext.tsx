@@ -188,6 +188,8 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   let [homeTaskSort, setHomeTaskSort] = useState();
 
   function handleProvenanceNodeClick(id) {
+
+    console.log ('called provenance node click on ', id)
     // console.log("dywootto handle provenance node click", id);
 
     // hardcoded data for now. ideally, we'll have the event id to be able to select on.

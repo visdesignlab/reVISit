@@ -28,6 +28,7 @@ const ProvenanceController = ({
 }) => {
   //  "https://vdl.sci.utah.edu/mvnv-study/?vis=NL&taskNum=7&participantID=5588d7a1fdf99b304ee56840&taskID=S-task07/#c0203065-9927-42f5-88f6-07189cae6cff";
   console.log(nodes, selectedNode, taskId, participantId, condition);
+  console.log('selectedNode',selectedNode)
 
   const [playInterval, setPlayInterval] = React.useState(null);
   const [hoveredItemId, setHoveredItemId] = React.useState(null);
