@@ -213,6 +213,11 @@ const DevExtremeTable = ({
     const currentFilterIndex = filters.findIndex(
       (filter) => filter.name === columnName
     );
+    console.log(
+      "current filter index",
+      currentFilterIndex,
+      JSON.parse(JSON.stringify(filters))
+    );
     let clonedFilters = [...filters];
     if (currentFilterIndex > -1) {
       clonedFilters[currentFilterIndex] = {
@@ -301,11 +306,11 @@ const DevExtremeTable = ({
   const setGrouping = (newGrouping) => {
     // if an item is recently grouped on, remove any filters for it.
     let newlyAddedGroups = differenceFilter(newGrouping, grouping)?.[0];
-
     if (newlyAddedGroups) {
       let currentFilter = filters.find(
         (filterItem) => newlyAddedGroups.columnName === filterItem.columnName
       );
+      console.log("filter values", filters, newlyAddedGroups.columnName);
 
       if (!currentFilter) {
         currentFilter = { value: { filterMin: 0.5, filterMax: 1.5 } };
@@ -462,6 +467,8 @@ const DevExtremeTable = ({
         const groupIndex = grouping.findIndex(
           (group) => group.columnName === columnName
         );
+        console.log("provenance group", groupIndex, grouping);
+
         const group = grouping[groupIndex];
 
         if (props.row.value === true) {

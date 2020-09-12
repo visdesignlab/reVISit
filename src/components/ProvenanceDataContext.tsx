@@ -281,11 +281,11 @@ export const ProvenanceDataContextProvider = ({ children }) => {
 
   //get task overviewdata for all remaining tasks
   // useFetchAPIData(async () => {
-  //   if (dataFromServer){
-  //     console.log('get remaining tasks ')
-  //     getTaskOverviewFromServer().then((newTaskData)=>{
-  //       console.log('newTaskData', newTaskData.data)
-  //       setData(newTaskData.data)
+  //   if (dataFromServer) {
+  //     console.log("get remaining tasks ");
+  //     getTaskOverviewFromServer().then((newTaskData) => {
+  //       console.log("newTaskData", newTaskData.data);
+  //       setData(newTaskData.data);
   //     });
   //   }
   // }, [dataFromServer]);
@@ -308,7 +308,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   let [taskSort, setTaskSort] = useState("name");
 
   /*const [allProvenanceData, setAllProvenanceData] = useState(() =>
-    processRawProvenanceData(initProvData)
+    processRawProvenanceData(initProvData) 
   );*/
 
   const [currentTaskData, setCurrentTaskData] = React.useState([]);
