@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { QuantitativeFilter, CategoricalFilter } from "./TableFilters";
 import * as d3 from "d3";
 import TagWrapper from "./reactTagWrapper";
 import ProvenanceIsolatedNodes from "./ProvenanceIsolatedNodes";
 import EventSearch from "./EventSearch";
 import Tagger from "./Tagger";
-
+import { getTopPatternsForGroup } from "../fetchers/fetchMocks.js";
+import { useFetchAPIData } from "../hooks/hooks";
+import Skeleton from "@material-ui/lab/Skeleton";
 const columnOverrides = {};
 const filterQuantitativeValues = (filter, value) =>
   value >= filter.filterMin && value <= filter.filterMax;
@@ -271,9 +273,7 @@ const EventsSummary = (props) => {
 
   return <EventSearch onFilter={props.onFilter}></EventSearch>;
 };
-/*<ProvenanceIsolatedNodes
-      nodes={incomingData[0].sequence}
-      handleProvenanceNodeClick={console.log}></ProvenanceIsolatedNodes> */
+/* */
 function filterEvents(filterValue, rowValue) {
   console.log("in filter events", filterValue, rowValue);
 
@@ -319,11 +319,9 @@ export class ProvenanceColumn {
       customFilterAndSearch: this.customFilterAndSearch,
       render: (renderData) =>
         renderProvenanceNodeCell(renderData, this.handleProvenanceNodeClick),
-      /*groupedSummaryComponent: (incomingData) => (
-        <GroupedContainer>
-          <EventsSummary incomingData={incomingData}></EventsSummary>
-        </GroupedContainer>
-      ),*/
+      groupedSummaryComponent: ({ incomingData }) => (
+        <GroupedEventSummary incomingData={incomingData}></GroupedEventSummary>
+      ),
       type: "provenance",
       filterComponent: (props) => (
         <EventsSummary
@@ -336,6 +334,70 @@ export class ProvenanceColumn {
     };
   }
 }
+
+const GroupedEventSummary = ({ incomingData }) => {
+  const filteredList = useMemo(() => {
+    return incomingData.map((row) => {
+      return {
+        participantID: row.participantID,
+        // uniqueID: row.uniqueID,
+        condition: row.condition,
+        taskID: row.taskID,
+      };
+    });
+  });
+
+  console.log("groyped event summary", incomingData, filteredList);
+
+  const [
+    isLoading,
+    errorLoading,
+    patternDataFromServer,
+  ] = useFetchAPIData(async () => {
+    const response = await getTopPatternsForGroup(filteredList);
+    console.log("fetched response", response);
+    return response;
+  }, []);
+  console.log(errorLoading, isLoading, patternDataFromServer);
+
+  // create list of individuals in each group
+  return (
+    <div>
+      {isLoading && (
+        <Skeleton width={"100%"} height={"100%"} variant={"rect"}></Skeleton>
+      )}
+      {errorLoading && <p>{errorLoading}</p>}
+      <div style={{ height: "60px", overflow: "auto" }}>
+        {patternDataFromServer &&
+          patternDataFromServer[0]["topK"].map((topSequence) => {
+            console.log(topSequence);
+            return (
+              <div
+                style={{
+                  display: "inline-block",
+                  backgroundColor: "whitesmoke",
+                  borderRadius: "20px",
+                  padding: "4px",
+                  margin: "10px",
+                }}>
+                <div style={{ float: "left" }}>
+                  <ProvenanceIsolatedNodes
+                    nodes={topSequence.sequence.map((seq) => {
+                      return { name: seq };
+                    })}
+                    handleProvenanceNodeClick={
+                      console.log
+                    }></ProvenanceIsolatedNodes>
+                </div>
+
+                <span style={{ float: "right" }}> {topSequence["count"]}</span>
+              </div>
+            );
+          })}{" "}
+      </div>
+    </div>
+  );
+};
 
 function renderNotesCell(rowData) {
   if (!Array.isArray(rowData.tags)) {

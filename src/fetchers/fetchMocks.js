@@ -6,6 +6,14 @@ export async function fetchProvenanceDataByNodeId(nodeId) {
   let res = await postData(host + "/actions/" + nodeId);
   return res;
 }
+
+export async function getTopPatternsForGroup(groups) {
+  let res = await postData(`${host}/groupPatterns`, {
+    groups: [{ id: "group1", participants: groups }],
+  });
+  return res;
+}
+
 export async function performPrefixSpan(data) {
   console.log("postData is ", data);
   console.log("data is ", data);
