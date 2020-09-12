@@ -9,6 +9,7 @@ import {
   saveActionConfigurationToDB,
   getTaskListFromServer,
   getTimelineFromServer,
+  fetchProvenanceDataByNodeId,
 } from "../fetchers/fetchMocks.js";
 import { useFetchAPIData } from "../hooks/hooks";
 import { eventMappingList } from "./eventMapping";
@@ -187,20 +188,29 @@ export const ProvenanceDataContextProvider = ({ children }) => {
 
   let [homeTaskSort, setHomeTaskSort] = useState();
 
-  function handleProvenanceNodeClick(id) {
-
-    console.log ('called provenance node click on ', id)
-    // console.log("dywootto handle provenance node click", id);
+  async function handleProvenanceNodeClick(node) {
+    console.log("dywootto handle provenance node click", node);
 
     // hardcoded data for now. ideally, we'll have the event id to be able to select on.
     const participantId = "545d6768fdf99b7f9fca24e3";
-    const taskNumber = 1;
-    const currentlyVisitedProvInfo = {
-      data: addIdsToNodes(nodes1),
-      props: commonProps,
-    };
-    // console.log("about to set visited", currentlyVisitedProvInfo);
-    setCurrentlyVisitedNodes(currentlyVisitedProvInfo);
+    console.log("about to fetch");
+    let fetched = await fetchProvenanceDataByNodeId(node.id);
+    console.log("fetched nodes", fetched);
+    if (fetched.success) {
+      console.log("about to set visited", fetched.data);
+      const processedNodes = fetched.data.map((node) => {
+        return {
+          id: node.id,
+          name: node.actionID,
+          time: node.elapsedTime,
+          nodeID: node.nodeID,
+          url: node.url,
+          participantId: node.participantID,
+          uniqueId: node.uniqueID,
+        };
+      });
+      setCurrentlyVisitedNodes(processedNodes);
+    }
 
     // select all of that provenance graph.
     //const promise = mysql_api(`/actions/${participantId}/${taskId}`);

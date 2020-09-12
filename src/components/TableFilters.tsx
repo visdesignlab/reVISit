@@ -142,6 +142,15 @@ export const Histogram = ({
 
   return (
     <g>
+      {
+        <rect
+          width={xScale.range()[1] - xScale.range()[0]}
+          fill={"lightgray"}
+          x={0}
+          y={height - 1}
+          height={1}></rect>
+      }
+
       {bars}
       <g className={"sample group dywootto"}></g>
       {hovered && (
@@ -165,13 +174,13 @@ export const Histogram = ({
             style={{
               fill: "rgb(0,0,0,0.25)",
               fontSize: "1em",
-              textAnchor: "start",
+              textAnchor: "end",
               stroke: "#fff",
               "paint-order": "stroke",
 
               "stroke-width": "1px",
             }}
-            x={xScale.range()[1] - 10}
+            x={xScale.range()[1]}
             y={23}>
             {" "}
             {Math.round(xScale.domain()[1])}{" "}
