@@ -31,12 +31,17 @@ const ProvenanceController = ({ nodes, selectedNode }) => {
   const url = selectedNode.url;
 
   useEffect(() => {
-    console.log("sending signal");
-    console.log(selectedItemId);
+
+
+
+    let currentNode = nodes[nodes.findIndex((node) => node.id === selectedItemId)];
+
+    console.log(currentNode.nodeID)
+    console.log(url);
 
     document
       .querySelector("#childFrame")
-      .contentWindow.postMessage("hello", "*");
+      .contentWindow.postMessage(currentNode.nodeID, "*");
   }, [selectedItemId]);
 
   function handlePlayClick() {
@@ -96,6 +101,7 @@ const ProvenanceController = ({ nodes, selectedNode }) => {
     setSelectedItemId(nodes[currentIndex - 1].id);
   }
 
+  console.log(url);
   return (
     <div style={{ backgroundColor: "white" }}>
       <div style={{ height: 825 }}>

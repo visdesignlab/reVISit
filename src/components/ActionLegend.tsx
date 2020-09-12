@@ -60,7 +60,7 @@ const ActionLegendDragContainer = (props) => {
   /*const { actionConfigurationsList, setActionConfigurationsList } = useContext(
     ProvenanceDataContext
   );*/
-  console.log(props);
+  // console.log(props);
   const {
     actionConfigurations,
     setActionConfigurationsList,
@@ -126,7 +126,7 @@ const ActionLegendDragContainer = (props) => {
         });
         copyListEvents[destination.droppableId] = copyListItem;
 
-        console.log("in list event", copyListItem, copyListEvents);
+        // console.log("in list event", copyListItem, copyListEvents);
         if (checkIfGroupDuplicates(copyListEvents)) {
           console.error("cannot add duplicate items to group");
           return;
@@ -239,11 +239,11 @@ export const ActionLegend = (props) => {
     const hashConfig = compileActionListToHashTable(
       volatileActionConfigurationList
     );
-    console.log(
-      "compiling new configs",
-      hashConfig,
-      volatileActionConfigurationList
-    );
+    // console.log(
+    //   "compiling new configs",
+    //   hashConfig,
+    //   volatileActionConfigurationList
+    // );
     return hashConfig;
   }, [volatileActionConfigurationList]);
   function cancelChanges() {
@@ -364,18 +364,18 @@ const EditActionForm = ({
   handleActionConfigurationChange,
   handleActionConfigurationCancel,
 }) => {
-  console.log("in edit action form", actionConfiguration);
+  // console.log("in edit action form", actionConfiguration);
 
   const [volatileConfiguration, setVolatileConfiguration] = useState(
     actionConfiguration
   );
-  console.log("edit form volatile config", volatileConfiguration);
+  // console.log("edit form volatile config", volatileConfiguration);
   if (!actionConfiguration.id) {
-    console.error(`action configuration is missing an id.`);
+    // console.error(`action configuration is missing an id.`);
     return <div></div>;
   }
   function handleConfigurationPropertyChange(key, newValue) {
-    console.log("property changing", key, newValue);
+    // console.log("property changing", key, newValue);
     let clonedConfiguration = JSON.parse(JSON.stringify(volatileConfiguration));
     let newConfiguration = {};
     newConfiguration[key] = newValue;
@@ -517,7 +517,7 @@ const Pop = ({
   actionConfigurationsList,
   hashMapConfig,
 }) => {
-  console.log("in render popover", open, handleActionItemEdit, reference);
+  // console.log("in render popover", open, handleActionItemEdit, reference);
   return (
     <div>
       {
@@ -576,7 +576,7 @@ const ActionLegendPresentational = ({
   </List>
   */
 
-  console.log("at hashmap config", hashMapConfig);
+  // console.log("at hashmap config", hashMapConfig);
   return (
     <React.Fragment>
       <div ref={listRef}>
@@ -635,7 +635,7 @@ export const ActionItemNode = ({
   collapsed,
   hashMapConfig,
 }) => {
-  console.log("in node", actionConfiguration);
+  // console.log("in node", actionConfiguration);
   return (
     <ListItem>
       <IsolatedNode

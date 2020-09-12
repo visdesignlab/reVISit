@@ -75,7 +75,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
 
   // state variable used to trigger an update of action configuration list
   const [queryCount, setQueryCount] = useState(0);
-  console.log("queryCount", queryCount);
+  // console.log("queryCount", queryCount);
   const [
     loadingActionConfigurations,
     errorLoadingActionConfigurations,
@@ -130,12 +130,12 @@ export const ProvenanceDataContextProvider = ({ children }) => {
 
     return false;
   }
-  console.log("current query count", queryCount);
+  // console.log("current query count", queryCount);
   function setActionConfigurationsList(newActionConfigurationsList) {
-    console.log(
-      "in setActionConfgiuration about to save",
-      newActionConfigurationsList
-    );
+    // console.log(
+    //   "in setActionConfgiuration about to save",
+    //   newActionConfigurationsList
+    // );
     saveActionConfigurationToDB(newActionConfigurationsList).then(
       (response) => {
         // if a structural change, refetch, else just reset
@@ -145,10 +145,10 @@ export const ProvenanceDataContextProvider = ({ children }) => {
             newActionConfigurationsList
           )
         ) {
-          console.log("IN STRUCTURAL");
+          // console.log("IN STRUCTURAL");
           setQueryCount(queryCount + 1);
         } else {
-          console.log("IN SUPERFICIAL");
+          // console.log("IN SUPERFICIAL");
           setActionConfigurationsListInternal(newActionConfigurationsList);
         }
       }
@@ -158,7 +158,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     actionConfigurationsList,
     setActionConfigurationsListInternal,
   ] = useState([]);
-  console.log("final list", actionConfigurationsList);
+  // console.log("final list", actionConfigurationsList);
   const [actionConfigurations, setActionConfigurations] = useState(
     compileActionListToHashTable(eventMappingList)
   );
@@ -265,18 +265,18 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   }, [dataFromServer]);
 
   //get task overviewdata for all remaining tasks
-  useFetchAPIData(async () => {
-    console.log("loop test for task overviews", fetchedInitialTask, taskList);
-    taskList.map((task) => {
-      getTaskOverviewFromServer(task).then((newTaskData) => {
-        let newData = { ...data };
-        // console.log(newData)
-        console.log(newTaskData.data.tasks[0]);
-        newData.tasks.push(newTaskData.data.tasks[0]);
-        setData(newData);
-      });
-    });
-  }, [fetchedInitialTask]);
+  // useFetchAPIData(async () => {
+  //   console.log("loop test for task overviews", fetchedInitialTask, taskList);
+  //   taskList.map((task) => {
+  //     getTaskOverviewFromServer(task).then((newTaskData) => {
+  //       let newData = { ...data };
+  //       // console.log(newData)
+  //       // console.log(newTaskData.data.tasks[0]);
+  //       newData.tasks.push(newTaskData.data.tasks[0]);
+  //       setData(newData);
+  //     });
+  //   });
+  // }, [fetchedInitialTask]);
 
   //get task overviewdata for all remaining tasks
   // useFetchAPIData(async () => {
@@ -344,6 +344,11 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     setSelectedTaskId([event.target.value]);
   }
 
+  let taskPrompts;
+  if (data){
+    taskPrompts = data.tasks.map(t=>({taskID:t.taskID,prompt:t.prompt}))
+  }
+
   return (
     <ProvenanceDataContext.Provider
       value={{
@@ -353,6 +358,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
         data,
         loadingTaskList,
         taskList,
+        taskPrompts,
         timelineData,
         metrics,
         setTaskSort,
