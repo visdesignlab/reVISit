@@ -116,11 +116,13 @@ const useStyles = makeStyles((theme: Theme) =>
 const SidePane = ({}) => {
   const {
     taskList,
+    taskPrompts,
     loadingTaskList,
     handleChangeSelectedTaskId,
     selectedTaskId,
   } = React.useContext(ProvenanceDataContext);
 
+  let selectedPrompt = taskPrompts && selectedTaskId ? taskPrompts.find(p=>p.taskID == selectedTaskId).prompt : ''
   const classes = useStyles();
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
@@ -201,14 +203,10 @@ const SidePane = ({}) => {
               )}
             </Select>
           </FormControl>
-          {/*<Box ml={3}>
+          <Box ml={3}>
             <Typography
-              variant="button"
-              noWrap
-              dangerouslySetInnerHTML={{
-                __html: taskInfo.prompt,
-              }}></Typography>
-            </Box>*/}
+              variant="button" noWrap>{selectedPrompt}</Typography>
+            </Box>
         </>
       );
     }
@@ -272,22 +270,22 @@ const SidePane = ({}) => {
         <Divider />
         <List>
           {[
-            { text: "Home", id: "Home", link: HomeLink, icon: HomeIcon },
-            { text: "Study", id: "Study", link: StudyLink, icon: ComputerIcon },
-            { text: "Upload", id: "Upload", link: Upload, icon: CloudUpload },
+            { text: "Task Overview", id: "Home", link: HomeLink, icon: HomeIcon },
+            { text: "Participant Timeline", id: "Study", link: StudyLink, icon: ComputerIcon },
+            // { text: "Upload", id: "Upload", link: Upload, icon: CloudUpload },
+            // {
+            //   text: "Provenance Prep ",
+            //   id: "Overview",
+            //   link: Overview,
+            //   icon: BarChart,
+            // },
             {
-              text: "Provenance Prep ",
-              id: "Overview",
-              link: Overview,
-              icon: BarChart,
-            },
-            {
-              text: "Provenance Analysis",
+              text: "Task Analysis",
               link: Table,
               id: "Table",
               icon: TableChart,
             },
-            { text: "Export", link: Export, icon: GetApp },
+            // { text: "Export", link: Export, icon: GetApp },
           ].map((item, index) => {
             return (
               //added key={index} to get rid of unique key error

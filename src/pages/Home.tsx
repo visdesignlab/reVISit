@@ -343,7 +343,7 @@ function Stimulus({ taskID, conditionName, classes }) {
       conditionName +
       ".png");
   } catch (err) {
-    console.log("could not find", imgName);
+    // console.log("could not find", imgName);
     img = "";
   }
 
