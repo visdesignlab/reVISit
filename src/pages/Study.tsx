@@ -153,11 +153,15 @@ export default function StudyCard() {
             let out = {}
             if (taskInfo) {
                 let stats = taskInfo.conditions[condition.trim()].stats.find(t => t.metric == metric);
-                out['average'] = stats.ci[0];
+                if (stats){
+                    out['average'] = stats.ci[0];
                 out['lowerBound'] = stats.ci[1];
                 out['upperBound'] = stats.ci[2];
                 out['min'] =stats.min;
                 out['max'] = stats.max;
+
+                }
+                
             }
             return out
         }
