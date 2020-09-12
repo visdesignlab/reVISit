@@ -57,7 +57,6 @@ export class NotesColumn {
         if (!Array.isArray(rowData.tags)) {
           rowData.tags = [];
         }
-        console.log("generatedRow", rowData, generateRowId(rowData));
         return (
           <TagWrapper
             id={generateRowId(rowData)}
@@ -154,12 +153,6 @@ export class QuantitativeColumn {
     this.customSort = (a, b) => a[this.name] - b[this.name];
     this.handleFilterChange = handleFilterChange;
     this.customFilterAndSearch = (filter, value) => {
-      console.log(
-        "in quant filter",
-        filter.value,
-        value,
-        filterQuantitativeValues(filter.value, value)
-      );
       return filterQuantitativeValues(filter.value, value);
     };
     this.cellComponent = (rowData) => {
@@ -263,20 +256,16 @@ function hasSubArrayNonStrict(master, sub) {
 }
 
 const EventsSummary = (props) => {
-  console.log("dywootto", props);
   let { incomingData } = props;
   incomingData = incomingData?.incomingData;
   if (!incomingData || !incomingData[0]) {
     return <div></div>;
   }
-  console.log("events summary", incomingData);
 
   return <EventSearch onFilter={props.onFilter}></EventSearch>;
 };
 /* */
 function filterEvents(filterValue, rowValue) {
-  console.log("in filter events", filterValue, rowValue);
-
   if (!filterValue || !rowValue) {
     return true;
   }
@@ -306,7 +295,6 @@ export class ProvenanceColumn {
     this.handleProvenanceNodeClick = metaData.handleProvenanceNodeClick;
     this.handleFilterChange = handleFilterChange;
     this.customFilterAndSearch = (filter, value) => {
-      console.log("provenance,", filter, value);
       return filterEvents(filter.value, value);
     };
   }
@@ -327,7 +315,6 @@ export class ProvenanceColumn {
         <EventsSummary
           incomingData={{ incomingData: this.data }}
           onFilter={(filter, value, row) => {
-            console.log("in event summary filter", filter, value, row);
             return this.handleFilterChange(this.name, filter);
           }}></EventsSummary>
       ),
@@ -347,30 +334,26 @@ const GroupedEventSummary = ({ incomingData }) => {
     });
   });
 
-  console.log("groyped event summary", incomingData, filteredList);
-
   const [
     isLoading,
     errorLoading,
     patternDataFromServer,
   ] = useFetchAPIData(async () => {
+    console.log("[new group pattern fetch]");
     const response = await getTopPatternsForGroup(filteredList);
-    console.log("fetched response", response);
     return response;
   }, []);
-  console.log(errorLoading, isLoading, patternDataFromServer);
 
   // create list of individuals in each group
   return (
     <div>
       {isLoading && (
-        <Skeleton width={"100%"} height={"100%"} variant={"rect"}></Skeleton>
+        <Skeleton width={"150px"} height={"35px"} variant={"rect"}></Skeleton>
       )}
       {errorLoading && <p>{errorLoading}</p>}
       <div style={{ height: "60px", overflow: "auto" }}>
         {patternDataFromServer &&
           patternDataFromServer[0]["topK"].map((topSequence) => {
-            console.log(topSequence);
             return (
               <div
                 style={{
@@ -403,7 +386,6 @@ function renderNotesCell(rowData) {
   if (!Array.isArray(rowData.tags)) {
     rowData.tags = [];
   }
-  console.log("generated tag", rowData);
   return (
     <TagWrapper
       id={generateRowId(rowData)}

@@ -232,14 +232,15 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   //
   useEffect(() => {
     if (taskListFromServer) {
-      setSelectedTaskId(taskListFromServer[0]);
+      console.log(taskListFromServer);
+      setSelectedTaskId(taskListFromServer[0].taskID);
     }
   }, [taskListFromServer]);
 
   // get task overview data from server for one task;
   let [isLoading, isError, dataFromServer] = useFetchAPIData(async () => {
     console.log("requesting task overview for ", taskList[0]);
-    return await getTaskOverviewFromServer(taskList[0]);
+    return await getTaskOverviewFromServer(taskList[0].taskID);
   }, [taskList, queryCount]);
 
   //  get timeline from server;
@@ -344,11 +345,6 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     setSelectedTaskId([event.target.value]);
   }
 
-  let taskPrompts;
-  if (data){
-    taskPrompts = data.tasks.map(t=>({taskID:t.taskID,prompt:t.prompt}))
-  }
-
   return (
     <ProvenanceDataContext.Provider
       value={{
@@ -358,7 +354,6 @@ export const ProvenanceDataContextProvider = ({ children }) => {
         data,
         loadingTaskList,
         taskList,
-        taskPrompts,
         timelineData,
         metrics,
         setTaskSort,

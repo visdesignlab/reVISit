@@ -116,13 +116,15 @@ const useStyles = makeStyles((theme: Theme) =>
 const SidePane = ({}) => {
   const {
     taskList,
-    taskPrompts,
     loadingTaskList,
     handleChangeSelectedTaskId,
     selectedTaskId,
   } = React.useContext(ProvenanceDataContext);
 
-  let selectedPrompt = taskPrompts && selectedTaskId ? taskPrompts.find(p=>p.taskID == selectedTaskId).prompt : ''
+  let selectedPrompt =
+    taskList && selectedTaskId
+      ? taskList.find((p) => p.taskID == selectedTaskId).prompt
+      : "";
   const classes = useStyles();
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
@@ -187,8 +189,8 @@ const SidePane = ({}) => {
                 taskList &&
                 taskList.map((value) => {
                   return (
-                    <MenuItem key={value} value={value}>
-                      {value}
+                    <MenuItem key={value.taskID} value={value.taskID}>
+                      {value.taskID}
                     </MenuItem>
                   );
                 })}
@@ -204,9 +206,10 @@ const SidePane = ({}) => {
             </Select>
           </FormControl>
           <Box ml={3}>
-            <Typography
-              variant="button" noWrap>{selectedPrompt}</Typography>
-            </Box>
+            <Typography variant="button" noWrap>
+              {selectedPrompt}
+            </Typography>
+          </Box>
         </>
       );
     }
@@ -270,8 +273,18 @@ const SidePane = ({}) => {
         <Divider />
         <List>
           {[
-            { text: "Task Overview", id: "Home", link: HomeLink, icon: HomeIcon },
-            { text: "Participant Timeline", id: "Study", link: StudyLink, icon: ComputerIcon },
+            {
+              text: "Task Overview",
+              id: "Home",
+              link: HomeLink,
+              icon: HomeIcon,
+            },
+            {
+              text: "Participant Timeline",
+              id: "Study",
+              link: StudyLink,
+              icon: ComputerIcon,
+            },
             // { text: "Upload", id: "Upload", link: Upload, icon: CloudUpload },
             // {
             //   text: "Provenance Prep ",

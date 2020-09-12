@@ -68,7 +68,6 @@ function toFixedTrunc(x, n) {
 }
 const GroupCellContent = (props) => {
   const { provenanceData, column, row, children } = props;
-  console.log(column, props);
   const groupData = children.props.columnSummaries[0].value;
 
   let Content = () => <div></div>;
@@ -209,10 +208,8 @@ const DevExtremeTable = ({
   tableSchema,
   handleTagCreation,
 }) => {
-  console.log("new provenance data", provenanceData);
   const [filters, setFilters] = React.useState([]);
   const handleFilter = (columnName, value) => {
-    console.log("in filter", columnName, value, filters);
     const currentFilterIndex = filters.findIndex(
       (filter) => filter.name === columnName
     );
@@ -226,7 +223,6 @@ const DevExtremeTable = ({
       clonedFilters.push({ columnName: columnName, value: value });
     }
     setFilters(clonedFilters);
-    console.log("new filter", clonedFilters);
   };
   let columnMetaData = {
     participantID: { order: 1 },
@@ -240,7 +236,6 @@ const DevExtremeTable = ({
     },
     notes: { width: 200, order: 6, handleTagCreation: handleTagCreation },
   };
-  console.log("current filters", filters);
 
   React.useEffect(() => {
     /*
@@ -307,12 +302,10 @@ const DevExtremeTable = ({
     // if an item is recently grouped on, remove any filters for it.
     let newlyAddedGroups = differenceFilter(newGrouping, grouping)?.[0];
 
-    console.log("dywootto", newlyAddedGroups);
     if (newlyAddedGroups) {
       let currentFilter = filters.find(
         (filterItem) => newlyAddedGroups.columnName === filterItem.columnName
       );
-      console.log("dywootto", currentFilter);
 
       if (!currentFilter) {
         currentFilter = { value: { filterMin: 0.5, filterMax: 1.5 } };
@@ -329,7 +322,6 @@ const DevExtremeTable = ({
     //setFilters(clonedFilters);
   };
   const groupingPredicate = (value, column, filterValue) => {
-    console.log("grouping pred", value, column, filterValue);
     // find filter value
     const isRowInTrueGroup = column.customFilterAndSearch(
       { value: filterValue },
@@ -440,14 +432,15 @@ const DevExtremeTable = ({
     const [hidden, setHidden] = useState(false);
     let groupedRowHeader = `Grouped Row`;
     const columnName = props.row.groupedBy;
+    console.log(props);
     const columnInfo = columns.find((column) => column.name == columnName);
     if (columnInfo) {
-      console.log(columnInfo);
       if (columnInfo.type === "quantitative") {
         const groupIndex = grouping.findIndex(
           (group) => group.columnName === columnName
         );
         const group = grouping[groupIndex];
+        console.log(columnInfo, group, props);
 
         if (props.row.value === true) {
           // grab values from filters
@@ -470,13 +463,6 @@ const DevExtremeTable = ({
           (group) => group.columnName === columnName
         );
         const group = grouping[groupIndex];
-        console.log(
-          "On provenance group",
-          props,
-          grouping,
-          columnName,
-          group.groupMetaData
-        );
 
         if (props.row.value === true) {
           // grab values from filters
