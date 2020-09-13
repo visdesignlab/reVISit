@@ -148,7 +148,7 @@ export class QuantitativeColumn {
     this.name = name;
     this.data = data;
     this.type = "quantitative";
-    this.height = 30;
+    this.height = 42.5;
     this.width = metaData.width ? metaData.width : 100;
     this.order = metaData.order;
     this.hideByDefault = metaData.hideByDefault;
