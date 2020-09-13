@@ -57,6 +57,7 @@
     "react-transition-group": "^4.4.1",
     "react-virtualized": "^9.22.2",
     "react-vis": "^1.11.7",
+    "recompose": "^0.30.0",
     "storybook": "^6.0.13",
     "styled": "^1.0.0",
     "styled-components": "^5.1.1",
@@ -100,6 +101,7 @@
     "fetch-mock": "^9.10.3",
     "gh-pages": "^3.0.0",
     "react-docgen-typescript-loader": "^3.7.2",
-    "react-docgen-typescript-webpack-plugin": "^1.1.0"
+    "react-docgen-typescript-webpack-plugin": "^1.1.0",
+    "why-did-you-update": "^1.0.8"
   }
 }

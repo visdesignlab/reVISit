@@ -9,6 +9,7 @@ import { getTopPatternsForGroup } from "../fetchers/fetchMocks.js";
 import { useFetchAPIData } from "../hooks/hooks";
 import Skeleton from "@material-ui/lab/Skeleton";
 import Typography from "@material-ui/core/Typography";
+import { pure } from "recompose";
 
 const columnOverrides = {};
 const filterQuantitativeValues = (filter, value) =>
@@ -257,7 +258,7 @@ function hasSubArrayNonStrict(master, sub) {
   return sub.every(((i) => (v) => (i = master.indexOf(v, i) + 1))(0));
 }
 
-const EventsSummary = (props) => {
+const EventsSummaryFunc = (props) => {
   let { incomingData } = props;
   incomingData = incomingData?.incomingData;
   if (!incomingData || !incomingData[0]) {
@@ -266,6 +267,8 @@ const EventsSummary = (props) => {
 
   return <EventSearch onFilter={props.onFilter}></EventSearch>;
 };
+
+const EventsSummary = pure(EventsSummaryFunc);
 /* */
 function filterEvents(filterValue, rowValue) {
   if (!filterValue || !rowValue) {
@@ -309,9 +312,15 @@ export class ProvenanceColumn {
       customFilterAndSearch: this.customFilterAndSearch,
       render: (renderData) =>
         renderProvenanceNodeCell(renderData, this.handleProvenanceNodeClick),
-      groupedSummaryComponent: ({ incomingData }) => (
-        <GroupedEventSummary incomingData={incomingData}></GroupedEventSummary>
-      ),
+      groupedSummaryComponent: pure(({ incomingData }) => {
+        console.log("in generate column object");
+
+        return (
+          <GroupedEventSummary
+            incomingData={incomingData}></GroupedEventSummary>
+        );
+      }),
+
       type: "provenance",
       filterComponent: (props) => (
         <EventsSummary
@@ -324,7 +333,7 @@ export class ProvenanceColumn {
   }
 }
 
-const GroupedEventSummary = ({ incomingData }) => {
+const GroupedEventSummaryFunc = ({ incomingData }) => {
   const filteredList = useMemo(() => {
     return incomingData.map((row) => {
       return {
@@ -357,9 +366,10 @@ const GroupedEventSummary = ({ incomingData }) => {
           {filteredList.length} Participants
         </Typography>
         {patternDataFromServer &&
-          patternDataFromServer[0]["topK"].map((topSequence) => {
+          patternDataFromServer[0]["topK"].map((topSequence, index) => {
             return (
               <div
+                key={`sequence${index}`}
                 style={{
                   display: "inline-block",
                   backgroundColor: "whitesmoke",
@@ -385,6 +395,7 @@ const GroupedEventSummary = ({ incomingData }) => {
     </div>
   );
 };
+const GroupedEventSummary = pure(GroupedEventSummaryFunc);
 
 function renderNotesCell(rowData) {
   if (!Array.isArray(rowData.tags)) {

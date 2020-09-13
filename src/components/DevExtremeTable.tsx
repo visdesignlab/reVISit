@@ -26,6 +26,7 @@ import {
   TableColumnVisibility,
   TableSummaryRow,
 } from "@devexpress/dx-react-grid-material-ui";
+import { pure } from "recompose";
 
 import ProvenanceGraph from "./ProvenanceGraph";
 import * as d3 from "d3";
@@ -66,7 +67,7 @@ function toFixedTrunc(x, n) {
   while (f.length < n) f += "0";
   return `${v[0]}.${f}`;
 }
-const GroupCellContent = (props) => {
+const GroupCellContentFunc = (props) => {
   const { provenanceData, column, row, children } = props;
   const groupData = children.props.columnSummaries[0].value;
 
@@ -81,6 +82,7 @@ const GroupCellContent = (props) => {
     </TableSummaryRow.GroupCell>
   );
 };
+const GroupCellContent = pure(GroupCellContentFunc);
 const GroupRowContent = (props) => {
   return (
     <div>
