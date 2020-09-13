@@ -102,7 +102,9 @@ export const Histogram = ({
     .thresholds(buckets.map((bucket) => bucket.x1));
 
   const currentBins = currentBinCounter(data);
-
+  console.log(data);
+  const average = d3.mean(data);
+  console.log(average);
   const bars = (
     <g transform={`translate(${(1 / 3) * binWidth},0)`}>
       {buckets.map((bucket, index) => {
@@ -141,6 +143,16 @@ export const Histogram = ({
       }
 
       {bars}
+      <g>
+        {average && (
+          <rect
+            x={xScale(average)}
+            y={0}
+            height={height}
+            width={2}
+            fill={"rgb(61, 119, 245)"}></rect>
+        )}
+      </g>
       <g className={"sample group dywootto"}></g>
       {hovered && (
         <>

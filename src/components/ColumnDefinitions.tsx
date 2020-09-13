@@ -8,6 +8,8 @@ import Tagger from "./Tagger";
 import { getTopPatternsForGroup } from "../fetchers/fetchMocks.js";
 import { useFetchAPIData } from "../hooks/hooks";
 import Skeleton from "@material-ui/lab/Skeleton";
+import Typography from "@material-ui/core/Typography";
+
 const columnOverrides = {};
 const filterQuantitativeValues = (filter, value) =>
   value >= filter.filterMin && value <= filter.filterMax;
@@ -351,6 +353,9 @@ const GroupedEventSummary = ({ incomingData }) => {
       )}
       {errorLoading && <p>{errorLoading}</p>}
       <div style={{ height: "60px", overflow: "auto" }}>
+        <Typography style={{ float: "left", marginTop: "20px" }}>
+          {filteredList.length} Participants
+        </Typography>
         {patternDataFromServer &&
           patternDataFromServer[0]["topK"].map((topSequence) => {
             return (
