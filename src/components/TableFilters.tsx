@@ -102,7 +102,9 @@ export const Histogram = ({
     .thresholds(buckets.map((bucket) => bucket.x1));
 
   const currentBins = currentBinCounter(data);
-
+  console.log(data);
+  const average = d3.mean(data);
+  console.log(average);
   const bars = (
     <g transform={`translate(${(1 / 3) * binWidth},0)`}>
       {buckets.map((bucket, index) => {
@@ -141,6 +143,16 @@ export const Histogram = ({
       }
 
       {bars}
+      <g>
+        {average !== null && (
+          <rect
+            x={xScale(average)}
+            y={0}
+            height={height}
+            width={2}
+            fill={"rgb(61, 119, 245)"}></rect>
+        )}
+      </g>
       <g className={"sample group dywootto"}></g>
       {hovered && (
         <>
@@ -155,10 +167,34 @@ export const Histogram = ({
               "stroke-width": "1px",
             }}
             x={10}
-            y={23}>
+            y={35}>
             {" "}
             {Math.round(xScale.domain()[0])}{" "}
           </text>
+          {average !== null && (
+            <g>
+              <rect
+                x={xScale(average) - 15}
+                y={2}
+                width={36}
+                height={18}
+                fill={"white"}
+                opacity={0.9}></rect>
+              <text
+                style={{
+                  fill: "rgb(61, 119, 245)",
+                  fontSize: "1em",
+                  textAnchor: "middle",
+                  stroke: "#fff",
+                  "paint-order": "stroke",
+                  "stroke-width": "2px",
+                }}
+                x={xScale(average)}
+                y={14}>
+                {average.toFixed(2)}
+              </text>
+            </g>
+          )}
           <text
             style={{
               fill: "rgb(0,0,0,0.25)",
@@ -170,7 +206,7 @@ export const Histogram = ({
               "stroke-width": "1px",
             }}
             x={xScale.range()[1]}
-            y={23}>
+            y={35}>
             {" "}
             {Math.round(xScale.domain()[1])}{" "}
           </text>
