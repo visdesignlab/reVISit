@@ -29,19 +29,19 @@ const ProvenanceController = ({ nodes, selectedNode }) => {
     selectedNode.id
   );
   const url = selectedNode.url;
+  console.log("my url", url);
 
   useEffect(() => {
+    let currentIndex = nodes.findIndex((node) => node.id === selectedItemId);
+    if (currentIndex > -1) {
+      let currentNode = nodes[currentIndex];
+      //console.log("current set node", currentNode, currentNode.nodeID);
+      //console.log(url);
 
-
-
-    let currentNode = nodes[nodes.findIndex((node) => node.id === selectedItemId)];
-
-    console.log(currentNode.nodeID)
-    console.log(url);
-
-    document
-      .querySelector("#childFrame")
-      .contentWindow.postMessage(currentNode.nodeID, "*");
+      document
+        .querySelector("#childFrame")
+        .contentWindow.postMessage(currentNode.nodeID, "*");
+    }
   }, [selectedItemId]);
 
   function handlePlayClick() {
@@ -54,12 +54,13 @@ const ProvenanceController = ({ nodes, selectedNode }) => {
   }
 
   const setSelectedItemId = (id) => {
-    console.log("setting item id change");
+    console.log("setting item id change", id);
 
-    // make async call to load data
+    // unselect the currently selected node
     if (id === selectedItemId) {
       setSelectedItemIdInternal(null);
     } else {
+      console.log("newid", selectedItemId, id);
       setSelectedItemIdInternal(id);
     }
   };
@@ -104,7 +105,7 @@ const ProvenanceController = ({ nodes, selectedNode }) => {
   console.log(url);
   return (
     <div style={{ backgroundColor: "white" }}>
-      <div style={{ height: 825 }}>
+      <div style={{ height: 1100 }}>
         <iframe
           id={"childFrame"}
           width={"100%"}

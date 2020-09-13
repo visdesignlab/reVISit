@@ -531,7 +531,7 @@ const DevExtremeTable = ({
         <TableColumnVisibility
           defaultHiddenColumnNames={defaultHiddenColumnNames}
         />
-        <TableColumnResizing columnWidths={defaultColumnWidths} />
+        <TableColumnResizing defaultColumnWidths={defaultColumnWidths} />
         <TableHeaderRow showGroupingControls />
         <TableSelection showSelectAll />
         <TableFilterRow cellComponent={FilterCells} />
