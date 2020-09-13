@@ -299,7 +299,6 @@ const DevExtremeTable = ({
   }, [provenanceData]);
   const [grouping, setGroupingInternal] = useState([]);
   const setGrouping = (newGrouping) => {
-    console.log("dywootto grouping", newGrouping, grouping, filters);
     // if an item is recently grouped on, remove any filters for it.
     let newlyAddedGroups = differenceFilter(newGrouping, grouping)?.[0];
     if (newlyAddedGroups) {
@@ -461,7 +460,6 @@ const DevExtremeTable = ({
           (group) => group.columnName === columnName
         );
         const group = grouping[groupIndex];
-        console.log(groupIndex, group, grouping);
 
         if (props.row.value === true) {
           // grab values from filters
