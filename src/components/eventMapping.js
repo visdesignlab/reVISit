@@ -17,7 +17,7 @@ import AspectRatio from "@material-ui/icons/AspectRatio";
 import VisibilityOff from "@material-ui/icons/VisibilityOff";
 import SelectAll from "@material-ui/icons/SelectAll";
 import GetApp from "@material-ui/icons/GetApp";
-import Brush from "@material-ui/icons/GetApp";
+import Brush from "@material-ui/icons/Brush";
 
 export const iconMapping = {
   Add,

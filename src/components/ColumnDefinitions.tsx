@@ -269,7 +269,7 @@ function filterEvents(filterValue, rowValue) {
   if (!filterValue || !rowValue) {
     return true;
   }
-  return hasSubArrayStrict(
+  return hasSubArrayNonStrict(
     rowValue.map((val) => val.name),
     filterValue.map((val) => val.id)
   ); //rowValue.length >= 5;
