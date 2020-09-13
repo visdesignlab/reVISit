@@ -258,7 +258,7 @@ function hasSubArrayNonStrict(master, sub) {
   return sub.every(((i) => (v) => (i = master.indexOf(v, i) + 1))(0));
 }
 
-const EventsSummaryFunc = (props) => {
+const EventsSummary = (props) => {
   let { incomingData } = props;
   incomingData = incomingData?.incomingData;
   if (!incomingData || !incomingData[0]) {
@@ -268,7 +268,6 @@ const EventsSummaryFunc = (props) => {
   return <EventSearch onFilter={props.onFilter}></EventSearch>;
 };
 
-const EventsSummary = pure(EventsSummaryFunc);
 /* */
 function filterEvents(filterValue, rowValue) {
   if (!filterValue || !rowValue) {
