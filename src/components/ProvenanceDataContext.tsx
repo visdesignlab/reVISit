@@ -81,15 +81,12 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     errorLoadingActionConfigurations,
     actionConfigurationsFromServer,
   ] = useFetchAPIData(async () => {
-    console.log("in fetch api data");
     const value = await getActionConfigurations();
-    console.log("action config value", value);
     return value;
   }, [queryCount]);
 
   useEffect(() => {
     // filter out events like "browsed away"
-    console.log(actionConfigurationsFromServer);
     if (actionConfigurationsFromServer) {
       const actionConfigurationsFiltered = actionConfigurationsFromServer.filter(
         (config) => config.type !== "event"
@@ -193,11 +190,8 @@ export const ProvenanceDataContextProvider = ({ children }) => {
 
     // hardcoded data for now. ideally, we'll have the event id to be able to select on.
     const participantId = "545d6768fdf99b7f9fca24e3";
-    console.log("about to fetch");
     let fetched = await fetchProvenanceDataByNodeId(node.id);
-    console.log("fetched nodes", fetched);
     if (fetched.success) {
-      console.log("about to set visited", fetched.data);
       const processedNodes = fetched.data.map((node) => {
         return {
           id: node.id,
@@ -232,7 +226,6 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   //
   useEffect(() => {
     if (taskListFromServer) {
-      console.log(taskListFromServer);
       setSelectedTaskId(taskListFromServer[0].taskID);
     }
   }, [taskListFromServer]);
@@ -258,7 +251,6 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   }, [timelineDataFromServer]);
 
   useEffect(() => {
-    console.log("data from server", dataFromServer);
     if (dataFromServer) {
       setData(dataFromServer);
       setFetchedInitialTask(!fetchedInitialTask);
@@ -318,7 +310,6 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     isTaskError,
     taskDataFromServer,
   ] = useFetchAPIData(async () => {
-    console.log("task data to fetch for id", selectedTaskId);
     const response = await getTaskDataFromServer(selectedTaskId);
     response.data = response.data.map((datum) => {
       // console.log(datum.sequence);

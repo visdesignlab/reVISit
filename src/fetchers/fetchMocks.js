@@ -15,13 +15,10 @@ export async function getTopPatternsForGroup(groups) {
 }
 
 export async function performPrefixSpan(data) {
-  console.log("postData is ", data);
-  console.log("data is ", data);
   let res = await postData(host + "/prefix", data);
   return res;
 }
 function parseActionConfiguration(config) {
-  console.log(config);
   if (config.elements) {
     config.elements = config.elements.replace(/FALSE/g, '"false"');
     config.elements = config.elements.replace(/TRUE/g, '"true"');
@@ -54,23 +51,17 @@ function storeActionConfiguration(configList) {
   });
 }
 export async function saveActionConfigurationToDB(updateActionConfigurations) {
-  console.log("in update", updateActionConfigurations);
-  console.log(storeActionConfiguration(updateActionConfigurations));
   let res = await postData(
     host + "/actionConfigurations",
     storeActionConfiguration(updateActionConfigurations)
   );
-  console.log("save result", res);
 
   return res;
 }
 export async function getActionConfigurations() {
   // TODO hook this up
-  console.log("in res data");
   let res = await getData(host + "/actionConfigurations");
-  console.log(res);
   res.data = res.data.map(parseActionConfiguration);
-  console.log("after processing", res);
 
   return res;
 }
@@ -176,7 +167,6 @@ export async function mockAPICall(
   const { shouldError, timeout } = options;
   console.log("in mockAPI");
   return await new Promise((resolution, rejection) => {
-    console.log("dywootto in promiser");
     setTimeout(() => {
       if (shouldError) {
         rejection({
