@@ -339,7 +339,6 @@ const GroupedEventSummary = ({ incomingData }) => {
     errorLoading,
     patternDataFromServer,
   ] = useFetchAPIData(async () => {
-    console.log("[new group pattern fetch]");
     const response = await getTopPatternsForGroup(filteredList);
     return response;
   }, []);

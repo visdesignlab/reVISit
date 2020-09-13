@@ -89,7 +89,7 @@ const ProvenanceController = ({ nodes, selectedNode }) => {
   console.log("new url for iframe", url);
   return (
     <div style={{ backgroundColor: "white" }}>
-      <div style={{ height: 1100 }}>
+      <div style={{ height: "85vh" }}>
         <iframe
           id={"childFrame"}
           width={"100%"}

@@ -211,12 +211,7 @@ const DevExtremeTable = ({
   const [filters, setFilters] = React.useState([]);
   const handleFilter = (columnName, value) => {
     const currentFilterIndex = filters.findIndex(
-      (filter) => filter.name === columnName
-    );
-    console.log(
-      "current filter index",
-      currentFilterIndex,
-      JSON.parse(JSON.stringify(filters))
+      (filter) => filter.columnName === columnName
     );
     let clonedFilters = [...filters];
     if (currentFilterIndex > -1) {
@@ -304,13 +299,13 @@ const DevExtremeTable = ({
   }, [provenanceData]);
   const [grouping, setGroupingInternal] = useState([]);
   const setGrouping = (newGrouping) => {
+    console.log("dywootto grouping", newGrouping, grouping, filters);
     // if an item is recently grouped on, remove any filters for it.
     let newlyAddedGroups = differenceFilter(newGrouping, grouping)?.[0];
     if (newlyAddedGroups) {
       let currentFilter = filters.find(
         (filterItem) => newlyAddedGroups.columnName === filterItem.columnName
       );
-      console.log("filter values", filters, newlyAddedGroups.columnName);
 
       if (!currentFilter) {
         currentFilter = { value: { filterMin: 0.5, filterMax: 1.5 } };
@@ -437,7 +432,6 @@ const DevExtremeTable = ({
     const [hidden, setHidden] = useState(false);
     let groupedRowHeader = `Grouped Row`;
     const columnName = props.row.groupedBy;
-    console.log(props);
     const columnInfo = columns.find((column) => column.name == columnName);
     if (columnInfo) {
       if (columnInfo.type === "quantitative") {
@@ -445,7 +439,6 @@ const DevExtremeTable = ({
           (group) => group.columnName === columnName
         );
         const group = grouping[groupIndex];
-        console.log(columnInfo, group, props);
 
         if (props.row.value === true) {
           // grab values from filters
@@ -467,9 +460,8 @@ const DevExtremeTable = ({
         const groupIndex = grouping.findIndex(
           (group) => group.columnName === columnName
         );
-        console.log("provenance group", groupIndex, grouping);
-
         const group = grouping[groupIndex];
+        console.log(groupIndex, group, grouping);
 
         if (props.row.value === true) {
           // grab values from filters
