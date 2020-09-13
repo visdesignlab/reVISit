@@ -29,7 +29,6 @@ export const CategoricalFilter = (props) => {
   );
   const yScale = d3.scaleLinear().domain([0, maxOccurance]).range([0, height]);
   function setCurrentFilter(currentValues) {
-    console.log(currentValues);
     onFilter(currentValues);
     setCurrentFilterInternal(currentValues);
   }
@@ -95,8 +94,6 @@ export const Histogram = ({
   yScale,
   height,
 }) => {
-  console.log("hist props", data, xScale, buckets, yScale, height);
-  console.log("HOVERED", hovered);
   const binWidth = 10;
   const [min, max] = xScale.domain();
   const currentBinCounter = d3
@@ -109,14 +106,6 @@ export const Histogram = ({
   const bars = (
     <g transform={`translate(${(1 / 3) * binWidth},0)`}>
       {buckets.map((bucket, index) => {
-        console.log(
-          index,
-          currentBins,
-          currentBins[index],
-          yScale(currentBins[index].length),
-          yScale(0),
-          yScale(250)
-        );
         return (
           <g>
             <rect
@@ -285,7 +274,6 @@ export const QuantitativeFilter = ({
   yScale,
   onFilter = (val) => {},
 }) => {
-  console.log("new Time Filter");
   const [minimum, setMinimum] = useState(d3.min(data));
   const [maximum, setMaximum] = useState(d3.max(data));
   const debouncedMin = useDebounce(minimum, 100);

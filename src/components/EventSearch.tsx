@@ -36,7 +36,6 @@ const actions = [
   "Hard Selected a Node",
 ];
 const COLLECTION = actions.map((actionName) => {
-  console.log(actionName);
   return { id: uuidv4(), label: actionName };
 });
 
@@ -199,11 +198,7 @@ const copy = (source, destination, droppableSource, droppableDestination) => {
   return [...destination];
 };
 
-const EventSearch = ({
-  onFilter = (val) => {
-    console.log(val);
-  },
-}) => {
+const EventSearch = ({ onFilter = (val) => {} }) => {
   const { actionConfigurationsList } = useContext(ProvenanceDataContext);
   const collection = useMemo(
     () =>
@@ -221,19 +216,15 @@ const EventSearch = ({
       onFilter(shoppingBagItems.length > 0 ? shoppingBagItems : null);
     }
   }, [shoppingBagItems]);
-  console.log(shoppingBagItems);
   const onDragEnd = React.useCallback(
     (result) => {
       const { source, destination } = result;
 
       // if dragged out of any box, delete it
       if (!destination) {
-        console.log("in delete node", source.index);
         setShoppingBagItems((state) => {
           const copy = [...state];
-          console.log("copy", copy);
           copy.splice(source.index, 1);
-          console.log("copy", copy);
 
           return copy;
         });

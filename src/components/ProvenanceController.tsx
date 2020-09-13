@@ -21,8 +21,6 @@ function parseTaskNumFromId(taskID) {
 }
 const ProvenanceController = ({ nodes, selectedNode }) => {
   //  "https://vdl.sci.utah.edu/mvnv-study/?vis=NL&taskNum=7&participantID=5588d7a1fdf99b304ee56840&taskID=S-task07/#c0203065-9927-42f5-88f6-07189cae6cff";
-  console.log(nodes, selectedNode);
-
   const [playInterval, setPlayInterval] = React.useState(null);
   const [hoveredItemId, setHoveredItemId] = React.useState(null);
   const [selectedItemId, setSelectedItemIdInternal] = React.useState(
@@ -31,17 +29,13 @@ const ProvenanceController = ({ nodes, selectedNode }) => {
   const url = selectedNode.url;
 
   useEffect(() => {
-
-
-
-    let currentNode = nodes[nodes.findIndex((node) => node.id === selectedItemId)];
-
-    console.log(currentNode.nodeID)
-    console.log(url);
-
-    document
-      .querySelector("#childFrame")
-      .contentWindow.postMessage(currentNode.nodeID, "*");
+    let currentIndex = nodes.findIndex((node) => node.id === selectedItemId);
+    if (currentIndex > -1) {
+      let currentNode = nodes[currentIndex];
+      document
+        .querySelector("#childFrame")
+        .contentWindow.postMessage(currentNode.nodeID, "*");
+    }
   }, [selectedItemId]);
 
   function handlePlayClick() {
@@ -54,9 +48,7 @@ const ProvenanceController = ({ nodes, selectedNode }) => {
   }
 
   const setSelectedItemId = (id) => {
-    console.log("setting item id change");
-
-    // make async call to load data
+    // unselect the currently selected node
     if (id === selectedItemId) {
       setSelectedItemIdInternal(null);
     } else {
@@ -64,19 +56,14 @@ const ProvenanceController = ({ nodes, selectedNode }) => {
     }
   };
 
-  console.log("dywootto", hoveredItemId);
-
   function handleForward() {
     // TODO handle case if
-    console.log("in forward", selectedItemId);
 
     setSelectedItemId((previousId) => {
-      console.log("setting item id change");
       if (!previousId) {
         setSelectedItemId(nodes[0].id);
       }
       const currentIndex = nodes.findIndex((node) => node.id === previousId);
-      console.log("in forward", currentIndex);
 
       // if at the end, do nothing
       if (currentIndex === nodes.length - 1 || currentIndex === -1) {
@@ -87,12 +74,10 @@ const ProvenanceController = ({ nodes, selectedNode }) => {
   }
 
   function handleBackward() {
-    console.log("in backward", selectedItemId);
     if (!selectedItemId) {
       setSelectedItemId(nodes[0].id);
     }
     const currentIndex = nodes.findIndex((node) => node.id === selectedItemId);
-    console.log("in backward", currentIndex);
 
     // if at the begining, do nothing
     if (currentIndex < 1) {
@@ -101,10 +86,10 @@ const ProvenanceController = ({ nodes, selectedNode }) => {
     setSelectedItemId(nodes[currentIndex - 1].id);
   }
 
-  console.log(url);
+  console.log("new url for iframe", url);
   return (
     <div style={{ backgroundColor: "white" }}>
-      <div style={{ height: 825 }}>
+      <div style={{ height: "85vh" }}>
         <iframe
           id={"childFrame"}
           width={"100%"}
@@ -184,7 +169,6 @@ const TimeLine = (props) => {
     selectedItemId,
     hoveredItemId,
   } = props;
-  console.log("dywootto width", width);
   function determineItemOpacity(node, selectedItemId, hoveredItemId) {
     let opacity;
     if (selectedItemId && node.id !== selectedItemId) {
@@ -204,7 +188,6 @@ const TimeLine = (props) => {
       .domain(d3.extent(nodes, (node) => node.time))
       .range([5, width - 5]);
   }, [nodes, width]);
-  console.log("commonScale", commonScale.range());
 
   return (
     <svg width={width} height={35}>

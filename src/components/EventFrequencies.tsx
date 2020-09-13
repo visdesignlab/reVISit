@@ -90,16 +90,6 @@ const SvgGrid = ({ items, itemHeight, itemWidth, gridHeight, gridWidth }) => {
     }
   }
   if (gridItems.length === 0) {
-    console.log(
-      "NOITEMS",
-      numberItems,
-      numberColumns,
-      numberRows,
-      "mc",
-      maxColumns,
-      "mr",
-      maxRows
-    );
   }
   return (
     <g className={"svggrid"} onClick={() => {}}>
