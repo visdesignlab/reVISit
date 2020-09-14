@@ -1,5 +1,12 @@
 //@ts-nocheck
-import React, { useState, useEffect, forwardRef, useMemo } from "react";
+import React, {
+  useState,
+  useEffect,
+  forwardRef,
+  useRef,
+  useCallback,
+  useMemo,
+} from "react";
 import Paper from "@material-ui/core/Paper";
 import {
   GroupingState,
@@ -25,8 +32,12 @@ import {
   ColumnChooser,
   TableColumnVisibility,
   TableSummaryRow,
+  ExportPanel,
 } from "@devexpress/dx-react-grid-material-ui";
+import { GridExporter } from "@devexpress/dx-react-grid-export";
+
 import { pure } from "recompose";
+import saveAs from "file-saver";
 
 import ProvenanceGraph from "./ProvenanceGraph";
 import * as d3 from "d3";
@@ -128,6 +139,14 @@ const ProvenanceCells = ({ value, style, ...restProps }) => {
     </VirtualTable.Cell>
   );
 };
+function onSave(workbook) {
+  workbook.xlsx.writeBuffer().then((buffer) => {
+    saveAs(
+      new Blob([buffer], { type: "application/octet-stream" }),
+      "DataGrid.xlsx"
+    );
+  });
+}
 
 function getGroupSummaryValues(props) {
   //const { selection, rows, totalSummaryItems } = this.state;
@@ -210,6 +229,8 @@ const DevExtremeTable = ({
   tableSchema,
   handleTagCreation,
 }) => {
+  const exporterRef = useRef(null);
+
   const [filters, setFilters] = React.useState([]);
   const handleFilter = (columnName, value) => {
     const currentFilterIndex = filters.findIndex(
@@ -295,6 +316,12 @@ const DevExtremeTable = ({
   };
 
   const [rows, setRows] = useState(provenanceData);
+  const startExport = useCallback(
+    (options) => {
+      exporterRef.current.exportGrid(options);
+    },
+    [exporterRef]
+  );
   // when task ID changes, use new data
   useEffect(() => {
     setRows(provenanceData);
@@ -556,9 +583,18 @@ const DevExtremeTable = ({
           }}
         />
         <Toolbar />
+        <ExportPanel startExport={startExport} />
+
         <ColumnChooser />
         <GroupingPanel showGroupingControls></GroupingPanel>
       </Grid>
+      <GridExporter
+        ref={exporterRef}
+        rows={rows}
+        columns={columns}
+        onSave={onSave}
+        selection={selection}
+      />
     </Paper>
   );
 };

@@ -311,14 +311,22 @@ export class ProvenanceColumn {
       customFilterAndSearch: this.customFilterAndSearch,
       render: (renderData) =>
         renderProvenanceNodeCell(renderData, this.handleProvenanceNodeClick),
-      groupedSummaryComponent: pure(({ incomingData }) => {
+      groupedSummaryComponent: ({ incomingData }) => {
         console.log("in generate column object");
-
         return (
-          <GroupedEventSummary
-            incomingData={incomingData}></GroupedEventSummary>
+          <GroupDataResolver incomingData={incomingData}>
+            {({ partitionedData }) => {
+              if (partitionedData.length === 0) {
+                return <div></div>;
+              }
+              return (
+                <GroupedEventSummary
+                  incomingData={partitionedData}></GroupedEventSummary>
+              );
+            }}
+          </GroupDataResolver>
         );
-      }),
+      },
 
       type: "provenance",
       filterComponent: (props) => (
@@ -444,16 +452,19 @@ function renderProvenanceNodeCell(data, handleProvenanceNodeClick) {
   );
 }
 
-const GroupDataResolver = (props) => {
+const GroupDataResolverFunc = (props) => {
   const { incomingData, children } = props;
   const [partitionedData, setPartitionedData] = useState([]);
   useEffect(() => {
+    console.log("in groupdata useEffect!!!");
     if (incomingData && incomingData.length > 0) {
       setPartitionedData(incomingData);
     }
-  }, incomingData);
+  }, [incomingData.length]);
   if (_.isFunction(children)) {
     return children({ partitionedData });
   }
   return <div></div>;
 };
+
+const GroupDataResolver = pure(GroupDataResolverFunc);
