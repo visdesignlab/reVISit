@@ -18,6 +18,7 @@ import VisibilityOff from "@material-ui/icons/VisibilityOff";
 import SelectAll from "@material-ui/icons/SelectAll";
 import GetApp from "@material-ui/icons/GetApp";
 import Brush from "@material-ui/icons/Brush";
+import DragHandleIcon from '@material-ui/icons/DragHandle';
 
 export const iconMapping = {
   Add,
@@ -39,6 +40,7 @@ export const iconMapping = {
   SelectAll,
   GetApp,
   Brush,
+  DragHandleIcon
 };
 const colors = [
   "#c6e0d6",

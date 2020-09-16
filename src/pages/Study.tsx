@@ -81,7 +81,7 @@ export default function StudyCard() {
         let yScale = d3.scaleLinear().domain(yDomain).range([height, 0])
 
         //metrics to plot in each task label
-        let metrics = ['accuracy', 'difficulty', 'confidence']
+        let metrics = ['accuracy']
 
 
         // let barHeight = 20;
@@ -90,7 +90,7 @@ export default function StudyCard() {
         let barHeight = 16
         let labelHeight = 15
         let textWidth = 30;
-        let labelWidth = textWidth + metrics.length * (metricSquare + barPadding) + textWidth  + barPadding
+        let labelWidth = textWidth  //+ metrics.length * (metricSquare + barPadding) + textWidth  + barPadding
         let axisHeight = yScale.range()[0] + barHeight + 3
 
         //compute scale for data; 
@@ -113,7 +113,7 @@ export default function StudyCard() {
         let maxTime = Math.max(...eventData.map(d => d.elapsedTime + d.duration))
         let phases = eventData.filter(d => d.level == 0)
 
-        var filteredData = eventData.filter(d => d.eventID == 'task' && d.category == 'Study' && d.taskID && d.taskID.includes('S-task')).sort((a, b) => a.elapsedTime > b.elapsedTime ? 1 : - 1);
+        var filteredData = eventData.filter(d => d.eventID == 'task' && d.taskID && d.taskID).sort((a, b) => a.elapsedTime > b.elapsedTime ? 1 : - 1);
     
         //compute y position for labels
         let y = 1;
@@ -274,7 +274,7 @@ export default function StudyCard() {
                                     x2={compressedTimeScale(n.data.upperBound)}
                                     y1={0}
                                     y2={0}></line> */}
-
+                                    {/* // PROBLEM HERE */}
                                 <rect x={timeScale(minTime)} y={timePadding} width={Math.abs(timeScale(avg) - timeScale(n.data.duration))} height={labelHeight - 2 * timePadding} style={{ fill: slower ? '#ff8d00' : 'rgb(53 130 184)', opacity: '.8' }}></rect>
 
                                 <rect x={timeScale(minTime)} y={labelHeight/2} width={timeScale(diff)} height={lineHeight} style={{ fill: slower ? '#ff8d00' : 'rgb(53 130 184)', opacity: '.8' }}></rect>
@@ -300,8 +300,8 @@ export default function StudyCard() {
 
                             </g>
                         }
-                        return <>{background} {label} {ciPlot} </>
-
+                        return <> {background} {label}   </> // {ciPlot}
+ 
 
                     })}
 
@@ -352,7 +352,7 @@ export default function StudyCard() {
                             })}
                         </>
 
-                        return metricPlot
+                        return <></> //metricPlot
                     }
 
 
@@ -432,11 +432,11 @@ export default function StudyCard() {
             <Card className={classes.root} key={'participantOverview'}  >
                 <CardContent>
                     <Typography variant="h5" component="h2">
-                        Event View
+                        Participant Timeline
                 </Typography>
-                    <Typography className={classes.pos} color="textSecondary"  >
+                    {/* <Typography className={classes.pos} color="textSecondary"  >
                         Event Sequences
-                    </Typography>
+                    </Typography> */}
                     <Divider />
                     <Box mt={2} >
                         <Grid container className={classes.root} spacing={2}>
@@ -457,6 +457,9 @@ export default function StudyCard() {
                                                     <Box borderBottom={1} boxShadow={0} p={1} style={{ borderColor: 'rgba(171, 171, 171, 0.5)' }}>
                                                         {/* <Box display="flex" justifyContent="flex-end"> */}
 
+                                                        <Typography style={{ display: 'block' }} color="primary" variant='overline'  >
+                                                            {'ParticipantID: ' + participant.participantID }
+                                                        </Typography>
                                                         <Typography style={{ display: 'block' }} color="primary" variant='overline'  >
                                                             {'Avg. Accuracy: ' + (Math.round(participant.averageAccuracy * 100) / 100 || undefined) }
                                                         </Typography>
