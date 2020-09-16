@@ -90,7 +90,7 @@ export default function StudyCard() {
         let barHeight = 16
         let labelHeight = 15
         let textWidth = 30;
-        let labelWidth = textWidth + metrics.length * (metricSquare + barPadding) + textWidth  + barPadding
+        let labelWidth = textWidth  //+ metrics.length * (metricSquare + barPadding) + textWidth  + barPadding
         let axisHeight = yScale.range()[0] + barHeight + 3
 
         //compute scale for data; 
@@ -300,7 +300,7 @@ export default function StudyCard() {
 
                             </g>
                         }
-                        return <> {background} {label} {ciPlot}  </> // 
+                        return <> {background} {label}   </> // {ciPlot}
  
 
                     })}
