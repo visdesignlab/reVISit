@@ -24,7 +24,7 @@
     "@types/react": "^16.9.35",
     "@types/react-dom": "^16.9.8",
     "@types/storybook__react": "^5.2.1",
-    "@visdesignlab/trrack": "github:visdesignlab/provenance-lib-core",
+    "@visdesignlab/trrack": "github:visdesignlab/trrack",
     "antd": "^4.3.5",
     "chroma-js": "^2.1.0",
     "css-modules-typescript-loader": "^4.0.0",
