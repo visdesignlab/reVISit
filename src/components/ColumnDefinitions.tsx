@@ -9,6 +9,7 @@ import { getTopPatternsForGroup } from "../fetchers/fetchMocks.js";
 import { useFetchAPIData } from "../hooks/hooks";
 import Skeleton from "@material-ui/lab/Skeleton";
 import Typography from "@material-ui/core/Typography";
+import { pure } from "recompose";
 
 const columnOverrides = {};
 const filterQuantitativeValues = (filter, value) =>
@@ -266,6 +267,7 @@ const EventsSummary = (props) => {
 
   return <EventSearch onFilter={props.onFilter}></EventSearch>;
 };
+
 /* */
 function filterEvents(filterValue, rowValue) {
   if (!filterValue || !rowValue) {
@@ -309,9 +311,23 @@ export class ProvenanceColumn {
       customFilterAndSearch: this.customFilterAndSearch,
       render: (renderData) =>
         renderProvenanceNodeCell(renderData, this.handleProvenanceNodeClick),
-      groupedSummaryComponent: ({ incomingData }) => (
-        <GroupedEventSummary incomingData={incomingData}></GroupedEventSummary>
-      ),
+      groupedSummaryComponent: ({ incomingData }) => {
+        console.log("in generate column object");
+        return (
+          <GroupDataResolver incomingData={incomingData}>
+            {({ partitionedData }) => {
+              if (partitionedData.length === 0) {
+                return <div></div>;
+              }
+              return (
+                <GroupedEventSummary
+                  incomingData={partitionedData}></GroupedEventSummary>
+              );
+            }}
+          </GroupDataResolver>
+        );
+      },
+
       type: "provenance",
       filterComponent: (props) => (
         <EventsSummary
@@ -324,7 +340,7 @@ export class ProvenanceColumn {
   }
 }
 
-const GroupedEventSummary = ({ incomingData }) => {
+const GroupedEventSummaryFunc = ({ incomingData }) => {
   const filteredList = useMemo(() => {
     return incomingData.map((row) => {
       return {
@@ -357,9 +373,10 @@ const GroupedEventSummary = ({ incomingData }) => {
           {filteredList.length} Participants
         </Typography>
         {patternDataFromServer &&
-          patternDataFromServer[0]["topK"].map((topSequence) => {
+          patternDataFromServer[0]["topK"].map((topSequence, index) => {
             return (
               <div
+                key={`sequence${index}`}
                 style={{
                   display: "inline-block",
                   backgroundColor: "whitesmoke",
@@ -385,6 +402,7 @@ const GroupedEventSummary = ({ incomingData }) => {
     </div>
   );
 };
+const GroupedEventSummary = pure(GroupedEventSummaryFunc);
 
 function renderNotesCell(rowData) {
   if (!Array.isArray(rowData.tags)) {
@@ -434,16 +452,19 @@ function renderProvenanceNodeCell(data, handleProvenanceNodeClick) {
   );
 }
 
-const GroupDataResolver = (props) => {
+const GroupDataResolverFunc = (props) => {
   const { incomingData, children } = props;
   const [partitionedData, setPartitionedData] = useState([]);
   useEffect(() => {
+    console.log("in groupdata useEffect!!!");
     if (incomingData && incomingData.length > 0) {
       setPartitionedData(incomingData);
     }
-  }, incomingData);
+  }, [incomingData.length]);
   if (_.isFunction(children)) {
     return children({ partitionedData });
   }
   return <div></div>;
 };
+
+const GroupDataResolver = pure(GroupDataResolverFunc);

@@ -109,9 +109,9 @@ export const Histogram = ({
     <g transform={`translate(${(1 / 3) * binWidth},0)`}>
       {buckets.map((bucket, index) => {
         return (
-          <g>
+          <g key={index}>
             <rect
-              key={index}
+              key={`old${index}`}
               x={xScale(bucket.x0) - 0.5 * binWidth} // 1/2 xBandwidth to move to middle 1/2 another because of -1 index on xBand domain
               y={yScale(bucket.length)}
               width={binWidth}

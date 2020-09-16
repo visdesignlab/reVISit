@@ -4,6 +4,7 @@ import styles from "./App.module.css";
 import Main from "./Main";
 import SidePane from "./SidePane";
 import "antd/dist/antd.css";
+
 import { ProvenanceDataContextProvider } from "./components/ProvenanceDataContext";
 //import { fetchProvenance } from "./firebase/fetchData";
 //fetchProvenance();
@@ -27,5 +28,10 @@ function App() {
     </div>
   );
 }
-
+/*
+used to determine why components updated
+if (process.env.NODE_ENV !== "production") {
+  const { whyDidYouUpdate } = require("why-did-you-update");
+  whyDidYouUpdate(React);
+}*/
 export default App;
