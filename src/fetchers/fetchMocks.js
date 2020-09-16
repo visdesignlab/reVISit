@@ -6,12 +6,28 @@ export async function fetchProvenanceDataByNodeId(nodeId) {
   let res = await postData(host + "/actions/" + nodeId);
   return res;
 }
-
+let patternCache = {};
 export async function getTopPatternsForGroup(groups) {
+  let cached = readFromCache(groups);
+  if (cached) {
+    console.log("[CACHE]: Read from cache!");
+    return cached;
+  }
   let res = await postData(`${host}/groupPatterns`, {
     groups: [{ id: "group1", participants: groups }],
   });
+  storeInCache(groups, res);
+
   return res;
+}
+function readFromCache(group) {
+  let idsShortened = group.map((group) => group.participantID.substring(0, 3));
+  return patternCache[idsShortened];
+}
+function storeInCache(group, res) {
+  let idsShortened = group.map((group) => group.participantID.substring(0, 3));
+  patternCache[idsShortened] = res;
+  return;
 }
 
 export async function performPrefixSpan(data) {
