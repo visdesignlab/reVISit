@@ -156,9 +156,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   const [overviewData, setOverviewData] = useState();
   const [fetchedInitialTask, setFetchedInitialTask] = useState(false);
   const [taskList, setTaskList] = useState();
-  const [currentlyVisitedNodes, setCurrentlyVisitedNodes] = React.useState(
-    null
-  );
+
 
   // const [metrics,setMetrics] = React.useState()
 
@@ -172,38 +170,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
 
   let [homeTaskSort, setHomeTaskSort] = useState();
 
-  async function handleProvenanceNodeClick(node) {
-    console.log("dywootto handle provenance node click", node);
 
-    // hardcoded data for now. ideally, we'll have the event id to be able to select on.
-    const participantId = "545d6768fdf99b7f9fca24e3";
-    let fetched = await fetchProvenanceDataByNodeId(node.id);
-    if (fetched.success) {
-      const processedNodes = fetched.data.map((node) => {
-        return {
-          id: node.id,
-          name: node.actionID,
-          time: node.elapsedTime,
-          nodeID: node.nodeID,
-          url: node.url,
-          participantId: node.participantID,
-          uniqueId: node.uniqueID,
-        };
-      });
-      setCurrentlyVisitedNodes(processedNodes);
-    }
-
-    // select all of that provenance graph.
-    //const promise = mysql_api(`/actions/${participantId}/${taskId}`);
-
-    //promise.then((resolved) => {
-    //  console.log("resolvedclick", resolved);
-    //alert(`queried (skinny) provenance from db ${resolved.data}`);
-
-    // rehydrate provenance graph
-    // render vis using that provenance graph
-    //});
-  }
 
   // get taskList from server;
   let [, loadingTaskList, taskListFromServer] = useFetchAPIData(async () => {
@@ -267,50 +234,15 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     setTaskList(taskListFromServer);
   }, [taskListFromServer]);
 
-  //State
-  function timeout(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  }
 
-  const handleTagCreation = async (participantID, taskID, tag, action) => {
-    await timeout(200);
 
-    return tag;
-  };
+
   let [taskSort, setTaskSort] = useState("name");
 
   /*const [allProvenanceData, setAllProvenanceData] = useState(() =>
     processRawProvenanceData(initProvData) 
   );*/
 
-  const [currentTaskData, setCurrentTaskData] = React.useState([]);
-
-  let [
-    isTaskLoading,
-    isTaskError,
-    taskDataFromServer,
-  ] = useFetchAPIData(async () => {
-    const response = await getTaskDataFromServer(selectedTaskId);
-    response.data = response.data.map((datum) => {
-      // console.log(datum.sequence);
-
-      // TODO: Fix this from being null
-      try {
-        datum.sequence = JSON.parse(`[${datum.sequence}]`);
-      } catch (err) {
-        console.error(
-          `[Provenance Data Context] Error Parsing ${datum.participantID}'s event sequence. This is likely caused by the sequence being > 16k characters.`
-        );
-        datum.sequence = [];
-      }
-      return datum;
-    });
-    return response;
-  }, [selectedTaskId, queryCount]);
-
-  useEffect(() => {
-    setCurrentTaskData(taskDataFromServer);
-  }, [taskDataFromServer]);
 
   function handleChangeSelectedTaskId(event) {
     setSelectedTaskId([event.target.value]);
@@ -319,21 +251,17 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   return (
     <ProvenanceDataContext.Provider
       value={{
-        currentTaskData,
         handleChangeSelectedTaskId,
         selectedTaskId,
         overviewData,
         loadingTaskList,
         taskList,
         metrics,
+        queryCount,
         setTaskSort,
         homeTaskSort,
         setHomeTaskSort,
         conditions,
-        handleTagCreation,
-        handleProvenanceNodeClick,
-        currentlyVisitedNodes,
-        setCurrentlyVisitedNodes,
         actionConfigurations,
         setActionConfigurationsList,
         actionConfigurationsList,
