@@ -9,6 +9,11 @@ import Box from '@material-ui/core/Box';
 import Tooltip from '@material-ui/core/Tooltip';
 import TrendingFlatIcon from '@material-ui/icons/TrendingFlat';
 import Divider from '@material-ui/core/Divider';
+import { Alert, AlertTitle } from '@material-ui/lab';
+
+import {
+    getTimelineFromServer,
+} from "../fetchers/fetchMocks.js";
 
 import * as labella from "labella"
 
@@ -27,6 +32,7 @@ import ProvenanceIsolatedNodes from "../components/ProvenanceIsolatedNodes";
 import Grid, { GridSpacing } from '@material-ui/core/Grid';
 import { pathToFileURL } from "url";
 import { keys } from "mobx";
+import Skeleton from "@material-ui/lab/Skeleton";
 
 const useStyles = makeStyles({
     root: {
@@ -62,14 +68,33 @@ function scale(width, maxValue) {
 }
 
 let xDomain, yDomain, categories;
+const TimeLineView = (props) => {
+    //  get timeline from server;
+    let [loadingTimeLineData, errorLoadingTimeLineData, timelineData] = useFetchAPIData(async () => {
+        console.log("requesting timeline data from server ");
+        return await getTimelineFromServer();
+    }, []);
 
 
-export default function StudyCard() {
+    return (<div>
+        {loadingTimeLineData && <Skeleton width={1000} height={1000}> Loading study data</Skeleton>}
+        {errorLoadingTimeLineData && <Alert severity="error">
+            <AlertTitle>Error</AlertTitle>
+            There was an error fetching timeline data {errorLoadingTimeLineData}
+        </Alert>}
+        {timelineData && <StudyCard timelineData={timelineData}></StudyCard>}
+    </div>)
+
+}
+export default TimeLineView;
+
+export function StudyCard(props) {
     const classes = useStyles();
     const bull = <span className={classes.bullet}>•</span>;
-    let { data,timelineData } = useContext(ProvenanceDataContext);
-
-    Object.assign(data,timelineData) 
+    let timelineData = props.timelineData;
+    let { overviewData } = useContext(ProvenanceDataContext);
+    console.log('dywootto study', overviewData, timelineData);
+    Object.assign(overviewData, timelineData)
     // console.log('combinedData is ', data)
 
     function eventMap(eventData, size = { width: 130, height: 30 }) {
@@ -99,7 +124,7 @@ export default function StudyCard() {
         // let colors = ["rgb(96, 201, 110)", "rgb(0, 191, 128)", "rgb(0, 180, 147)", "rgb(0, 167, 165)", "rgb(0, 153, 179)", "rgb(0, 138, 188)", "rgb(0, 122, 189)", "rgb(0, 104, 182)", "rgb(42, 85, 168)", "rgb(77, 65, 147)"]
         let colors = ["rgb(0, 153, 179)", "rgb(0, 138, 188)", "rgb(0, 122, 189)", "rgb(0, 104, 182)", "rgb(42, 85, 168)", "rgb(77, 65, 147)"]
         // let colors = [ "#e6f598", "#abdda4", "#66c2a5", "#3288bd", "#5e4fa2", "#9e0142", "#d53e4f", "#f46d43", "#fdae61","#fee08b", "#ffffbf", ]
-       
+
         let colorScale = d3.scaleOrdinal(colors).domain(categories);
 
         let color = function (d) {
@@ -114,7 +139,7 @@ export default function StudyCard() {
         let phases = eventData.filter(d => d.level == 0)
 
         var filteredData = eventData.filter(d => d.eventID == 'task' && d.taskID && d.taskID).sort((a, b) => a.elapsedTime > b.elapsedTime ? 1 : - 1);
-    
+
         //compute y position for labels
         let y = 1;
         let labelPos = [];
@@ -139,50 +164,50 @@ export default function StudyCard() {
             return n;
         })
 
-        let metricColorScales={}; //one color scale per metric
-        let metricYScales={} // one y scale per metric
+        let metricColorScales = {}; //one color scale per metric
+        let metricYScales = {} // one y scale per metric
         let taskTimeScales = {} // one time scale per task (depending on the range of completion times)
 
         let colorRange = ["#e6550d", "#3182bd"];
         let heightRange = [barPadding, labelHeight - barPadding]
-        let timeScaleRange = [barPadding, textWidth-2*barPadding];
+        let timeScaleRange = [barPadding, textWidth - 2 * barPadding];
 
- 
-        let getStats = function(taskID,condition,metric){
-            let taskInfo = data.tasks.find(dd => dd.taskID == taskID);
+
+        let getStats = function (taskID, condition, metric) {
+            let taskInfo = overviewData.tasks.find(dd => dd.taskID == taskID);
             let out = {}
             if (taskInfo) {
                 let stats = taskInfo.conditions[condition.trim()].stats.find(t => t.metric == metric);
-                if (stats){
+                if (stats) {
                     out['average'] = stats.ci[0];
-                out['lowerBound'] = stats.ci[1];
-                out['upperBound'] = stats.ci[2];
-                out['min'] =stats.min;
-                out['max'] = stats.max;
+                    out['lowerBound'] = stats.ci[1];
+                    out['upperBound'] = stats.ci[2];
+                    out['min'] = stats.min;
+                    out['max'] = stats.max;
 
                 }
-                
+
             }
             return out
         }
 
         //get stats for all metrics to be displayed in the label plus time. 
-        nodes.map(n=>{
-            n.data.stats={}
-            metrics.map(metric=>{
-                n.data.stats[metric] = getStats(n.data.taskID,n.data.condition,metric)
+        nodes.map(n => {
+            n.data.stats = {}
+            metrics.map(metric => {
+                n.data.stats[metric] = getStats(n.data.taskID, n.data.condition, metric)
             })
-            n.data.stats['time'] = getStats(n.data.taskID,n.data.condition,'time')
+            n.data.stats['time'] = getStats(n.data.taskID, n.data.condition, 'time')
         })
 
         metrics.map(metric => {
             //create metric scales for color and height of bars
-            metricColorScales[metric] = d3.scaleLinear().range(colorRange).domain(data.metrics[metric])
-            metricYScales[metric] = d3.scaleLinear().range(heightRange).domain(data.metrics[metric])
+            metricColorScales[metric] = d3.scaleLinear().range(colorRange).domain(overviewData.metrics[metric])
+            metricYScales[metric] = d3.scaleLinear().range(heightRange).domain(overviewData.metrics[metric])
         })
 
-        data.taskList.map(task => {
-            data.conditions.map(condition => {
+        overviewData.taskList.map(task => {
+            overviewData.conditions.map(condition => {
                 let stats = getStats(task, condition, 'time')
                 //WARNING, right now setting a single range for time, regardless of task/condtion since the backend returns a common scale for all metrics
                 taskTimeScales[task] = d3.scaleLinear().range(timeScaleRange).domain([stats['min'], stats['max']])
@@ -222,15 +247,15 @@ export default function StudyCard() {
 
                     )}
 
-                    {nodes.map(n => <line x1={xScale(n.data.elapsedTime) + barPadding} y1={yScale(n.data.level) + 15} x2={xScale(n.data.elapsedTime) + barPadding} y2={yScale(n.y)+labelHeight} style={{ stroke: 'rgb(150,150,150)', strokeWidth: '.8px'}}></line>)}
+                    {nodes.map(n => <line x1={xScale(n.data.elapsedTime) + barPadding} y1={yScale(n.data.level) + 15} x2={xScale(n.data.elapsedTime) + barPadding} y2={yScale(n.y) + labelHeight} style={{ stroke: 'rgb(150,150,150)', strokeWidth: '.8px' }}></line>)}
 
                     {nodes.map(n => {
                         let ciPlot, background;
 
                         let timeScale = taskTimeScales[n.data.taskID];
 
-                        let label = <g style={{ "transform": "translate(" + (xScale(n.data.elapsedTime)+barPadding) + "px, " + (yScale(n.y)) + "px)" }}>
-                        <rect className='count' key={'background_' + n.data.eventID} style={{ fill: 'rgb(245,245,245)' }}
+                        let label = <g style={{ "transform": "translate(" + (xScale(n.data.elapsedTime) + barPadding) + "px, " + (yScale(n.y)) + "px)" }}>
+                            <rect className='count' key={'background_' + n.data.eventID} style={{ fill: 'rgb(245,245,245)' }}
                                 x={0}
                                 y={0}
                                 width={labelWidth}
@@ -239,8 +264,8 @@ export default function StudyCard() {
                             <line x1={0} y1={labelHeight} x2={n.labelWidth} y2={labelHeight} style={{ stroke: 'rgb(150,150,150)', strokeWidth: '.8px' }}></line>
 
                             <text
-                                style={{ fontSize: ".75em", fontWeight:'bold', textAnchor: "start", fill: 'rgb(90,90,90)', alignmentBaseline: "hanging" }}
-                                x={barPadding*2}
+                                style={{ fontSize: ".75em", fontWeight: 'bold', textAnchor: "start", fill: 'rgb(90,90,90)', alignmentBaseline: "hanging" }}
+                                x={barPadding * 2}
                                 y={barPadding}>
                                 {" "}
                                 {n.data.shortName}{" "}
@@ -248,12 +273,12 @@ export default function StudyCard() {
                         </g>
 
                         if (Object.keys(n.data.stats).includes('time')) {
-                            let plotHeight  = yScale(n.y) + barHeight
+                            let plotHeight = yScale(n.y) + barHeight
                             let maxWidth = Math.max(xScale(n.data.duration) + barPadding, xScale(n.data.upperBound));
 
                             let avg = n.data.stats['time'].average
                             let slower = avg < n.data.duration;
-                            let minTime = Math.min(avg,n.data.duration)
+                            let minTime = Math.min(avg, n.data.duration)
                             let diff = Math.abs(avg - n.data.duration)
 
                             let timePadding = 2;
@@ -262,11 +287,11 @@ export default function StudyCard() {
 
                             ciPlot = <g style={{ "transform": "translate(" + (xScale(n.data.elapsedTime) + (labelWidth - textWidth) + barPadding) + "px, " + (yScale(n.y)) + "px)" }}>
 
-                                <line x1={timeScale.range()[0]} y1={labelHeight/2+lineHeight/2} x2={timeScale.range()[1]} y2={labelHeight/2+lineHeight/2} style={{ stroke: 'rgb(200,200,200)', strokeWidth: '.8px' }}></line>
+                                <line x1={timeScale.range()[0]} y1={labelHeight / 2 + lineHeight / 2} x2={timeScale.range()[1]} y2={labelHeight / 2 + lineHeight / 2} style={{ stroke: 'rgb(200,200,200)', strokeWidth: '.8px' }}></line>
 
-                       
 
-     {/*
+
+                                {/*
                                 <line
                                     className="count"
                                     style={{ stroke: "black", strokeWidth: 3, opacity: 0.5 }}
@@ -274,16 +299,16 @@ export default function StudyCard() {
                                     x2={compressedTimeScale(n.data.upperBound)}
                                     y1={0}
                                     y2={0}></line> */}
-                                    {/* // PROBLEM HERE */}
+                                {/* // PROBLEM HERE */}
                                 <rect x={timeScale(minTime)} y={timePadding} width={Math.abs(timeScale(avg) - timeScale(n.data.duration))} height={labelHeight - 2 * timePadding} style={{ fill: slower ? '#ff8d00' : 'rgb(53 130 184)', opacity: '.8' }}></rect>
 
-                                <rect x={timeScale(minTime)} y={labelHeight/2} width={timeScale(diff)} height={lineHeight} style={{ fill: slower ? '#ff8d00' : 'rgb(53 130 184)', opacity: '.8' }}></rect>
+                                <rect x={timeScale(minTime)} y={labelHeight / 2} width={timeScale(diff)} height={lineHeight} style={{ fill: slower ? '#ff8d00' : 'rgb(53 130 184)', opacity: '.8' }}></rect>
                                 {/* <rect x={timeScale(avg)} y={timePadding} width={1} height={labelHeight - 2 * timePadding} style={{ fill: 'black', opacity: '1', 'rx': 0 }}></rect> */}
 
                                 {/* <rect x={0} y={0} width ={glyphSize} height={glyphSize}  transform ={"translate(" + timeScale(avg) + "," +  (labelHeight/2) + ") rotate(45,2,2)"} style={{ fill: 'black', opacity: '1'}}></rect> */}
-                                <rect x={0} y={0} width ={glyphSize} height={glyphSize}  style={{ fill: 'black', opacity: '1', transform: "translate(" + timeScale(avg) + "px," +  (labelHeight/2 - glyphSize/2) + "px) rotate(45deg)"}}></rect>
+                                <rect x={0} y={0} width={glyphSize} height={glyphSize} style={{ fill: 'black', opacity: '1', transform: "translate(" + timeScale(avg) + "px," + (labelHeight / 2 - glyphSize / 2) + "px) rotate(45deg)" }}></rect>
 
-                                <rect x={0} y={0} width ={glyphSize} height={glyphSize}  style={{ fill: 'red', opacity: '1', transform: "translate(" + timeScale(n.data.duration) + "px," +  (labelHeight/2 - glyphSize/2) + "px) rotate(45deg)"}}></rect>
+                                <rect x={0} y={0} width={glyphSize} height={glyphSize} style={{ fill: 'red', opacity: '1', transform: "translate(" + timeScale(n.data.duration) + "px," + (labelHeight / 2 - glyphSize / 2) + "px) rotate(45deg)" }}></rect>
 
 
                                 {/* <circle
@@ -301,7 +326,7 @@ export default function StudyCard() {
                             </g>
                         }
                         return <> {background} {label}   </> // {ciPlot}
- 
+
 
                     })}
 
@@ -346,7 +371,7 @@ export default function StudyCard() {
                                         height={Math.abs(vertScale(avg) - vertScale(value))}></rect>
 
                                     {/* {i == metrics.length - 1 ? <line x1={xScale(n.data.elapsedTime) + textWidth + barPadding + (i + 1) * (metricSquare + barPadding)} y1={yScale(n.y)} x2={xScale(n.data.elapsedTime) + textWidth + barPadding + (i + 1) * (metricSquare + barPadding)} y2={yScale(n.y) + labelHeight} style={{ "stroke": "rgb(0,0,0,0.25)", "strokeWidth": .8}}></line> */}
-                                        {/* : ''} */}
+                                    {/* : ''} */}
 
                                 </g>
                             })}
@@ -387,8 +412,8 @@ export default function StudyCard() {
     }
 
     useEffect(() => {
-        if (data) {
-            participants = data.participants
+        if (overviewData) {
+            participants = overviewData.participants
             participants.map(p => {
                 p.study.map(d => {
                     d.uniqueID = d.eventID + '_' + Math.random()
@@ -396,13 +421,13 @@ export default function StudyCard() {
             })
         }
 
-    }, [data])
+    }, [overviewData])
 
     let [hoveredElement, setHovered] = useState();
 
     let participants, conditionGroups;
-    if (data) {
-        participants = data.participants
+    if (overviewData) {
+        participants = overviewData.participants
         //the concept of a single condition per participant is not always valid. 
         // participants.map(p => p.condition = p.study[0].condition)
         let allLevels = participants.map(p => p.study.map(s => s.level)).flat();
@@ -422,7 +447,7 @@ export default function StudyCard() {
         .range([0.3, 1])
 
     //Only render when all API calls have returned 
-    let ready = data;
+    let ready = overviewData;
     // if (ready) {
     //     // console.log(data)
     // }
@@ -458,10 +483,10 @@ export default function StudyCard() {
                                                         {/* <Box display="flex" justifyContent="flex-end"> */}
 
                                                         <Typography style={{ display: 'block' }} color="primary" variant='overline'  >
-                                                            {'ParticipantID: ' + participant.participantID }
+                                                            {'ParticipantID: ' + participant.participantID}
                                                         </Typography>
                                                         <Typography style={{ display: 'block' }} color="primary" variant='overline'  >
-                                                            {'Avg. Accuracy: ' + (Math.round(participant.averageAccuracy * 100) / 100 || undefined) }
+                                                            {'Avg. Accuracy: ' + (Math.round(participant.averageAccuracy * 100) / 100 || undefined)}
                                                         </Typography>
                                                         {/* <Typography style={{ display: 'block' }} color="primary" variant='overline'  >
                                                                 {'ID:' + participant.participantID.slice(0, 3) + '...' + participant.participantID.slice(-3)}

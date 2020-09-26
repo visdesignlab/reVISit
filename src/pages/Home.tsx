@@ -150,8 +150,8 @@ export const BarChart = (props) => {
       : undefined;
     let hoveredVarsToPlot = hoveredStats
       ? Object.entries(hoveredStats.count)
-          .sort((a, b) => (a[1] > b[1] ? -1 : 1))
-          .slice(0, 20)
+        .sort((a, b) => (a[1] > b[1] ? -1 : 1))
+        .slice(0, 20)
       : [];
 
     if (!vert) {
@@ -223,21 +223,21 @@ export const BarChart = (props) => {
                   {hoveredRowColor ? (
                     ""
                   ) : (
-                    <text
-                      style={{
-                        fontSize: "1em",
-                        textAnchor: "middle",
-                      }}
-                      x={vert ? -5 : xScale(key) + barWidth / 2}
-                      y={
-                        vert
-                          ? yScale(key) - barWidth
-                          : height - yScale.range()[0] - yScale(value) - 2
-                      }>
-                      {" "}
-                      {value}{" "}
-                    </text>
-                  )}
+                      <text
+                        style={{
+                          fontSize: "1em",
+                          textAnchor: "middle",
+                        }}
+                        x={vert ? -5 : xScale(key) + barWidth / 2}
+                        y={
+                          vert
+                            ? yScale(key) - barWidth
+                            : height - yScale.range()[0] - yScale(value) - 2
+                        }>
+                        {" "}
+                        {value}{" "}
+                      </text>
+                    )}
                 </React.Fragment>
               );
             })}
@@ -367,7 +367,13 @@ function Stimulus({ taskID, conditionName, classes }) {
 }
 
 //Compoment to draw participant counts for each interaction sequence
-function SequenceCount({ row, hoveredRow, hoveredRowColor, clickedRow, clickedRowColor }) {
+function SequenceCount({
+  row,
+  hoveredRow,
+  hoveredRowColor,
+  clickedRow,
+  clickedRowColor,
+}) {
   let total = 137;
   let height = 25;
   let iconWidth = 3;
@@ -385,22 +391,23 @@ function SequenceCount({ row, hoveredRow, hoveredRowColor, clickedRow, clickedRo
   let yScale = d3.scaleLinear().range([0, height]).domain([0, numIconsPerCol]);
 
   let currentParticipants = row.matchingSequences.map((s) => s.participantID);
-  let hoveredParticipants =[]; 
-  
-  if (clickedRow){
-    hoveredParticipants  = clickedRow.matchingSequences.map((s) => s.participantID)
+  let hoveredParticipants = [];
+
+  if (clickedRow) {
+    hoveredParticipants = clickedRow.matchingSequences.map(
+      (s) => s.participantID
+    );
   } else {
     hoveredParticipants = hoveredRow
-    ? hoveredRow.matchingSequences.map((s) => s.participantID)
-    : [];
-  } 
+      ? hoveredRow.matchingSequences.map((s) => s.participantID)
+      : [];
+  }
 
   // if (hoveredRow){
   //   console.log('currentRow has ', row.count, currentParticipants.length , 'participants')
   //   console.log('hoveredRow has ', hoveredParticipants.length , 'participants')
-  
+
   // }
- 
 
   let intersection = currentParticipants.filter((x) =>
     hoveredParticipants.includes(x)
@@ -409,7 +416,7 @@ function SequenceCount({ row, hoveredRow, hoveredRowColor, clickedRow, clickedRo
   // width = countScale.range()[1]
 
   return (
-    <svg width={width + textWidth*4} height={height}>
+    <svg width={width + textWidth * 4} height={height}>
       {Array.from(Array(total).keys()).map((key) => {
         return (
           <rect
@@ -424,8 +431,10 @@ function SequenceCount({ row, hoveredRow, hoveredRowColor, clickedRow, clickedRo
                 key < intersection.length
                   ? hoveredRowColor || "rgb(220, 220, 220)"
                   : key < row.count
-                  ? (hoveredRow && clickedRow ? clickedRowColor : "rgb(150, 150, 150)")
-                  : "rgb(220, 220, 220)", //rgb(147 195 209)
+                    ? hoveredRow && clickedRow
+                      ? clickedRowColor
+                      : "rgb(150, 150, 150)"
+                    : "rgb(220, 220, 220)", //rgb(147 195 209)
             }}></rect>
         );
       })}
@@ -437,36 +446,42 @@ function SequenceCount({ row, hoveredRow, hoveredRowColor, clickedRow, clickedRo
           fontWeight: "bold",
           alignmentBaseline: "middle",
           textAnchor: "start",
-          fill:  "rgb(150, 150, 150)",
+          fill: "rgb(150, 150, 150)",
         }}>
         {row.count}
       </text>
 
-      {hoveredRow ? <text
-        x={xScale(numCols) + padding + 25}
-        y={yScale(numIconsPerCol / 2)}
-        style={{
-          fontWeight: "bold",
-          alignmentBaseline: "middle",
-          textAnchor: "start",
-          fill: hoveredRowColor,
-        }}>
-        {' / ' + intersection.length }
-      </text> : <></>}
+      {hoveredRow ? (
+        <text
+          x={xScale(numCols) + padding + 25}
+          y={yScale(numIconsPerCol / 2)}
+          style={{
+            fontWeight: "bold",
+            alignmentBaseline: "middle",
+            textAnchor: "start",
+            fill: hoveredRowColor,
+          }}>
+          {" / " + intersection.length}
+        </text>
+      ) : (
+          <></>
+        )}
 
-      {clickedRow && hoveredRow? <text
-        x={xScale(numCols) + padding + 55}
-        y={yScale(numIconsPerCol / 2)}
-        style={{
-          fontWeight: "bold",
-          alignmentBaseline: "middle",
-          textAnchor: "start",
-          fill: clickedRowColor,
-        }}>
-        {'/ ' + (row.count - intersection.length) }
-      </text> : <></>}
-
-
+      {clickedRow && hoveredRow ? (
+        <text
+          x={xScale(numCols) + padding + 55}
+          y={yScale(numIconsPerCol / 2)}
+          style={{
+            fontWeight: "bold",
+            alignmentBaseline: "middle",
+            textAnchor: "start",
+            fill: clickedRowColor,
+          }}>
+          {"/ " + (row.count - intersection.length)}
+        </text>
+      ) : (
+          <></>
+        )}
 
       {/* <rect
     x={0}
@@ -516,7 +531,7 @@ function TableComponent({
   setHoveredRow = undefined,
   clickedRowColor,
   clickedRow = undefined,
-  setClickedRow = undefined
+  setClickedRow = undefined,
 }) {
   // console.log('rendering table',hoveredRow)
   // console.log(rows)
@@ -585,7 +600,12 @@ function TableComponent({
                   }}
                   onMouseLeave={() => setHoveredRow()}
                   style={{
-                    background: clickedRow == row ?  "rgb(230,230,230)" : hoveredRow == row ? "rgb(245,245,245)"  : "white",
+                    background:
+                      clickedRow == row
+                        ? "rgb(230,230,230)"
+                        : hoveredRow == row
+                          ? "rgb(245,245,245)"
+                          : "white",
                   }}>
                   <TableCell
                     component="th"
@@ -596,10 +616,10 @@ function TableComponent({
                         // key={}
                         nodes={row.seqObj}
                         selectedItemId={undefined}
-                        handleProvenanceNodeClick={() => {}}></ProvenanceIsolatedNodes>
+                        handleProvenanceNodeClick={() => { }}></ProvenanceIsolatedNodes>
                     ) : (
-                      row.answer
-                    )}
+                        row.answer
+                      )}
                   </TableCell>
                   {row.seq ? (
                     <TableCell align="left">
@@ -607,13 +627,12 @@ function TableComponent({
                         row={row}
                         hoveredRow={hoveredRow}
                         hoveredRowColor={hoveredRowColor}
-                        clickedRow = {clickedRow}
-                        clickedRowColor = {clickedRowColor}
-                        ></SequenceCount>
+                        clickedRow={clickedRow}
+                        clickedRowColor={clickedRowColor}></SequenceCount>
                     </TableCell>
                   ) : (
-                    <></>
-                  )}
+                      <></>
+                    )}
                   {/* <TableCell  component="th" scope="row" style={{padding:'10px'}}>
           {row.seq? <Histogram data={value} ci={value.ci} />: <></>}
         </TableCell> */}
@@ -628,39 +647,49 @@ function TableComponent({
 }
 
 // Compoment for single metric histogram
-function Histogram({ data, hoveredRow, metric, hoveredRowColor, clickedRow, clickedRowColor }) {
+function Histogram({
+  data,
+  hoveredRow,
+  metric,
+  hoveredRowColor,
+  clickedRow,
+  clickedRowColor,
+}) {
   // let hoveredStats = undefined;
   // let hoveredCI = undefined;
   let value = data.find((m) => m.metric == metric);
   if (value.type == "int" || value.type == "float") {
-    let hoveredStats; 
-    
-    if (clickedRow && hoveredRow && clickedRow == hoveredRow){
-      hoveredStats = hoveredRow
-      ? hoveredRow.stats.find((m) => m.metric == metric)
-      : undefined;
-      console.log('showing metrics for ', hoveredRow.matchingSequences.length)
+    let hoveredStats;
 
-    }
-    else if (clickedRow){
-      
-      let intersectionRow = hoveredRow ? clickedRow.intersections.find(r=>r.id == hoveredRow.id) : undefined
-      hoveredStats = intersectionRow 
-      ? intersectionRow.stats.find((m) => m.metric == metric)
-      : undefined;
+    if (clickedRow && hoveredRow && clickedRow == hoveredRow) {
+      hoveredStats = hoveredRow
+        ? hoveredRow.stats.find((m) => m.metric == metric)
+        : undefined;
+      console.log("showing metrics for ", hoveredRow.matchingSequences.length);
+    } else if (clickedRow) {
+      let intersectionRow = hoveredRow
+        ? clickedRow.intersections.find((r) => r.id == hoveredRow.id)
+        : undefined;
+      hoveredStats = intersectionRow
+        ? intersectionRow.stats.find((m) => m.metric == metric)
+        : undefined;
       if (intersectionRow) {
-        console.log('showing metrics for ', intersectionRow.matchingSequences.length)
+        console.log(
+          "showing metrics for ",
+          intersectionRow.matchingSequences.length
+        );
       }
     } else {
       hoveredStats = hoveredRow
-      ? hoveredRow.stats.find((m) => m.metric == metric)
-      : undefined;
+        ? hoveredRow.stats.find((m) => m.metric == metric)
+        : undefined;
     }
-     
 
-    
     let hoveredCI = hoveredStats ? hoveredStats.ci : undefined;
-    let histColor = clickedRow && clickedRow !== hoveredRow ? clickedRowColor  : hoveredRowColor
+    let histColor =
+      clickedRow && clickedRow !== hoveredRow
+        ? clickedRowColor
+        : hoveredRowColor;
     return (
       <Grid key={metric + "_hist"} item>
         {
@@ -866,128 +895,129 @@ function ConditionCard({ condition, conditionName, classes, taskID }) {
   return !metricValues ? (
     <></>
   ) : (
-    <React.Fragment key={"ConditionCard_" + conditionName}>
-      <Typography
-        onClick={() => {
-          setHidden(!hidden);
-        }}
-        style={{ cursor: "pointer" }}
-        className={classes.condition}
-        variant="overline">
-        {conditionName}
-      </Typography>
-      {hidden ? (
-        <></>
-      ) : (
-        <Grid container className={classes.root} spacing={2}>
-          <Grid item xs={12}>
-            <Grid container justify="flex-start" spacing={2}>
-              <Grid key={"cat"} item>
-                <Stimulus
-                  taskID={taskID}
-                  classes={classes}
-                  conditionName={conditionName}></Stimulus>
-              </Grid>
-              <Grid key={"prov"} item>
-                <Box
-                  height={rowHeight}
-                  width={600}
-                  mt={"5px"}
-                  mb={"6px"}
-                  mr={"10px"}
-                  boxShadow={0}
-                  style={{ overflow: "scroll" }}>
-                  {
-                    <TableComponent
-                      rows={freqPattern}
-                      hoveredRow={hoveredRow}
-                      hoveredRowColor={hoveredRow ? hoveredRowColor : undefined}
-                      setHoveredRow={setHoveredRow}
-                      clickedRow={clickedRow}
-                      clickedRowColor={clickedRow ? clickedRowColor : undefined}
-                      setClickedRow={setClickedRow}></TableComponent>
-                  }
-                </Box>
-                <Typography
-                  className={classes.pos}
-                  variant="overline"
-                  color="primary">
-                  Actions
-                </Typography>
-              </Grid>
-              <Grid key={"performanceMetrics"} item xs>
-                <Grid
-                  key={"performanceMetrics"}
-                  item
-                  style={{ display: "block" }}>
-                  <Box
-                    height={rowHeight / 2.5}
-                    p={"20px"}
-                    mt={"5px"}
-                    mb={"6px"}
-                    mr={"10px"}
-                    style={{ overflow: "scroll", display: "inline-flex" }}
-                    boxShadow={1}>
-                    {metricValues.map((metric) => {
-                      return (
-                        <Histogram
-                          key={metric}
-                          data={data}
+      <React.Fragment key={"ConditionCard_" + conditionName}>
+        <Typography
+          onClick={() => {
+            setHidden(!hidden);
+          }}
+          style={{ cursor: "pointer" }}
+          className={classes.condition}
+          variant="overline">
+          {conditionName}
+        </Typography>
+        {hidden ? (
+          <></>
+        ) : (
+            <Grid container className={classes.root} spacing={2}>
+              <Grid item xs={12}>
+                <Grid container justify="flex-start" spacing={2}>
+                  <Grid key={"cat"} item>
+                    <Stimulus
+                      taskID={taskID}
+                      classes={classes}
+                      conditionName={conditionName}></Stimulus>
+                  </Grid>
+                  <Grid key={"prov"} item>
+                    <Box
+                      height={rowHeight}
+                      width={600}
+                      mt={"5px"}
+                      mb={"6px"}
+                      mr={"10px"}
+                      boxShadow={0}
+                      style={{ overflow: "scroll" }}>
+                      {
+                        <TableComponent
+                          rows={freqPattern}
                           hoveredRow={hoveredRow}
-                          hoveredRowColor={
-                            hoveredRow ? hoveredRowColor : undefined
-                          }
+                          hoveredRowColor={hoveredRow ? hoveredRowColor : undefined}
+                          setHoveredRow={setHoveredRow}
                           clickedRow={clickedRow}
-                          clickedRowColor={
-                            clickedRow ? clickedRowColor : undefined
-                          }
-                          metric={metric}></Histogram>
-                      );
-                    })}
-                  </Box>
-                  <Typography
-                    className={classes.pos}
-                    variant="overline"
-                    color="primary"
-                    style={{ display: "block" }}>
-                    Performance Metrics
+                          clickedRowColor={clickedRow ? clickedRowColor : undefined}
+                          setClickedRow={setClickedRow}></TableComponent>
+                      }
+                    </Box>
+                    <Typography
+                      className={classes.pos}
+                      variant="overline"
+                      color="primary">
+                      Actions
+                </Typography>
+                  </Grid>
+                  <Grid key={"performanceMetrics"} item xs>
+                    <Grid
+                      key={"performanceMetrics"}
+                      item
+                      style={{ display: "block" }}>
+                      <Box
+                        height={rowHeight / 2.5}
+                        p={"20px"}
+                        mt={"5px"}
+                        mb={"6px"}
+                        mr={"10px"}
+                        style={{ overflow: "scroll", display: "inline-flex" }}
+                        boxShadow={1}>
+                        {metricValues.map((metric) => {
+                          return (
+                            <Histogram
+                              key={metric}
+                              data={data}
+                              hoveredRow={hoveredRow}
+                              hoveredRowColor={
+                                hoveredRow ? hoveredRowColor : undefined
+                              }
+                              clickedRow={clickedRow}
+                              clickedRowColor={
+                                clickedRow ? clickedRowColor : undefined
+                              }
+                              metric={metric}></Histogram>
+                          );
+                        })}
+                      </Box>
+                      <Typography
+                        className={classes.pos}
+                        variant="overline"
+                        color="primary"
+                        style={{ display: "block" }}>
+                        Performance Metrics
                   </Typography>
-                </Grid>
-
-                <Grid key={"qualData"} item xs>
-                  <Box
-                    height={rowHeight / 2.5}
-                    width={1}
-                    mt={"5px"}
-                    mb={"6px"}
-                    mr={"10px"}
-                    boxShadow={1}
-                    style={{ overflow: "scroll" }}>
-                    {metricValues.map((metric) => {
-                      return (
-                        <BarChart
-                          key={metric}
-                          allData={data}
-                          hoveredRow={hoveredRow}
-                          hoveredRowColor={
-                            hoveredRow ? hoveredRowColor : undefined
-                          }
-                          metric={metric}></BarChart>
-                      );
-                    })}
-                    {/* {<Tagger text = {condition.textAnswers.map(a=>a.answer).flat().join('--')}></Tagger>} */}
-                    {/* <TableComponent rows={condition.textAnswers}></TableComponent> */}
-                  </Box>
-                  <Typography
-                    className={classes.pos}
-                    variant="overline"
-                    color="primary">
-                    Word Counts for Qualitative Responses
+                    </Grid>
+                    {''/* 
+                    <Grid key={"qualData"} item xs>
+                      <Box
+                        height={rowHeight / 2.5}
+                        width={1}
+                        mt={"5px"}
+                        mb={"6px"}
+                        mr={"10px"}
+                        boxShadow={1}
+                        style={{ overflow: "scroll" }}>
+                        {metricValues.map((metric) => {
+                          console.log('dywootto', metric, data)
+                          return (
+                            <BarChart
+                              key={metric}
+                              allData={data}
+                              hoveredRow={hoveredRow}
+                              hoveredRowColor={
+                                hoveredRow ? hoveredRowColor : undefined
+                              }
+                              metric={metric}></BarChart>
+                          );
+                        })}
+                      </Box>
+                      <Typography
+                        className={classes.pos}
+                        variant="overline"
+                        color="primary">
+                        Word Counts for Qualitative Responses
                   </Typography>
-                </Grid>
-              </Grid>
+                    </Grid>
+                    */}
+                  </Grid>
 
-              {/* {condition.textAnswers.map(txt=>{
+
+                  {/* {condition.textAnswers.map(txt=>{
               return <List dense={true}>
               <ListItem>
                 <ListItemText
@@ -997,13 +1027,13 @@ function ConditionCard({ condition, conditionName, classes, taskID }) {
               </ListItem>
           </List>
             })} */}
+                </Grid>
+              </Grid>
             </Grid>
-          </Grid>
-        </Grid>
-      )}
-      <Divider />
-    </React.Fragment>
-  );
+          )}
+        <Divider />
+      </React.Fragment>
+    );
 }
 
 function TaskCard({ task, classes }) {
@@ -1013,7 +1043,7 @@ function TaskCard({ task, classes }) {
     <Box
       m={2}
       key={"box_" + task.taskID}
-      // style={{ display: "inline-block" }}
+    // style={{ display: "inline-block" }}
     >
       {/* style={{ 'width': 600 }}  */}
       <Card className={classes.root} key={task.taskID}>
@@ -1039,26 +1069,26 @@ function TaskCard({ task, classes }) {
           {hidden ? (
             <></>
           ) : (
-            Object.keys(task.conditions).map((cKey) => {
-              let condition = task.conditions[cKey];
-              return (
-                <ConditionCard
-                  key={task.taskID + cKey}
-                  condition={condition}
-                  conditionName={cKey}
-                  taskID={task.taskID}
-                  classes={classes}></ConditionCard>
-              );
-            })
-          )}
+              Object.keys(task.conditions).map((cKey) => {
+                let condition = task.conditions[cKey];
+                return (
+                  <ConditionCard
+                    key={task.taskID + cKey}
+                    condition={condition}
+                    conditionName={cKey}
+                    taskID={task.taskID}
+                    classes={classes}></ConditionCard>
+                );
+              })
+            )}
         </CardContent>
         {hidden ? (
           <></>
         ) : (
-          <CardActions>
-            <Button size="small">Explore</Button>
-          </CardActions>
-        )}
+            <CardActions>
+              <Button size="small">Explore</Button>
+            </CardActions>
+          )}
       </Card>
     </Box>
   );
@@ -1068,8 +1098,7 @@ export default function TaskContainer() {
   const classes = useStyles();
   const bull = <span className={classes.bullet}>•</span>;
 
-  const { data, homeTaskSort } = useContext(ProvenanceDataContext);
-
+  const { overviewData, homeTaskSort } = useContext(ProvenanceDataContext);
 
   // console.log('data is ', data)
 
@@ -1088,7 +1117,7 @@ export default function TaskContainer() {
     });
     return values;
   }
-  if (data) {
+  if (overviewData) {
     // console.log(data.tasks)
 
     if (homeTaskSort) {
@@ -1097,7 +1126,7 @@ export default function TaskContainer() {
       let desc = homeTaskSort.desc;
       let conditionFilter = homeTaskSort.conditions;
 
-      data.tasks.sort((a, b) => {
+      overviewData.tasks.sort((a, b) => {
         let aValue, bValue;
         if (sortKey == "name") {
           aValue = a[sortKey];
@@ -1113,15 +1142,15 @@ export default function TaskContainer() {
         return aValue > bValue ? rValue : -rValue;
       });
 
-      data.taskList.sort((a, b) => {
-        let taskA = data.tasks.find((t) => t.taskID == a);
-        let taskB = data.tasks.find((t) => t.taskID == b);
+      overviewData.taskList.sort((a, b) => {
+        let taskA = overviewData.tasks.find((t) => t.taskID == a);
+        let taskB = overviewData.tasks.find((t) => t.taskID == b);
 
         if (!taskA || !taskB) {
           return -1;
         }
-        let indexA = data.tasks.indexOf(taskA);
-        let indexB = data.tasks.indexOf(taskB);
+        let indexA = overviewData.tasks.indexOf(taskA);
+        let indexB = overviewData.tasks.indexOf(taskB);
 
         return indexA > indexB ? 1 : -1;
       });
@@ -1138,27 +1167,27 @@ export default function TaskContainer() {
     .range([0.3, 1]);
 
   //Only render when all API calls have returned
-  let ready = data;
+  let ready = overviewData;
   // console.log('actions', actions)
   return ready == undefined ? (
     <></>
   ) : (
-    <>
-      {data.taskList.map((taskID) => {
-        let task = data.tasks.find((t) => t.taskID == taskID);
-        return task ? (
-          <TaskCard key={task.name} task={task} classes={classes}></TaskCard>
-        ) : (
-          <Skeleton
-            key={taskID}
-            variant="rect"
-            width={"98%"}
-            height={500}
-            style={{ margin: "20px", padding: "20px" }}>
-            Loading {taskID}
-          </Skeleton>
-        );
-      })}
-    </>
-  );
+      <>
+        {overviewData.taskList.map((taskID) => {
+          let task = overviewData.tasks.find((t) => t.taskID == taskID);
+          return task ? (
+            <TaskCard key={task.name} task={task} classes={classes}></TaskCard>
+          ) : (
+              <Skeleton
+                key={taskID}
+                variant="rect"
+                width={"98%"}
+                height={500}
+                style={{ margin: "20px", padding: "20px" }}>
+                Loading {taskID}
+              </Skeleton>
+            );
+        })}
+      </>
+    );
 }

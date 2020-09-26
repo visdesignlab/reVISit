@@ -200,6 +200,7 @@ const copy = (source, destination, droppableSource, droppableDestination) => {
 
 const EventSearch = ({ onFilter = (val) => {} }) => {
   const { actionConfigurationsList } = useContext(ProvenanceDataContext);
+  console.log(actionConfigurationsList);
   const collection = useMemo(
     () =>
       actionConfigurationsList.map((config) => {

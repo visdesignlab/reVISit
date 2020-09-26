@@ -41,23 +41,6 @@ function addIdsToNodes(nodes) {
     return Object.assign(node, dataObject);
   });
 }
-let nodes1 = [
-  { id: "49607", name: "startedProvenance", time: 0 },
-  { id: "49608", name: "sort", time: 0.133333 },
-  { id: "49609", name: "sort", time: 0.15 },
-  { id: "49610", name: "sort", time: 0.183333 },
-  { id: "49611", name: "sort", time: 0.2 },
-  { id: "49612", name: "sort", time: 0.216667 },
-  { id: "49613", name: "sort", time: 0.233333 },
-  { id: "49614", name: "search", time: 0.566667 },
-  { id: "49615", name: "answerBox", time: 0.716667 },
-  { id: "49616", name: "Finished Task", time: 0.733333 },
-];
-const commonProps = {
-  condition: "nodeLink",
-  taskId: "S-task13",
-  participantId: "545d6768fdf99b7f9fca24e3",
-};
 
 const ProvenanceDataContext = React.createContext({});
 function compileActionListToHashTable(list) {
@@ -82,6 +65,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     actionConfigurationsFromServer,
   ] = useFetchAPIData(async () => {
     const value = await getActionConfigurations();
+    console.log("actionConfgigs from server", value);
     return value;
   }, [queryCount]);
 
@@ -91,6 +75,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
       const actionConfigurationsFiltered = actionConfigurationsFromServer.filter(
         (config) => config.type !== "event"
       );
+      console.log("fetched filtered actions", actionConfigurationsFiltered);
       setActionConfigurationsListInternal(actionConfigurationsFiltered);
     }
   }, [actionConfigurationsFromServer]);
@@ -133,6 +118,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     //   "in setActionConfgiuration about to save",
     //   newActionConfigurationsList
     // );
+    // clear data
     saveActionConfigurationToDB(newActionConfigurationsList).then(
       (response) => {
         // if a structural change, refetch, else just reset
@@ -144,6 +130,8 @@ export const ProvenanceDataContextProvider = ({ children }) => {
         ) {
           // console.log("IN STRUCTURAL");
           setQueryCount(queryCount + 1);
+          setOverviewData();
+          setCurrentTaskData();
         } else {
           // console.log("IN SUPERFICIAL");
           setActionConfigurationsListInternal(newActionConfigurationsList);
@@ -165,10 +153,9 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     );
   }, [actionConfigurationsList]);
 
-  const [data, setData] = useState();
+  const [overviewData, setOverviewData] = useState();
   const [fetchedInitialTask, setFetchedInitialTask] = useState(false);
   const [taskList, setTaskList] = useState();
-  const [timelineData, setTimelineData] = useState();
   const [currentlyVisitedNodes, setCurrentlyVisitedNodes] = React.useState(
     null
   );
@@ -178,9 +165,9 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   let conditions;
   let metrics;
 
-  if (data) {
-    conditions = data.conditions;
-    metrics = data.metrics;
+  if (overviewData) {
+    conditions = overviewData.conditions;
+    metrics = overviewData.metrics;
   }
 
   let [homeTaskSort, setHomeTaskSort] = useState();
@@ -226,7 +213,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
   //
   useEffect(() => {
     if (taskListFromServer) {
-      setSelectedTaskId(taskListFromServer[0].taskID);
+      setSelectedTaskId(taskListFromServer[12].taskID);
     }
   }, [taskListFromServer]);
 
@@ -236,23 +223,16 @@ export const ProvenanceDataContextProvider = ({ children }) => {
     return await getTaskOverviewFromServer(taskList[0].taskID);
   }, [taskList, queryCount]);
 
-  //  get timeline from server;
-  let [, , timelineDataFromServer] = useFetchAPIData(async () => {
-    console.log("requesting timeline data from server ");
-    return await getTimelineFromServer();
-  }, []);
+
 
   // console.log(isLoading, isError, dataFromServer);
   /*[{"_id":"startedProvenance","actionID":"startedProvenance","category":"Study\r","condition":"nodeLink","elapsedTime":0,"id":1,"label":"Start Task","participantID":"545d6768fdf99b7f9fca24e3","target":null,"taskID":"S-task01","time":"Wed, 28 Aug 2019 00:51:18 GMT","type":"action"},{"_id":"Hard Selected A Node","actionID":"Hard Selected a Node","category":"Answer\r","condition":"nodeLink","elapsedTime":0.283333,"id":2,"label":"Select","participantID":"545d6768fdf99b7f9fca24e3","target":null,"taskID":"S-task01","time":"Wed, 28 Aug 2019 00:51:35 GMT","type":"action"},{"_id":"Hard Unselected A Node","actionID":"Hard Unselected a Node","category":"Answer\r","condition":"nodeLink","elapsedTime":0.316667,"id":3,"label":"Unselect","participantID":"545d6768fdf99b7f9fca24e3","target":null,"taskID":"S-task01","time":"Wed, 28 Aug 2019 00:51:37 GMT","type":"action"},{"_id":"Hard Selected A Node","actionID":"Hard Selected a Node","category":"Answer\r","condition":"nodeLink","elapsedTime":0.45,"id":2,"label":"Select","participantID":"545d6768fdf99b7f9fca24e3","target":null,"taskID":"S-task01","time":"Wed, 28 Aug 2019 00:51:45 GMT","type":"action"},{"_id":"Finished Task","actionID":"Finished Task","category":"Study\r","condition":"nodeLink","elapsedTime":0.666667,"id":4,"label":"Finish Task","participantID":"545d6768fdf99b7f9fca24e3","target":null,"taskID":"S-task01","time":"Wed, 28 Aug 2019 00:51:58 GMT","type":"action"}]*/
 
-  useEffect(() => {
-    console.log("timeline data from server", timelineDataFromServer);
-    setTimelineData(timelineDataFromServer);
-  }, [timelineDataFromServer]);
+
 
   useEffect(() => {
     if (dataFromServer) {
-      setData(dataFromServer);
+      setOverviewData(dataFromServer);
       setFetchedInitialTask(!fetchedInitialTask);
     }
   }, [dataFromServer]);
@@ -277,7 +257,7 @@ export const ProvenanceDataContextProvider = ({ children }) => {
       console.log("get remaining tasks ");
       getTaskOverviewFromServer().then((newTaskData) => {
         console.log("newTaskData", newTaskData.data);
-        setData(newTaskData.data);
+        setOverviewData(newTaskData.data);
       });
     }
   }, [dataFromServer]);
@@ -342,10 +322,9 @@ export const ProvenanceDataContextProvider = ({ children }) => {
         currentTaskData,
         handleChangeSelectedTaskId,
         selectedTaskId,
-        data,
+        overviewData,
         loadingTaskList,
         taskList,
-        timelineData,
         metrics,
         setTaskSort,
         homeTaskSort,

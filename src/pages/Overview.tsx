@@ -14,7 +14,7 @@ import ProvenanceDataContext from "../components/ProvenanceDataContext";
 const { Search } = Input;
 
 const Overview = ({ location }) => {
-  const { data } = useContext(ProvenanceDataContext);
+  const { overviewData } = useContext(ProvenanceDataContext);
 
   const [search, setSearch] = React.useState("");
 
@@ -35,7 +35,7 @@ const Overview = ({ location }) => {
         // onSearch={newEvent}
         // onChange={event => setSearch(event.target.value)}
         style={{ width: 672 }}
-        // value={search}
+      // value={search}
       />
       <div style={{ paddingTop: "15px" }}>
         {/* {patternComponent} */}

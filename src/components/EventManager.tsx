@@ -166,7 +166,7 @@ export const GroupedList = ({
         name: `${type}-${newListName}`,
         type: type,
         hidden: false,
-        icon: "Add",
+        icon: "text",
         color: "#ddd",
         elements: [],
       },

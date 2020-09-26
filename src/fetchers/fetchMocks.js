@@ -36,12 +36,24 @@ export async function performPrefixSpan(data) {
 }
 function parseActionConfiguration(config) {
   if (config.elements) {
+    console.log(config.elements);
     config.elements = config.elements.replace(/FALSE/g, '"false"');
     config.elements = config.elements.replace(/TRUE/g, '"true"');
+    config.elements = config.elements.replace(/(\r\n|\n|\r)/gm, " ");
 
-    config.elements = JSON.parse(config.elements);
+    //config.elements = config.elements.replace(/"/g, "'");
+
+    console.log("past replaces", config.elements, typeof config.elements);
+    try {
+      config.elements = JSON.parse(config.elements);
+    } catch (err) {
+      console.log("ERROR", err);
+    }
+    console.log("past parse", config.elements);
   }
+
   config.color = config.color.replace("/r", "");
+  console.log("past color", config.color);
 
   return {
     color: config.color,
@@ -71,13 +83,16 @@ export async function saveActionConfigurationToDB(updateActionConfigurations) {
     host + "/actionConfigurations",
     storeActionConfiguration(updateActionConfigurations)
   );
+  console.log("saved actions", res);
 
   return res;
 }
 export async function getActionConfigurations() {
   // TODO hook this up
   let res = await getData(host + "/actionConfigurations");
+  console.log("res from action configs", res);
   res.data = res.data.map(parseActionConfiguration);
+  console.log("got action configs", res);
 
   return res;
 }
