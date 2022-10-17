@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/reVISit/static/css/main.8fdfddcf.chunk.css",
-    "main.js": "/reVISit/static/js/main.0700daa1.chunk.js",
-    "main.js.map": "/reVISit/static/js/main.0700daa1.chunk.js.map",
+    "main.js": "/reVISit/static/js/main.f46147eb.chunk.js",
+    "main.js.map": "/reVISit/static/js/main.f46147eb.chunk.js.map",
     "runtime-main.js": "/reVISit/static/js/runtime-main.d14098cd.js",
     "runtime-main.js.map": "/reVISit/static/js/runtime-main.d14098cd.js.map",
     "static/css/2.3cb76441.chunk.css": "/reVISit/static/css/2.3cb76441.chunk.css",
     "static/js/2.0432022f.chunk.js": "/reVISit/static/js/2.0432022f.chunk.js",
     "static/js/2.0432022f.chunk.js.map": "/reVISit/static/js/2.0432022f.chunk.js.map",
     "index.html": "/reVISit/index.html",
-    "precache-manifest.ac5224884e127fcf14f8dfe7298e6eda.js": "/reVISit/precache-manifest.ac5224884e127fcf14f8dfe7298e6eda.js",
+    "precache-manifest.e46f69b1bf5c6a8f89d82c64b2476ceb.js": "/reVISit/precache-manifest.e46f69b1bf5c6a8f89d82c64b2476ceb.js",
     "service-worker.js": "/reVISit/service-worker.js",
     "static/css/2.3cb76441.chunk.css.map": "/reVISit/static/css/2.3cb76441.chunk.css.map",
     "static/css/main.8fdfddcf.chunk.css.map": "/reVISit/static/css/main.8fdfddcf.chunk.css.map",
@@ -90,6 +90,6 @@
     "static/css/2.3cb76441.chunk.css",
     "static/js/2.0432022f.chunk.js",
     "static/css/main.8fdfddcf.chunk.css",
-    "static/js/main.0700daa1.chunk.js"
+    "static/js/main.f46147eb.chunk.js"
   ]
 }
