@@ -1,6 +1,6 @@
 import mockAllData from "./mockData.json";
 let local = true;
-let host = local ? "http://127.0.0.1:5000" : "https://revisit.live";
+let host = local ? "http://127.0.0.1:5000" : "https://apps.vdl.sci.utah.edu/revisitServer";
 
 export async function fetchProvenanceDataByNodeId(nodeId) {
   let res = await postData(host + "/actions/" + nodeId);
