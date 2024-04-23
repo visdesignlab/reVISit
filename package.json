@@ -101,7 +101,7 @@
     "@visdesignlab/provenance-lib-core": "^4.2.1",
     "awesome-typescript-loader": "^5.2.1",
     "fetch-mock": "^9.10.3",
-    "gh-pages": "^3.0.0",
+    "gh-pages": "^5.0.0",
     "react-docgen-typescript-loader": "^3.7.2",
     "react-docgen-typescript-webpack-plugin": "^1.1.0",
     "why-did-you-update": "^1.0.8"
